@@ -59,16 +59,19 @@ and check the Grafana Dashboard continously.
 ### Example experiments:
 
 #### Follower Restart
+
+_Note:_ To test that we need only one partition instead of 3, otherwise every node is a leader.
+
 **Experiment:**
 1. Verify Steady State:
- 1. 1. Wait's that the cluster is up and running.
- 1. 2. Start workflow instances on all partitions
+  1. Wait's that the cluster is up and running.
+  2. Start workflow instances on all partitions
 2. Action;
- 2. 1. Detect follower for partition 3
- 2. 2. Kill follower for partition 3
+  1. Detect Follower for partition 3
+  2. Kill Follower for partition 3
 3. Verify Steady State:
- 3. 1. Wait's that the cluster is up and running.
- 3. 2. Start workflow instances on all partitions
+  1. Wait's that the cluster is up and running.
+  2. Start workflow instances on all partitions
 
 ```
 chaos run follower-restart/experiment.json
@@ -77,14 +80,14 @@ chaos run follower-restart/experiment.json
 #### Leader Restart
 **Experiment:**
 1. Verify Steady State:
- 1. 1. Wait's that the cluster is up and running.
- 1. 2. Start workflow instances on all partitions
+  1. Wait's that the cluster is up and running.
+  2. Start workflow instances on all partitions
 2. Action;
- 2. 1. Detect Leader for partition 3
- 2. 2. Kill Leader for partition 3
+  1. Detect Leader for partition 3
+  2. Kill Leader for partition 3
 3. Verify Steady State:
- 3. 1. Wait's that the cluster is up and running.
- 3. 2. Start workflow instances on all partitions
+  1. Wait's that the cluster is up and running.
+  2. Start workflow instances on all partitions
 
 ```
 chaos run follower-restart/experiment.json
