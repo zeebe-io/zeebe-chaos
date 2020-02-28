@@ -1,0 +1,62 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe Worker restart experiment",
+    "description": "Zeebe Workers should be able to reconnect after restart.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "configuration": {
+        "namespace": {
+            "type": "env",
+            "key": "CURRENT_K8_NS",
+            "default": "default"
+        }
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create a workflow and await the result",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "await-workflows-with-result.sh",
+                    "arguments": "3",
+                    "timeout": 60
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Restart worker pod",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.pod.actions",
+                "func": "terminate_pods",
+                "arguments": {
+                    "label_selector": "app=worker",
+                    "rand": true,
+                    "ns": "${namespace}"
+                }
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ],
+    "rollbacks": []
+}
