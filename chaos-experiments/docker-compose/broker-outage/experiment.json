@@ -16,8 +16,11 @@
         "tolerance": 0,
         "provider": {
           "type": "process",
-          "path": "../../scripts/docker-compose/verify-steady-state.sh",
+          "path": "../scripts/verify-steady-state.sh",
           "timeout": 60
+        },
+        "pauses": {
+          "after": 5
         }
       }]
   },
@@ -27,8 +30,21 @@
       "name": "terminate-random-broker",
       "provider": {
         "type": "process",
-        "path": "../../scripts/docker-compose/kill-random-broker.sh"
+        "path": "../scripts/kill-random-broker.sh"
+      },
+      "pauses": {
+        "after": 5
       }
-    }],
-  "rollbacks": []
+    }
+  ],
+  "rollbacks": [
+    {
+      "type": "action",
+      "name": "restart-broker",
+      "provider": {
+        "type": "process",
+        "path": "../scripts/start-broker.sh"
+      }
+    }
+  ]
 }
