@@ -1,0 +1,50 @@
+{
+  "version": "0.1.0",
+  "title": "Zeebe broker outage experiment",
+  "description": "Zeebe should be fault-tolerant when one broker dies",
+  "contributions": {
+    "reliability": "high",
+    "availability": "high"
+  },
+  "steady-state-hypothesis":
+  {
+    "title": "Zeebe is alive",
+    "probes": [
+      {
+        "name": "should-be-able-to-create-workflow-instances",
+        "type": "probe",
+        "tolerance": 0,
+        "provider": {
+          "type": "process",
+          "path": "../scripts/verify-steady-state.sh",
+          "timeout": 60
+        },
+        "pauses": {
+          "after": 5
+        }
+      }]
+  },
+  "method": [
+    {
+      "type": "action",
+      "name": "terminate-random-broker",
+      "provider": {
+        "type": "process",
+        "path": "../scripts/kill-random-broker.sh"
+      },
+      "pauses": {
+        "after": 5
+      }
+    }
+  ],
+  "rollbacks": [
+    {
+      "type": "action",
+      "name": "restart-broker",
+      "provider": {
+        "type": "process",
+        "path": "../scripts/start-broker.sh"
+      }
+    }
+  ]
+}
