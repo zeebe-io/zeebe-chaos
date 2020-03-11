@@ -11,39 +11,47 @@
     "title": "Zeebe is alive",
     "probes": [
       {
-        "name": "should-be-able-to-create-workflow-instances",
+        "name": "Verify setup",
         "type": "probe",
         "tolerance": 0,
         "provider": {
           "type": "process",
-          "path": "../scripts/verify-steady-state.sh",
-          "timeout": 60
-        },
-        "pauses": {
-          "after": 5
+          "path": "verify-docker-setup.sh",
+          "timeout": 10
         }
-      }]
+      },
+      {
+        "name": "Should be able to create workflow instances",
+        "type": "probe",
+        "tolerance": 0,
+        "provider": {
+          "type": "process",
+          "path": "verify-steady-state.sh",
+          "timeout": 60
+        }
+      }
+    ]
   },
   "method": [
     {
       "type": "action",
-      "name": "terminate-random-broker",
+      "name": "Terminate an random Zeebe Broker",
       "provider": {
         "type": "process",
-        "path": "../scripts/kill-random-broker.sh"
+        "path": "kill-random-broker.sh"
       },
       "pauses": {
-        "after": 5
+        "after": 15
       }
     }
   ],
   "rollbacks": [
     {
       "type": "action",
-      "name": "restart-broker",
+      "name": "Restart Broker",
       "provider": {
         "type": "process",
-        "path": "../scripts/start-broker.sh"
+        "path": "start-broker.sh"
       }
     }
   ]

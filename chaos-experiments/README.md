@@ -1,7 +1,4 @@
 # Chaos Experiments
-
-<details><summary>Installation</summary>
-<p>
         
 ## Installation
 
@@ -44,59 +41,18 @@ export GOOGLE_APPLICATION_CREDENTIALS=/home/user/chaos/zeebe-io-6a9c86d58c95.jso
 
 You should add this to you `~/.bashrc` or something similar.
 
-</p>
-</details>
-
 ## Run Chaos Experiments
 
-Make sure you setup everything correctly and started a zeebe cluster via the helm charts. _Currently the chaos tests
-expect 3 nodes with 3 partitions and replication factor 3._
+Make sure you setup everything correctly. You can either run chaos experiments in a kubernetes setup, the please follow this [guide](kubernetes/README.md) or
+via docker-compose then follow this [guide](docker-compose/README.md)
 
-To activate your enviroment and set some necessary paths just run `source runChaos.sh` in this directory.
-It might make sense to run in parallel `kubectl get pods -w` so you can see what is happening during the experiment
-and check the Grafana Dashboard continously.
-
-### Example experiments:
-
-#### Follower Restart
-
-_Note:_ To test that we need only one partition instead of 3, otherwise every node is a leader.
-
-**Experiment:**
-1. Verify Steady State:
-    1. Wait's that the cluster is up and running.
-    2. Start workflow instances on all partitions
-2. Action;
-    1. Detect Follower for partition 3
-    2. Kill Follower for partition 3
-3. Verify Steady State:
-    1. Wait's that the cluster is up and running.
-    2. Start workflow instances on all partitions
-
-```
-chaos run follower-restart/experiment.json
-```
-
-#### Leader Restart
-**Experiment:**
-1. Verify Steady State:
-    1. Wait's that the cluster is up and running.
-    2. Start workflow instances on all partitions
-2. Action;
-    1. Detect Leader for partition 3
-    2. Kill Leader for partition 3
-3. Verify Steady State:
-    1. Wait's that the cluster is up and running.
-    2. Start workflow instances on all partitions
-
-```
-chaos run follower-restart/experiment.json
-```
+It is necessary to activate your installed chaostoolkit environment to run chaos experiments.
+In order to do so just run `source runChaos.sh` it will source the `~/.venvs/chaostk/bin/activate` and also add the 
+script folders to your `PATH`. This makes it possible to run chaos experiments easily.
 
 ## Chaos tests with Snapshots
 
-If you want to test current snapshot version you have to build and push docker images and use them in the 
-kubernetes deployment.
+If you want to test current snapshot version you have to build and push docker images and use them in your setup.
 
 ### Build docker image for current snapshot
 
