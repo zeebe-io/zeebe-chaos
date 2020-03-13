@@ -1,16 +1,10 @@
 #!/bin/bash
-set -exo pipefail
+set -exuo pipefail
 
 namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
 pod=$(kubectl get pod -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
 
 state=$1
-
-until [[ $(kubectl get pod $pod) == *"Running"* ]];
-do
-  echo "Waiting on K8s..."
-  sleep 10s
-done
 
 # To print the topology in the journal
 kubectl exec $pod -- zbctl status --insecure
