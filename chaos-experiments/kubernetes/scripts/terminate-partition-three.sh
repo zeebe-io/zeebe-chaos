@@ -25,7 +25,7 @@ kubectl exec $pod -- zbctl status --insecure
 # This means broker 1, 2 or 3 participates on partition 3
 
 
-index=$[$(kubectl exec zell-chaos-zeebe-0 -- zbctl status --insecure \
+index=$[$(kubectl exec $pod -- zbctl status --insecure \
   | grep 'Partition 3' \
   | grep -n "$state" -m 1 \
   | sed 's/\([0-9]*\).*/\1/') - 1]
