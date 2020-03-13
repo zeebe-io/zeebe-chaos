@@ -35,7 +35,7 @@
     "method": [
         {
             "type": "action",
-            "name": "terminate-follower-of-partition-3",
+            "name": "Terminate follower of partition 3",
             "provider": {
                 "type": "process",
                 "path": "terminate-partition-three.sh",

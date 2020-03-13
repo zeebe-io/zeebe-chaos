@@ -27,7 +27,7 @@ kubectl exec $pod -- zbctl status --insecure
 
 index=$[$(kubectl exec zell-chaos-zeebe-0 -- zbctl status --insecure \
   | grep 'Partition 3' \
-  | grep -n "Follower" -m 1 \
+  | grep -n "$state" -m 1 \
   | sed 's/\([0-9]*\).*/\1/') - 1]
 
 pod=$(echo $pod | sed 's/\(.*\)\([0-9]\)$/\1/')
