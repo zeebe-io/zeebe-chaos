@@ -6,13 +6,6 @@
         "reliability": "high",
         "availability": "high"
     },
-    "configuration": {
-        "namespace": {
-            "type": "env",
-            "key": "CURRENT_K8_NS",
-            "default": "default"
-        }
-    },
     "steady-state-hypothesis": {
         "title": "Zeebe is alive",
         "probes": [
@@ -43,15 +36,11 @@
         {
             "type": "action",
             "name": "Restart worker pod",
+            "tolerance": 0,
             "provider": {
-                "type": "python",
-                "module": "chaosk8s.pod.actions",
-                "func": "terminate_pods",
-                "arguments": {
-                    "label_selector": "app=worker",
-                    "rand": true,
-                    "ns": "${namespace}"
-                }
+                "type": "process",
+                "path": "terminate-workers.sh",
+                "timeout": 60
             },
             "pauses": {
                 "after": 5
