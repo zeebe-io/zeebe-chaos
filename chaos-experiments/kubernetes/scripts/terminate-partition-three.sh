@@ -1,34 +1,39 @@
 #!/bin/bash
+set -exo pipefail
+
+namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+pod=$(kubectl get pod -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
 
 state=$1
 
-until [[ $(kubectl get pod zeebe-0) == *"Running"* ]];
+until [[ $(kubectl get pod $pod) == *"Running"* ]];
 do
   echo "Waiting on K8s..."
   sleep 10s
 done
 
 # To print the topology in the journal
-kubectl exec zeebe-0 -- zbctl status --insecure
+kubectl exec $pod -- zbctl status --insecure
 
-# For cluster size 5 and replication factor 3
+# For cluster size 3 and replication factor 3
 # we know the following partition matrix
-# partition \ node  0    1     2    3   4
-#     1             X    X     X
-#     2                  X     X    X 
-#     3                        X    X    X
+# partition \ node  0    1     2
+#     1             L    F     F
+#     2             F    L     F
+#     3             F    F     L
 #    etc.
-# This means broker 2, 3 or 4 participates on partition 3
+# This means broker 1, 2 or 3 participates on partition 3
 
-participants=(2 3 4)
 
-index=$(kubectl exec zeebe-0 -- zbctl status --insecure \
+index=$[$(kubectl exec zell-chaos-zeebe-0 -- zbctl status --insecure \
   | grep 'Partition 3' \
-  | grep -n $state -m 1 \
-  | sed 's/\([0-9]*\).*/\1/')
+  | grep -n "Follower" -m 1 \
+  | sed 's/\([0-9]*\).*/\1/') - 1]
 
-broker=${participants[$index-1]}
-echo Broker-$broker will be stopped
+pod=$(echo $pod | sed 's/\(.*\)\([0-9]\)$/\1/')
+pod=$pod$index
 
-kubectl delete pod zeebe-$broker
+echo $pod will be stopped
+
+kubectl delete pod $pod
 

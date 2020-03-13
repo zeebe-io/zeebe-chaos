@@ -1,4 +1,5 @@
 #!/bin/bash
+set -exo pipefail
 
 namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
 pod=$(kubectl get pod -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
