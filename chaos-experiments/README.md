@@ -28,31 +28,14 @@ Then install the chaostoolkit and necessary dependencies in this environment:
 (chaostk) $ pip install chaostoolkit-kubernetes
 ```
 
-To access our gcloud cluster during the chaos test you need to create a new service account key (app-token) in the google cloud console.
-
-https://console.cloud.google.com/apis/credentials/serviceaccountkey?authuser=1&project=zeebe-io
-
-As service account use `zeebe-chaos-toolkit`.
-This app token can you store somewhere in your home directory. You then need to set the path to this token as an env variable.
-
-```
-export GOOGLE_APPLICATION_CREDENTIALS=/home/user/chaos/zeebe-io-6a9c86d58c95.json
-```
-
-You should add this to you `~/.bashrc` or something similar.
-
 ## Run Chaos Experiments
 
-Make sure you setup everything correctly. You can either run chaos experiments in a kubernetes setup, the please follow this [guide](kubernetes/README.md) or
+Make sure you setup everything correctly. You can either run chaos experiments in a kubernetes setup, then please follow this [guide](kubernetes/README.md) or
 via docker-compose then follow this [guide](docker-compose/README.md)
-
-It is necessary to activate your installed chaostoolkit environment to run chaos experiments.
-In order to do so just run `source runChaos.sh` it will source the `~/.venvs/chaostk/bin/activate` and also add the 
-script folders to your `PATH`. This makes it possible to run chaos experiments easily.
 
 ## Chaos tests with Snapshots
 
-If you want to test current snapshot version you have to build and push docker images and use them in your setup.
+If you want to test a current snapshot version, you have to build and push a new docker image and use it in your setup.
 
 ### Build docker image for current snapshot
 
