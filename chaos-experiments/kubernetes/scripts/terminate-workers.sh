@@ -1,4 +1,6 @@
 #!/bin/bash
 set -exuo pipefail
 
-kubectl delete pods -l app=worker
+namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+
+kubectl delete pods -l app=worker -n $namespace
