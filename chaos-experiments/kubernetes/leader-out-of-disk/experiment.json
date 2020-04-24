@@ -1,0 +1,47 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe can recover when a node goes out of disk space",
+    "description": "Zeebe should be able to detect and fail-over on out of disk space error",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create workflow instances on partition 3",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-steady-state.sh",
+                    "arguments": "3",
+                    "timeout": 60
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Leader out of disk space",
+            "provider": {
+                "type": "process",
+                "path": "leaderOutOfDiskSpace.sh",
+                "arguments": "3"
+            }
+        }
+    ],
+    "rollbacks": []
+}
