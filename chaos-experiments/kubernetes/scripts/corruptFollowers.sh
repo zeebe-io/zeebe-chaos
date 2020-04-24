@@ -3,7 +3,7 @@
 set -xoeu pipefail
 
 partition=$1
-
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
 pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
 
@@ -27,11 +27,15 @@ podPrefix=$(echo $pod | sed 's/\(.*\)\([0-9]\)$/\1/')
 leader=$podPrefix$index
 
 # Corrupts snapshots on all followers of given partition
-kubectl get pods -n $namespace \
+followers=$(kubectl get pods -n $namespace \
   | grep -o -E "$podPrefix[0-9]" \
-  | grep -v $leader \
-  | xargs -I % \
-  sh -c "kubectl cp corruptSnapshot.sh %:/usr/local/zeebe/corrupting.sh; kubectl exec % -- ./corrupting.sh $partition"
+  | grep -v $leader)
 
+for follower in $followers
+do
+  echo Corrupt snapshot on $follower;
+  kubectl cp $SCRIPTPATH/corruptSnapshot.sh $follower:/usr/local/zeebe/corrupting.sh
+  kubectl exec $follower -- ./corrupting.sh $partition
+done
 
 kubectl exec $pod -- zbctl status --insecure
