@@ -1,5 +1,5 @@
 #!/bin/bash
-set -exo pipefail
+set -xo pipefail
 
 if [ -z $1 ]
 then
@@ -7,11 +7,13 @@ then
   exit 1
 fi
 
-namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
-pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
-
-
 scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source $scriptPath/utils.sh
+
+namespace=$(getNamespace)
+pod=$(getGateway)
+
+
 processFileName=one_task.bpmn
 bpmnPath=$scriptPath/../../bpmn/$processFileName
 
