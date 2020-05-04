@@ -13,7 +13,6 @@ source $scriptPath/utils.sh
 namespace=$(getNamespace)
 pod=$(getGateway)
 
-
 processFileName=one_task.bpmn
 bpmnPath=$scriptPath/../../bpmn/$processFileName
 
@@ -34,8 +33,4 @@ until [[ $partition -eq $requiredPartition ]]; do
 
   echo Started workflow with key $workflowInstanceKey, corresponding partition $partition
 done
-
-
-
-
 

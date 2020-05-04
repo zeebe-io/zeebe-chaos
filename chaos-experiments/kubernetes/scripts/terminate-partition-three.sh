@@ -1,13 +1,17 @@
 #!/bin/bash
 set -exuo pipefail
 
-namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
-pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
+scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source $scriptPath/utils.sh
+
+namespace=$(getNamespace)
+pod=$(getBroker)
+gateway=$(getGateway)
 
 state=$1
 
 # To print the topology in the journal
-kubectl exec $pod -n $namespace -- zbctl status --insecure
+kubectl exec $gateway -n $namespace -- zbctl status --insecure
 
 # For cluster size 3 and replication factor 3
 # we know the following partition matrix
@@ -19,7 +23,7 @@ kubectl exec $pod -n $namespace -- zbctl status --insecure
 # This means broker 1, 2 or 3 participates on partition 3
 
 
-index=$[$(kubectl exec $pod -n $namespace -- zbctl status --insecure \
+index=$[$(kubectl exec $gateway -n $namespace -- zbctl status --insecure \
   | grep 'Partition 3' \
   | grep -n "$state" -m 1 \
   | sed 's/\([0-9]*\).*/\1/') - 1]

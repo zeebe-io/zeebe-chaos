@@ -1,6 +1,9 @@
 #!/bin/bash
 set -exuo pipefail
 
-namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source $scriptPath/utils.sh
+
+namespace=$(getNamespace)
 
 kubectl delete pods -l app=worker -n $namespace
