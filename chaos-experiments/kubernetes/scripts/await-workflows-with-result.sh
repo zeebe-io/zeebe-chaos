@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xo pipefail
+set -euo pipefail
 
 scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 source $scriptPath/utils.sh
@@ -7,7 +7,12 @@ source $scriptPath/utils.sh
 namespace=$(getNamespace)
 pod=$(getGateway)
 
-for i in {0..10}
+. $scriptPath/deploy-model.sh
+
+set +e
+result=1
+until [[ $result -eq 0 ]]
 do
   kubectl exec $pod -n $namespace -- zbctl --insecure create instance benchmark --withResult
+  result=$?
 done
