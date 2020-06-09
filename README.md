@@ -31,5 +31,7 @@ Resources which you might find interesting regarding to that topic.
 In order to test or execute chaos experiments we use an tool called [chaos-toolkit](https://chaostoolkit.org/), which
 makes it easy to create chaos experiments and also automate them later on.
 
+[Complete list of experiments](inventory.md) 
+
 All our current experiments are located under `chaos-experiments/`, for more details please have a look
 at the [README](chaos-experiments/README.md).
