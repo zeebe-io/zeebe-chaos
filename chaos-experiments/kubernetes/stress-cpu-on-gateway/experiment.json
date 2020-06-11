@@ -1,0 +1,47 @@
+{
+    "version": "0.1.0",
+    "title": "CPU stress on an Gateway",
+    "description": "The cpu stress on gateway should not cause any failures. We should be able to start and complete instances.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create workflow instances on partition 3",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-steady-state.sh",
+                    "arguments": "3",
+                    "timeout": 60
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Stress CPU on Gateway",
+            "provider": {
+                "type": "process",
+                "path": "stress-cpu.sh",
+                "arguments": "gateway"
+            }
+        }
+    ],
+    "rollbacks": []
+}
