@@ -2,17 +2,27 @@
 set -exuo pipefail
 
 
+target=${1:-"broker"}
+
+
 scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 source $scriptPath/utils.sh
 
 namespace=$(getNamespace)
-broker=$(getBroker)
 
-kubectl exec -n $namespace $broker -- apt update
-kubectl exec -n $namespace $broker -- apt install -y stress
+targetPod=$(getBroker)
+if [ "$target" == "gateway" ];
+then
+  targetPod=$(getGateway)
+fi
 
-# stress cpu
+# we need to update the system before installing new packages
+kubectl exec -n $namespace $targetPod -- apt update
 
-kubectl exec -n $namespace $broker -- stress --cpu 256 --vm 32 --vm-bytes 4M --timeout 180 &
+# we install stress and procps to kill it later with pgrep
+kubectl exec -n $namespace $targetPod -- apt install -y stress procps
+
+# stress cpu in background
+#kubectl exec -n $namespace $targetPod -- bash -c "stress --cpu 256 --vm 32 --vm-bytes 4M --timeout 600 > /dev/null 2> /dev/null &"
 
 
