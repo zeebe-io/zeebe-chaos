@@ -10,8 +10,10 @@ function getNamespace()
 
 function getBroker()
 {
+  index=${1:-0}
+
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
+  pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[$index].metadata.name}")
 
   echo $pod
 }

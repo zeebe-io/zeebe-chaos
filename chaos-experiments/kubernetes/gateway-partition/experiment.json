@@ -1,0 +1,61 @@
+{
+    "version": "0.1.0",
+    "title": "The gateway can handle network partitions",
+    "description": "After a network partition the gateway should be able to come back and receive all leaders to have a correct topology. Based on https://github.com/zeebe-io/zeebe/issues/4557",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create workflow instances on partition 3",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-steady-state.sh",
+                    "arguments": "3",
+                    "timeout": 60
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Disconnect the gateway from the brokers.",
+            "provider": {
+                "type": "process",
+                "path": "disconnect-standalone-gateway.sh"
+            },
+            "pauses": {
+              "after": 30
+            }
+        },
+        {
+            "type": "action",
+            "name": "Connect the gateway to the brokers again.",
+            "provider": {
+                "type": "process",
+                "path": "connect-standalone-gateway.sh"
+            },
+            "pauses": {
+              "after": 30
+            }
+        }
+
+    ],
+    "rollbacks": []
+}
