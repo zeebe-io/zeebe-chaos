@@ -23,5 +23,6 @@ kubectl exec -n $namespace $targetPod -- apt update
 kubectl exec -n $namespace $targetPod -- apt install -y stress procps
 
 # stress cpu in background
-kubectl exec -n $namespace $targetPod -- stress --cpu 256 --vm 32 --vm-bytes 4M --timeout 30
+#kubectl exec -n $namespace $targetPod -- bash -c "stress --cpu 256 --vm 32 --vm-bytes 4M --timeout 600 > /dev/null 2> /dev/null &"
+
 
