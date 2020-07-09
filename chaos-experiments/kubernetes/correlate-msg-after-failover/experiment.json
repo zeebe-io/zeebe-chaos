@@ -1,0 +1,51 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe correlates messages after restart",
+    "description": "It should not matter whether the node have been restarted or not. On reaching a message catch event an existing message should be correlated.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create a workflow and await the result",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "await-workflows-with-result.sh",
+                    "arguments": "3",
+                    "timeout": 60
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Restart worker pod",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "terminate-workers.sh",
+                "timeout": 60
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ],
+    "rollbacks": []
+}
