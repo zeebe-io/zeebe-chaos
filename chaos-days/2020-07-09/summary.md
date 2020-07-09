@@ -13,6 +13,8 @@ Based on the Hypothesis written here:  https://github.com/zeebe-io/zeebe-chaos/i
 
 We wanted to explore what happens when we have a lot of timers running and especially what happens when the are triggered at once. We created the following workflow model, where timers are exponentially created.
 
+![timerProcess](timerProcess.png)
+
 The experiments is based on the hypotheses we wrote here https://github.com/zeebe-io/zeebe-chaos/issues/31.
 
 #### Expectations 
