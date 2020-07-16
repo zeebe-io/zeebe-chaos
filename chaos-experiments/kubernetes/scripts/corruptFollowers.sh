@@ -1,6 +1,7 @@
 #!/bin/bash
 set -xoeu pipefail
 
+partition=$1
 scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 source $scriptPath/utils.sh
 
@@ -9,9 +10,6 @@ pod=$(getBroker)
 
 # To print the topology in the journal
 kubectl exec $pod -n $namespace -- zbctl status --insecure
-
-partition=$1
-
 
 # determine leader for partition
 state=Leader
