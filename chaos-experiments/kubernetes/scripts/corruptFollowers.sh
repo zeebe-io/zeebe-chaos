@@ -1,12 +1,11 @@
 #!/bin/bash
-
 set -xoeu pipefail
 
-partition=$1
-SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
-pod=$(kubectl get pod -n $namespace -l app=$namespace-zeebe -o jsonpath="{.items[0].metadata.name}")
+scriptPath=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source $scriptPath/utils.sh
 
+namespace=$(getNamespace)
+pod=$(getBroker)
 
 # To print the topology in the journal
 kubectl exec $pod -n $namespace -- zbctl status --insecure
@@ -34,7 +33,7 @@ followers=$(kubectl get pods -n $namespace \
 for follower in $followers
 do
   echo Corrupt snapshot on $follower;
-  kubectl cp $SCRIPTPATH/corruptSnapshot.sh $follower:/usr/local/zeebe/corrupting.sh
+  kubectl cp $scriptPath/corruptSnapshot.sh $follower:/usr/local/zeebe/corrupting.sh
   kubectl exec $follower -- ./corrupting.sh $partition
 done
 
