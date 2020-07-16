@@ -22,12 +22,13 @@
 
  ![overview](overview.png)
 
- In operate we can see that we have two running workflow instances, one was started after the first failed. Later we also created instance in a loop without issues. This means we are not breaking partition processing.
- The problem we have is that we are not able to see in Operate that the workflow instance is actually broken.
+ In operate we can see that we have two running workflow instances, one was started after the first failed. Later we created multiple instance's in a loop, without issues. This means we are not breaking partition processing, otherwise we would see timeouts.
+ 
+ The problem we have is that we are not able to see in Operate that the workflow instance is actually broken. We have no indication for that.
 
  ![broken-multi](broken-multi.png)
 
- It seems it is still in starting the multi instance but actually is already blacklisted.
+ The instances seem still to be in starting the multi instance, but actually they are already blacklisted. If we check the logs we can find the following:
 
 ```
 I 2020-07-16T13:05:20.630315Z Error event was committed, we continue with processing. 
@@ -38,6 +39,10 @@ I 2020-07-16T13:05:26.738421Z Error record was written at 568, we will continue 
 I 2020-07-16T13:05:26.793523Z Error event was committed, we continue with processing.
 
 ```
+
+I created a feature request for operate https://jira.camunda.com/browse/OPE-1037
+
+In general chaos experiment succeeded, since we not breaking processing and are still able to process other instances, but we are only to see that the instance is blacklisted in the logs not in operate, which is a problem from my POV.
 
 ### Code
 
