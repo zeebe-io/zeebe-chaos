@@ -8,7 +8,7 @@ source $scriptPath/utils.sh
 namespace=$(getNamespace)
 pod=$(getGateway)
 
-processFileName=${1:-'one_task.bpmn'}
+processFileName=one_task.bpmn
 bpmnPath=$scriptPath/../../bpmn/$processFileName
 
 kubectl cp $bpmnPath $pod:/tmp/$processFileName -n $namespace

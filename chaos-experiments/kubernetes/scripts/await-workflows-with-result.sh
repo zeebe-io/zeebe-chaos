@@ -7,17 +7,12 @@ source $scriptPath/utils.sh
 namespace=$(getNamespace)
 pod=$(getGateway)
 
-workflow=${1:-'benchmark'}
-
-
-. $scriptPath/deploy-model.sh $workflow.bpmn
-
-workflow=${1:-'benchmark'}
+. $scriptPath/deploy-model.sh
 
 set +e
 result=1
 until [[ $result -eq 0 ]]
 do
-  kubectl exec $pod -n $namespace -- zbctl --insecure create instance $workflow --withResult
+  kubectl exec $pod -n $namespace -- zbctl --insecure create instance benchmark --withResult
   result=$?
 done
