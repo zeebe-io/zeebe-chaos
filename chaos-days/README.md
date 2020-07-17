@@ -11,5 +11,5 @@ We will spent a day in a week to explore our system, documenting failure cases, 
  * [2020-06-25](2020-06-25/README.md)
  * [2020-07-02](2020-07-02/README.md)
  * [2020-07-09](2020-07-09/README.md)
- * [2020-07-09](2020-07-16/README.md)
+ * [2020-07-16](2020-07-16/README.md)
 
