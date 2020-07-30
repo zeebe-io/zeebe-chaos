@@ -42,7 +42,7 @@ I 2020-07-16T13:05:26.793523Z Error event was committed, we continue with proces
 
 I created a feature request for operate https://jira.camunda.com/browse/OPE-1037
 
-In general chaos experiment succeeded, since we not breaking processing and are still able to process other instances, but we are only to see that the instance is blacklisted in the logs not in operate, which is a problem from my POV. A bit unexpected was that we already failed before we are able to activate jobs, since the size of the multi instance was already to big.
+In general chaos experiment succeeded, since we not breaking processing and we are still able to process other instances, but we only see that the instance is blacklisted in the logs not in operate, which is a problem from my POV. Furthermore a bit unexpected was, that we already failed before, we are not able to activate jobs, since the size of the multi instance was already to big.
 
 ### Code
 
