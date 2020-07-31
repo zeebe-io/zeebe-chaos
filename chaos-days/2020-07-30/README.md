@@ -22,24 +22,30 @@
 
  These benchmarks run overnight without bigger issues. This means all of three where able to take snapshots and compact the log. This satisfy our hypothesis of https://github.com/zeebe-io/zeebe-chaos/issues/20 .
 
-| Default | Metric exporter | Without exporters |
-|---|---|---|---|---|
-| ![default-pvc](default-pvc.png) | ![metric-pvc](metric-exporter-pvc.png) | ![without-exporter-pvc](without-exporter-pvc.png) |
+| Default | Without exporters |
+|---|---|
+| ![default-pvc](default-pvc.png) | ![without-exporter-pvc](without-exporter-pvc.png) |
+
+The resource consumption seem to be kind of similar, but we still see that the memory usage increases overtime. This seems to be related to https://github.com/zeebe-io/zeebe/issues/4812
+| Default | Metric Exporter | Without exporters |
+|---|---|---|
+| ![default](default-resources.png) | ![metric](metric-exporter-resources.png) | ![without](without-exporter-resources.png) |
 
  Unexpected was that we see a difference in throughput. The benchmark without exporters seem to have a better throughput overall. It is able to complete ~ 30 workflow instances more per second, then the other benchmarks.
 
-  ![default](default-general.png)
-  ![metric](metric-exporter-general.png)
-  ![without](without-exporter-general.png)
+| Default | Metric Exporter | Without exporters |
+|---|---|---|
+| ![default](default-general.png) | ![metric](metric-exporter-general.png) | ![without](without-exporter-general.png) |
 
   We compared also other benchmarks which we have currently running, e.g. a snapshot from 24-07-2020 or from the 0.24.1 release. 
 
-  ![snapshot](snapshot-24-7-general.png)
-  ![release-241](release-0241-general.png)
+| Snapshot 24-07 | Release 0.24.1 |
+|---|---|
+| ![snapshot](snapshot-24-7-general.png) | ![release-241](release-0241-general.png) |
 
   All benchmarks with exporters seem to have a throughput around ~140 workflow instance completions per second, but the benchmarks without exporters reaches ~170 workflow instance completions per second.
  When we check the metrics we can see that sometimes brokers are leader for all partition and sometimes it is good distributed, but even this makes not that huge difference as the fact to having no exporter.
- This is unexpected and we need to investigate further.
+ This is unexpected and we need to investigate further, created new issue for this https://github.com/zeebe-io/zeebe/issues/5085
  
  The latency seems to be not affected by this.
 
