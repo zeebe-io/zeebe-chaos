@@ -1,0 +1,260 @@
+
+D 2020-07-31T11:04:57.124318Z Broker-0-DeletionService-3 Compacting Atomix log up to index 120905599  Broker-0-DeletionService-3
+D 2020-07-31T11:04:57.782209Z Broker-2-DeletionService-3 Compacting Atomix log up to index 120905599  Broker-2-DeletionService-3
+D 2020-07-31T11:06:34.204580Z Broker-2-DeletionService-1 Compacting Atomix log up to index 122669399  Broker-2-DeletionService-1
+D 2020-07-31T11:06:34.481696Z Broker-0-DeletionService-1 Compacting Atomix log up to index 122669399  Broker-0-DeletionService-1
+D 2020-07-31T11:06:34.612793Z Broker-1-DeletionService-1 Compacting Atomix log up to index 122669399  Broker-1-DeletionService-1
+D 2020-07-31T11:13:05.239957Z Broker-2-DeletionService-2 Compacting Atomix log up to index 128482999  Broker-2-DeletionService-2
+D 2020-07-31T11:13:05.435880Z Broker-0-DeletionService-2 Compacting Atomix log up to index 128482999  Broker-0-DeletionService-2
+D 2020-07-31T11:13:05.503417Z Broker-1-DeletionService-2 Compacting Atomix log up to index 128482999  Broker-1-DeletionService-2
+D 2020-07-31T11:19:57.748836Z Broker-0-DeletionService-3 Compacting Atomix log up to index 122224999  Broker-0-DeletionService-3
+D 2020-07-31T11:19:58.133511Z Broker-2-DeletionService-3 Compacting Atomix log up to index 122224999  Broker-2-DeletionService-3
+D 2020-07-31T11:21:34.291618Z Broker-2-DeletionService-1 Compacting Atomix log up to index 123632399  Broker-2-DeletionService-1
+D 2020-07-31T11:21:34.553898Z Broker-0-DeletionService-1 Compacting Atomix log up to index 123632399  Broker-0-DeletionService-1
+D 2020-07-31T11:28:06.424990Z Broker-2-DeletionService-2 Compacting Atomix log up to index 129834299  Broker-2-DeletionService-2
+D 2020-07-31T11:28:06.821381Z Broker-0-DeletionService-2 Compacting Atomix log up to index 129834299  Broker-0-DeletionService-2
+D 2020-07-31T11:28:07.055866Z Broker-1-DeletionService-2 Compacting Atomix log up to index 129834299  Broker-1-DeletionService-2
+D 2020-07-31T11:33:49.212950Z Broker-1-TopologyManager Received REACHABILITY_CHANGED from member 2, was not handled.  Broker-1-TopologyManager
+D 2020-07-31T11:33:49.225600Z Broker-0-TopologyManager Received REACHABILITY_CHANGED from member 2, was not handled.  Broker-0-TopologyManager
+D 2020-07-31T11:33:50.456729Z Broker-0-ZeebePartition-1 Partition role transitioning from FOLLOWER to CANDIDATE  Broker-0-ZeebePartition-1
+D 2020-07-31T11:33:50.694105Z Broker-0-ZeebePartition-2 Partition role transitioning from FOLLOWER to CANDIDATE  Broker-0-ZeebePartition-2
+D 2020-07-31T11:33:59.116540Z Broker-1-TopologyManager Received member removed BrokerInfo{nodeId=2, partitionsCount=3, clusterSize=3, replicationFactor=3, partitionRoles={1=LEADER, 2=LEADER, 3=FOLLOWER}, partitionLeaderTerms={1=15, 2=5}, version=0.25.0-SNAPSHOT}   Broker-1-TopologyManager
+D 2020-07-31T11:33:59.129028Z Broker-0-TopologyManager Received member removed BrokerInfo{nodeId=2, partitionsCount=3, clusterSize=3, replicationFactor=3, partitionRoles={1=LEADER, 2=LEADER, 3=FOLLOWER}, partitionLeaderTerms={1=15, 2=5}, version=0.25.0-SNAPSHOT}   Broker-0-TopologyManager
+D 2020-07-31T11:36:20.234152Z Broker-0-ZeebePartition-2 Removing follower partition service for partition PartitionId{id=2, group=raft-partition}  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.234465Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.234808Z Broker-0-ZeebePartition-2 Partition role transitioning from CANDIDATE to LEADER  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.234987Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.235116Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.235259Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.235324Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: state replication  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.235611Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: state replication closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.235704Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.237356Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:20.237513Z Broker-0-ZeebePartition-2 Installing leader partition service for partition PartitionId{id=2, group=raft-partition}  Broker-0-ZeebePartition-2
+D 2020-07-31T11:36:26.433273Z Broker-0-LogStream-2 Configured log appender back pressure at partition 2 as AppenderVegasCfg{initialLimit=1024, maxConcurrency=32768, alphaLimit=0.7, betaLimit=0.95}. Window limiting is disabled  Broker-0-LogStream-2
+D 2020-07-31T11:36:26.438814Z Broker-0-StreamProcessor-2 Recovering state of partition 2 from snapshot  Broker-0-StreamProcessor-2
+I 2020-07-31T11:36:26.439642Z Broker-0-StreamProcessor-2 Engine created. [value-mapper: CompositeValueMapper(List(io.zeebe.el.impl.feel.MessagePackValueMapper@3b9bddbc)), function-provider: io.zeebe.el.impl.feel.FeelFunctionProvider@5bdd73b9, configuration: Configuration(false)]  Broker-0-StreamProcessor-2
+D 2020-07-31T11:36:26.509384Z Broker-1-TopologyManager Received metadata change for 0, partitions {1=FOLLOWER, 2=LEADER, 3=LEADER} terms {2=6, 3=10}  Broker-1-TopologyManager
+I 2020-07-31T11:36:26.511282Z Broker-0-StreamProcessor-2 Recovered state of partition 2 from snapshot at position 165001995  Broker-0-StreamProcessor-2
+I 2020-07-31T11:36:26.512156Z Broker-0-StreamProcessor-2 Engine created. [value-mapper: CompositeValueMapper(List(io.zeebe.el.impl.feel.MessagePackValueMapper@bb1e57b)), function-provider: io.zeebe.el.impl.feel.FeelFunctionProvider@6ea2af8c, configuration: Configuration(false)]  Broker-0-StreamProcessor-2
+I 2020-07-31T11:36:38.624578Z Broker-0-StreamProcessor-2 Processor starts reprocessing, until last source event position 165596448  Broker-0-StreamProcessor-2
+D 2020-07-31T11:36:51.517430Z Broker-0-ZeebePartition-1 Removing follower partition service for partition PartitionId{id=1, group=raft-partition}  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.517721Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.517859Z Broker-0-ZeebePartition-1 Partition role transitioning from CANDIDATE to LEADER  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518006Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518127Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518257Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518334Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: state replication  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518581Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: state replication closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518697Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518822Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:51.518919Z Broker-0-ZeebePartition-1 Installing leader partition service for partition PartitionId{id=1, group=raft-partition}  Broker-0-ZeebePartition-1
+D 2020-07-31T11:36:53.673084Z Broker-0-LogStream-1 Configured log appender back pressure at partition 1 as AppenderVegasCfg{initialLimit=1024, maxConcurrency=32768, alphaLimit=0.7, betaLimit=0.95}. Window limiting is disabled  Broker-0-LogStream-1
+D 2020-07-31T11:36:54.020471Z Broker-1-TopologyManager Received metadata change for 0, partitions {1=LEADER, 2=LEADER, 3=LEADER} terms {1=16, 2=6, 3=10}  Broker-1-TopologyManager
+D 2020-07-31T11:37:04.906884Z Broker-0-ZeebePartition-1 Detected unhealthy components. The current health status of components: {ZeebePartition-1=HEALTHY, Raft-1=HEALTHY, Broker-0-StreamProcessor-1=UNHEALTHY, logstream-raft-partition-partition-1=HEALTHY}  Broker-0-ZeebePartition-1
+E 2020-07-31T11:37:04.907283Z Broker-0-HealthCheckService Partition-1 failed, marking it as unhealthy  Broker-0-HealthCheckService
+D 2020-07-31T11:37:04.907550Z Broker-0-HealthCheckService Detected unhealthy components. The current health status of components: {Partition-2=HEALTHY, Partition-1=UNHEALTHY, Partition-3=HEALTHY}  Broker-0-HealthCheckService
+D 2020-07-31T11:37:38.942547Z Broker-0-DeletionService-3 Compacting Atomix log up to index 123418599  Broker-0-DeletionService-3
+D 2020-07-31T11:37:39.408601Z Broker-1-DeletionService-3 Compacting Atomix log up to index 123418599  Broker-1-DeletionService-3
+D 2020-07-31T11:38:00.962527Z Broker-2-TopologyManager Received metadata change for 0, partitions {1=LEADER, 2=LEADER, 3=LEADER} terms {1=16, 2=6, 3=10}  Broker-2-TopologyManager
+D 2020-07-31T11:38:00.965618Z Broker-2-TopologyManager Received metadata change for 1, partitions {1=FOLLOWER, 2=FOLLOWER, 3=FOLLOWER} terms {}  Broker-2-TopologyManager
+D 2020-07-31T11:38:00.974996Z Broker-0-TopologyManager Received metadata change for 2, partitions {} terms {}  Broker-0-TopologyManager
+D 2020-07-31T11:38:00.993912Z Broker-2-ZeebePartition-3 Removing leader partition services for partition PartitionId{id=3, group=raft-partition}  Broker-2-ZeebePartition-3
+D 2020-07-31T11:38:00.997682Z Broker-2-ZeebePartition-3 Partition role transitioning from null to FOLLOWER  Broker-2-ZeebePartition-3
+D 2020-07-31T11:38:00.998504Z Broker-2-ZeebePartition-3 Installing follower partition service for partition PartitionId{id=3, group=raft-partition}  Broker-2-ZeebePartition-3
+D 2020-07-31T11:38:01.059859Z Broker-1-TopologyManager Received metadata change for 2, partitions {} terms {}  Broker-1-TopologyManager
+D 2020-07-31T11:38:01.149759Z Broker-2-HealthCheckService The components are healthy. The current health status of components: {Partition-3=HEALTHY}  Broker-2-HealthCheckService
+D 2020-07-31T11:38:01.149938Z Broker-2-ZeebePartition-3 The components are healthy. The current health status of components: {ZeebePartition-3=HEALTHY}  Broker-2-ZeebePartition-3
+D 2020-07-31T11:38:01.150418Z Broker-2-ZeebePartition-2 Removing leader partition services for partition PartitionId{id=2, group=raft-partition}  Broker-2-ZeebePartition-2
+D 2020-07-31T11:38:01.150822Z Broker-2-ZeebePartition-2 Partition role transitioning from null to FOLLOWER  Broker-2-ZeebePartition-2
+D 2020-07-31T11:38:01.151227Z Broker-2-ZeebePartition-2 Installing follower partition service for partition PartitionId{id=2, group=raft-partition}  Broker-2-ZeebePartition-2
+D 2020-07-31T11:38:01.168087Z Broker-2-ZeebePartition-2 The components are healthy. The current health status of components: {ZeebePartition-2=HEALTHY}  Broker-2-ZeebePartition-2
+D 2020-07-31T11:38:01.169806Z Broker-2-ZeebePartition-1 Removing leader partition services for partition PartitionId{id=1, group=raft-partition}  Broker-2-ZeebePartition-1
+D 2020-07-31T11:38:01.170258Z Broker-2-ZeebePartition-1 Partition role transitioning from null to FOLLOWER  Broker-2-ZeebePartition-1
+D 2020-07-31T11:38:01.170600Z Broker-2-ZeebePartition-1 Installing follower partition service for partition PartitionId{id=1, group=raft-partition}  Broker-2-ZeebePartition-1
+D 2020-07-31T11:38:01.177165Z Broker-2-HealthCheckService All partitions are installed. Broker is ready!  Broker-2-HealthCheckService
+D 2020-07-31T11:38:01.178040Z Broker-2-ZeebePartition-1 The components are healthy. The current health status of components: {ZeebePartition-1=HEALTHY}  Broker-2-ZeebePartition-1
+D 2020-07-31T11:38:01.216142Z Broker-1-TopologyManager Received metadata change for 2, partitions {1=FOLLOWER, 2=FOLLOWER, 3=FOLLOWER} terms {}  Broker-1-TopologyManager
+D 2020-07-31T11:38:01.224581Z Broker-0-TopologyManager Received metadata change for 2, partitions {1=FOLLOWER, 2=FOLLOWER, 3=FOLLOWER} terms {}  Broker-0-TopologyManager
+D 2020-07-31T11:38:04.949279Z Broker-0-ZeebePartition-1 The components are healthy. The current health status of components: {ZeebePartition-1=HEALTHY, Raft-1=HEALTHY, Broker-0-StreamProcessor-1=HEALTHY, logstream-raft-partition-partition-1=HEALTHY}  Broker-0-ZeebePartition-1
+D 2020-07-31T11:38:04.949740Z Broker-0-HealthCheckService Partition-1 recovered, marking it as healthy  Broker-0-HealthCheckService
+D 2020-07-31T11:38:04.949940Z Broker-0-HealthCheckService The components are healthy. The current health status of components: {Partition-2=HEALTHY, Partition-1=HEALTHY, Partition-3=HEALTHY}  Broker-0-HealthCheckService
+I 2020-07-31T11:39:48.003379Z Broker-0-StreamProcessor-2 Processor finished reprocessing at event position 165596448  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.014189Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556218, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.014614Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556226, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.014946Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556227, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.015393Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556228, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.016624Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556229, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.016847Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556230, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.038025Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556269, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.057422Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556271, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.059966Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556274, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.073911Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556275, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.094366Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556277, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.095646Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556278, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.097125Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556279, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.098687Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556292, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.100008Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556303, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.100339Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556304, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.100585Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556305, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.100859Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556306, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.101117Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556307, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.101365Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556308, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.101639Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556309, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:39:48.103072Z Broker-0-StreamProcessor-2 Expected to have a rate limiter listener for request-2-48556323, but none found. (This can happen during fail over.)  Broker-0-StreamProcessor-2
+D 2020-07-31T11:40:29.444192Z Broker-0-DeletionService-2 Compacting Atomix log up to index 130356499  Broker-0-DeletionService-2
+D 2020-07-31T11:40:29.741577Z Broker-2-DeletionService-2 Compacting Atomix log up to index 130356499  Broker-2-DeletionService-2
+D 2020-07-31T11:40:29.829263Z Broker-1-DeletionService-2 Compacting Atomix log up to index 130356499  Broker-1-DeletionService-2
+D 2020-07-31T11:50:00.010396Z Broker-0-DeletionService-3 Compacting Atomix log up to index 124249499  Broker-0-DeletionService-3
+D 2020-07-31T11:50:00.326427Z Broker-1-DeletionService-3 Compacting Atomix log up to index 124249499  Broker-1-DeletionService-3
+D 2020-07-31T11:50:00.329256Z Broker-2-DeletionService-3 Compacting Atomix log up to index 124249499  Broker-2-DeletionService-3
+D 2020-07-31T11:50:58.931765Z Broker-0-DeletionService-1 Compacting Atomix log up to index 125101699  Broker-0-DeletionService-1
+D 2020-07-31T11:50:59.225139Z Broker-2-DeletionService-1 Compacting Atomix log up to index 125101699  Broker-2-DeletionService-1
+D 2020-07-31T11:50:59.280268Z Broker-1-DeletionService-1 Compacting Atomix log up to index 125101699  Broker-1-DeletionService-1
+D 2020-07-31T11:55:30.009908Z Broker-0-DeletionService-2 Compacting Atomix log up to index 131422199  Broker-0-DeletionService-2
+D 2020-07-31T11:55:30.314717Z Broker-2-DeletionService-2 Compacting Atomix log up to index 131422199  Broker-2-DeletionService-2
+D 2020-07-31T11:55:30.369706Z Broker-1-DeletionService-2 Compacting Atomix log up to index 131422199  Broker-1-DeletionService-2
+D 2020-07-31T12:04:55.911903Z Broker-0-DeletionService-3 Compacting Atomix log up to index 125137299  Broker-0-DeletionService-3
+D 2020-07-31T12:04:56.296539Z Broker-2-DeletionService-3 Compacting Atomix log up to index 125137299  Broker-2-DeletionService-3
+D 2020-07-31T12:04:56.377045Z Broker-1-DeletionService-3 Compacting Atomix log up to index 125137299  Broker-1-DeletionService-3
+D 2020-07-31T12:05:59.489865Z Broker-0-DeletionService-1 Compacting Atomix log up to index 126208099  Broker-0-DeletionService-1
+D 2020-07-31T12:05:59.862757Z Broker-2-DeletionService-1 Compacting Atomix log up to index 126208099  Broker-2-DeletionService-1
+D 2020-07-31T12:05:59.870528Z Broker-1-DeletionService-1 Compacting Atomix log up to index 126208099  Broker-1-DeletionService-1
+D 2020-07-31T12:10:32.043707Z Broker-0-DeletionService-2 Compacting Atomix log up to index 132645799  Broker-0-DeletionService-2
+D 2020-07-31T12:10:32.335379Z Broker-2-DeletionService-2 Compacting Atomix log up to index 132645799  Broker-2-DeletionService-2
+D 2020-07-31T12:10:32.416926Z Broker-1-DeletionService-2 Compacting Atomix log up to index 132645799  Broker-1-DeletionService-2
+D 2020-07-31T12:19:58.333155Z Broker-0-DeletionService-3 Compacting Atomix log up to index 126486899  Broker-0-DeletionService-3
+D 2020-07-31T12:19:58.624811Z Broker-2-DeletionService-3 Compacting Atomix log up to index 126486899  Broker-2-DeletionService-3
+D 2020-07-31T12:20:56.336411Z Broker-0-DeletionService-1 Compacting Atomix log up to index 127213399  Broker-0-DeletionService-1
+D 2020-07-31T12:20:56.723001Z Broker-2-DeletionService-1 Compacting Atomix log up to index 127213399  Broker-2-DeletionService-1
+D 2020-07-31T12:25:30.467587Z Broker-0-DeletionService-2 Compacting Atomix log up to index 133700499  Broker-0-DeletionService-2
+D 2020-07-31T12:25:30.817939Z Broker-2-DeletionService-2 Compacting Atomix log up to index 133700499  Broker-2-DeletionService-2
+D 2020-07-31T12:25:30.941272Z Broker-1-DeletionService-2 Compacting Atomix log up to index 133700499  Broker-1-DeletionService-2
+D 2020-07-31T12:27:58.652144Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.655391Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service closed successfully  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.655713Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.656018Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller closed successfully  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.656238Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: state replication  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.656812Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: state replication closed successfully  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.657109Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.657748Z Broker-2-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader closed successfully  Broker-2-ZeebePartition-1
+D 2020-07-31T12:27:58.659265Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.659607Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service closed successfully  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.659828Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.660026Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller closed successfully  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.660281Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: state replication  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.660695Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: state replication closed successfully  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.660880Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.661719Z Broker-2-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader closed successfully  Broker-2-ZeebePartition-2
+D 2020-07-31T12:27:58.662705Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.663769Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service closed successfully  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.663975Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.664161Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller closed successfully  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.664351Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: state replication  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.664844Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: state replication closed successfully  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.665045Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.665801Z Broker-2-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader closed successfully  Broker-2-ZeebePartition-3
+D 2020-07-31T12:27:58.669301Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.672465Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service closed successfully  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.672777Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.673054Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller closed successfully  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.673315Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: state replication  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.674175Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: state replication closed successfully  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.675195Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.676164Z Broker-1-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader closed successfully  Broker-1-ZeebePartition-1
+D 2020-07-31T12:27:58.685285Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.686578Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service closed successfully  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.687133Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.689513Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: RocksDB metric timer  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.690382Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: RocksDB metric timer closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.690578Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot director  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.690833Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot director closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.690911Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: health component registration  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.691064Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: health component registration closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.691150Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: stream processor  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.692560Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller closed successfully  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.695544Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: state replication  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.704138Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: state replication closed successfully  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.704745Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.705652Z Broker-1-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader closed successfully  Broker-1-ZeebePartition-2
+D 2020-07-31T12:27:58.707293Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.707816Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service closed successfully  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.708Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.708200Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller closed successfully  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.708349Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: state replication  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.708755Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: state replication closed successfully  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.708967Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.710761Z Broker-1-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader closed successfully  Broker-1-ZeebePartition-3
+D 2020-07-31T12:27:58.714513Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: stream processor closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.714747Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot listener for replication  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.714856Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot listener for replication closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.714934Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.715044Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: deletion service closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.715115Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753023Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: snapshot controller closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753114Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: state replication  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753174Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: state replication closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753262Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753614Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: raft log reader closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753708Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: health component registration  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753794Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: health component registration closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.753859Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: log stream  Broker-0-ZeebePartition-1
+I 2020-07-31T12:27:58.753940Z Broker-0-LogStream-1 Close appender for log stream logstream-raft-partition-partition-1  Broker-0-LogStream-1
+D 2020-07-31T12:27:58.754161Z logstream-raft-partition-partition-1-write-buffer Dispatcher closed  logstream-raft-partition-partition-1-write-buffer
+I 2020-07-31T12:27:58.754315Z Broker-0-LogStream-1 On closing logstream logstream-raft-partition-partition-1 close 2 readers  Broker-0-LogStream-1
+I 2020-07-31T12:27:58.755456Z Broker-0-LogStream-1 Close log storage with name logstream-raft-partition-partition-1  Broker-0-LogStream-1
+D 2020-07-31T12:27:58.755637Z Broker-0-ZeebePartition-1 Closing Zeebe-Partition-1: log stream closed successfully  Broker-0-ZeebePartition-1
+D 2020-07-31T12:27:58.756475Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: RocksDB metric timer  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.787835Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: RocksDB metric timer closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.788139Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot director  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.788520Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot director closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.788733Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: health component registration  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.788985Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: health component registration closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.789209Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: stream processor  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.789989Z Broker-0-StreamProcessor-2 Closed stream processor controller Broker-0-StreamProcessor-2.  Broker-0-StreamProcessor-2
+D 2020-07-31T12:27:58.789991Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: stream processor closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.790194Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot listener for replication  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.790334Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot listener for replication closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.790431Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.790568Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: deletion service closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.790628Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.836027Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: snapshot controller closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.836162Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: state replication  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.836265Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: state replication closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.836346Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.837073Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: raft log reader closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.837155Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: health component registration  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.837203Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: health component registration closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.837234Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: log stream  Broker-0-ZeebePartition-2
+I 2020-07-31T12:27:58.837325Z Broker-0-LogStream-2 Close appender for log stream logstream-raft-partition-partition-2  Broker-0-LogStream-2
+D 2020-07-31T12:27:58.837584Z logstream-raft-partition-partition-2-write-buffer Dispatcher closed  logstream-raft-partition-partition-2-write-buffer
+I 2020-07-31T12:27:58.837749Z Broker-0-LogStream-2 On closing logstream logstream-raft-partition-partition-2 close 2 readers  Broker-0-LogStream-2
+I 2020-07-31T12:27:58.837894Z Broker-0-LogStream-2 Close log storage with name logstream-raft-partition-partition-2  Broker-0-LogStream-2
+D 2020-07-31T12:27:58.837998Z Broker-0-ZeebePartition-2 Closing Zeebe-Partition-2: log stream closed successfully  Broker-0-ZeebePartition-2
+D 2020-07-31T12:27:58.838533Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: RocksDB metric timer  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838677Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: RocksDB metric timer closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838722Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot director  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838861Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot director closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838904Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: health component registration  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838945Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: health component registration closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.838976Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: stream processor  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839145Z Broker-0-StreamProcessor-3 Closed stream processor controller Broker-0-StreamProcessor-3.  Broker-0-StreamProcessor-3
+D 2020-07-31T12:27:58.839155Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: stream processor closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839304Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot listener for replication  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839403Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot listener for replication closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839474Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839634Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: deletion service closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.839726Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962168Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: snapshot controller closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962303Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: state replication  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962380Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: state replication closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962446Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962560Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: raft log reader closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962657Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: health component registration  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962735Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: health component registration closed successfully  Broker-0-ZeebePartition-3
+D 2020-07-31T12:27:58.962802Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: log stream  Broker-0-ZeebePartition-3
+I 2020-07-31T12:27:58.962898Z Broker-0-LogStream-3 Close appender for log stream logstream-raft-partition-partition-3  Broker-0-LogStream-3
+D 2020-07-31T12:27:58.963123Z logstream-raft-partition-partition-3-write-buffer Dispatcher closed  logstream-raft-partition-partition-3-write-buffer
+I 2020-07-31T12:27:58.963288Z Broker-0-LogStream-3 On closing logstream logstream-raft-partition-partition-3 close 2 readers  Broker-0-LogStream-3
+I 2020-07-31T12:27:58.963480Z Broker-0-LogStream-3 Close log storage with name logstream-raft-partition-partition-3  Broker-0-LogStream-3
+D 2020-07-31T12:27:58.963594Z Broker-0-ZeebePartition-3 Closing Zeebe-Partition-3: log stream closed successfully  Broker-0-ZeebePartition-3
