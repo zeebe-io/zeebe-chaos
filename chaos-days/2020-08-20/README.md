@@ -35,7 +35,7 @@ In general we can see that the clusters haven't survived long. This is also visi
 ![status](status.png)
 
 I think it is kind of related with the preemtable nodes, high load, long restarts and that pods are restarted after 15 minutes, when there are not getting ready.
-One of the reasons why restarting takes so long is fixed now with https://github.com/zeebe-io/zeebe/pull/5189 so I hope that this gets better. But currently it is an issue, since you start replicating a snapshot and reprocess on start up. If this takes longer then 15 min the pod will be restarted because of this configuration: `Liveness: XXX` after restarting the pod you haven't gained any value you just need to start again the complete procedure. In k8 we can see a high restart count of the pods.
+One of the reasons why restarting takes so long is fixed now with https://github.com/zeebe-io/zeebe/pull/5189 so I hope that this gets better. But currently it is an issue, since you start replicating a snapshot and reprocess on start up. If this takes longer then 15 min the pod will be restarted because of this configuration: `Liveness:   http-get http://:9600/ready delay=900s timeout=1s period=15s #success=1 #failure=3` after restarting the pod you haven't gained any value you just need to start again the complete procedure. In k8 we can see a high restart count of the pods.
 
 ### Throughput
 
