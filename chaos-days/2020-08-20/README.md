@@ -39,6 +39,12 @@ In general we can see that the clusters haven't survived long. This is also visi
 I think it is kind of related with the preemtable nodes, high load, long restarts and that pods are restarted after 15 minutes, when there are not getting ready.
 One of the reasons why restarting takes so long is fixed now with https://github.com/zeebe-io/zeebe/pull/5189 so I hope that this gets better. But currently it is an issue, since you start replicating a snapshot and reprocess on start up. If this takes longer then 15 min the pod will be restarted because of this configuration: `Liveness:   http-get http://:9600/ready delay=900s timeout=1s period=15s #success=1 #failure=3` after restarting the pod you haven't gained any value you just need to start again the complete procedure. In k8 we can see a high restart count of the pods.
 
+Interesting is if we take a look at the working part of Prod S then we clearly see how often actually a pod is preemted or leader change happens.
+
+![prod-s](prod-s-working.png)
+
+It is a known issue that currently the nodes are preemted quite often in Camunda Cloud and they working on a solution to it.
+
 ### Throughput
 
 If we take a look at the Working part we can see that we scale based on the partition count (or prod cluster sizes) in Camunda Cloud. For Prod S we reach in avg ~24 workflow instance creation/completions per second. For Prod M we reach in avg ~46 workflow instance creation/completions per second. For Prod L we reach in avg ~99 workflow instance creations and completions. To be fair I run the benchmark on these cluster sizes only with three workers, which have 8 threads an activation count of 120 and they completing an job after 150 ms delay, and an starter which starts 100 workflow instances per second. Normally we use in our benchmarks 12 workers and start 300 workflow instances per second. I tried that with the Prod L cluster, but this failed quite fast after increasing the load. Here we probably need to investigate further. If we take a look at our cluster setup then we reach in avg ~147 workflow instance creations/completions per second.
