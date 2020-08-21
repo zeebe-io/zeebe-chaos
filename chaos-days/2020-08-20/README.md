@@ -65,7 +65,7 @@ Furthermore I saw that all container related and pvc related metrics are missing
 
 ![io](missing-io.png)
 
-If we want to run more tests and chaos experiments we need to fix these missing metrics before.
+If we want to run more tests and chaos experiments we need to fix these missing metrics before. Opened a new issue for it https://github.com/camunda-cloud/monitoring/issues/242
 
 ## Running automated Chaos experiments
 
