@@ -29,7 +29,7 @@ In the following table I want to highlight the different configurations of the d
 |------|-------------|--------|--------|--------|
 |General|![base](base.png)|![prods](prod-s-general.png)|![prods](prod-m-general.png)|![prods](prod-l-general.png)|
 |Resources|![base](base-res.png)|![prods](prod-s-res.png)|![prods](prod-m-res.png)|![prods](prod-l-res.png)|
-|Latency||![prods](prod-s-disk.png)|![prods](prod-m-disk.png)|![prods](prod-l-disk.png)|
+|Disk usage||![prods](prod-s-disk.png)|![prods](prod-m-disk.png)|![prods](prod-l-disk.png)|
 |Latency|![base](base-latency.png)|![prods](prod-s-latency.png)|![prods](prod-m-latency.png)|![prods](prod-l-latency.png)|
 |Working|![base](base.png)|![prods](prod-s-working.png)|![prods](prod-m-working.png)|![prods](prod-l-working.png)|
 
