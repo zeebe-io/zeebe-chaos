@@ -7,6 +7,8 @@ As part of the chaos day I run the same benchmark we normally run in our gke wit
 
 ## Configurations of Zeebe Clusters
 
+In the following table I want to highlight the different configurations of the different Zeebe Clusters (cluster types).
+
 | Name | Our Default | Prod S | Prod M | Prod L |
 |------|-------------|--------|--------|--------|
 |Partitions|  3      |   1    |   4    |  8     |
