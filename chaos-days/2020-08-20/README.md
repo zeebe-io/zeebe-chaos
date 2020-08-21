@@ -59,6 +59,10 @@ Furthermore I saw that all container related and pvc related metrics are missing
 
 If we want to run more tests and chaos experiments we need to fix these missing metrics before.
 
+## Running automated Chaos experiments
+
+In order to run automated chaos experiments in our new gke. I had to create a new serviceaccount and rolebindings, such that our Jenkins can access the new Kubernetes cluster and our experiments can delete and create new resources.
+
 ## Participants
 
  * @zelldon
