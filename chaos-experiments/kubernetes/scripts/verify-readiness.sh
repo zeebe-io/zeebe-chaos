@@ -7,4 +7,4 @@ source $scriptPath/utils.sh
 namespace=$(getNamespace)
 
 # verify that everything is running
-kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=$namespace --timeout=900s -n $namespace
+kubectl wait --for=condition=Ready pod -l app.kubernetes.io/app=zeebe --timeout=900s -n $namespace
