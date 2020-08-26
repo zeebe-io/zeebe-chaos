@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CHAOS_SETUP=${CHAOS_SETUP:-"helm"}
 
 function getNamespace()
 {
@@ -13,7 +14,11 @@ function getBroker()
   index=${1:-0}
 
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n $namespace -l app.kubernetes.io/component=broker -o jsonpath="{.items[$index].metadata.name}")
+  if [ "${CHAOS_SETUP}" == "cloud" ]; then
+    pod=$(kubectl get pod -n $namespace -l app.kubernetes.io/app=zeebe -o jsonpath="{.items[$index].metadata.name}")
+  else
+    pod=$(kubectl get pod -n $namespace -l app.kubernetes.io/component=broker -o jsonpath="{.items[$index].metadata.name}")
+  fi
 
   echo $pod
 }
