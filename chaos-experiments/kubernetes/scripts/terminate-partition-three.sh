@@ -9,6 +9,7 @@ pod=$(getBroker)
 gateway=$(getGateway)
 
 state=$1
+partition=${2:-3}
 
 # To print the topology in the journal
 kubectl exec $gateway -n $namespace -- zbctl status --insecure
@@ -21,10 +22,11 @@ kubectl exec $gateway -n $namespace -- zbctl status --insecure
 #     3             F    F     L
 #    etc.
 # This means broker 1, 2 or 3 participates on partition 3
+# BE AWARE the topology above is just an example and the leader can every node participating node.
 
 
 index=$[$(kubectl exec $gateway -n $namespace -- zbctl status --insecure \
-  | grep 'Partition 3' \
+  | grep "Partition $partition" \
   | grep -n "$state" -m 1 \
   | sed 's/\([0-9]*\).*/\1/') - 1]
 
