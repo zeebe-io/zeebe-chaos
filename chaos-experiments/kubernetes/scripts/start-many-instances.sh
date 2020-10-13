@@ -16,12 +16,7 @@ namespace=$(getNamespace)
 pod=$(getGateway)
 
 . $scriptPath/deploy-model.sh
+COUNTER=0 
 
-COUNTER=0
-
-until [[ $COUNTER -gt maxIterations ]]; do
-  kubectl exec $pod -n $namespace -- zbctl create instance benchmark --insecure &>/dev/null &
-  
-  let COUNTER=COUNTER+1 
-done
-
+kubectl -n "$namespace" cp "$scriptPath/zbctl-start-instances.sh" "$pod:/tmp/start-instances.sh"
+kubectl exec "$pod" -n "$namespace" -- /tmp/start-instances.sh $maxIterations
