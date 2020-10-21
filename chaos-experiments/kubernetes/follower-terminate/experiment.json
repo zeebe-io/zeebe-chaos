@@ -1,7 +1,7 @@
 {
     "version": "0.1.0",
-    "title": "Zeebe follower graceful restart experiment",
-    "description": "Zeebe should be fault-tolerant. Zeebe should be able to handle follower restarts.",
+    "title": "Zeebe follower restart non-graceful experiment",
+    "description": "Zeebe should be fault-tolerant. Zeebe should be able to handle followers terminations.",
     "contributions": {
         "reliability": "high",
         "availability": "high"
@@ -35,11 +35,11 @@
     "method": [
         {
             "type": "action",
-            "name": "Restart follower of partition 3 gracefully",
+            "name": "Terminate follower of partition 3",
             "provider": {
                 "type": "process",
-                "path": "shutdown-gracefully-partition.sh",
-                "arguments": ["Follower", "3"]
+                "path": "terminate-partition.sh",
+                "arguments": [ "Follower", "3"]
             }
         }
     ],
