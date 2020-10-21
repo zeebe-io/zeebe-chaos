@@ -47,8 +47,8 @@
             "name": "Terminate leader of partition 3",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition-three.sh",
-                "arguments": "Leader"
+                "path": "shutdown-gracefully-partition.sh",
+                "arguments": [ "Leader", "3" ]
             }
         }
     ],

@@ -1,7 +1,7 @@
 {
     "version": "0.1.0",
-    "title": "Zeebe Leader restart gracefully experiment",
-    "description": "Zeebe should be fault-tolerant. Zeebe should recover after a partition leader was restarted gracefully.",
+    "title": "Zeebe Leader restart non-graceful experiment",
+    "description": "Zeebe should be fault-tolerant. We expect that Zeebe can handle non-graceful leader restarts.",
     "contributions": {
         "reliability": "high",
         "availability": "high"
@@ -35,10 +35,10 @@
     "method": [
         {
             "type": "action",
-            "name": "Terminate leader of partition 3",
+            "name": "Terminate leader of partition 3 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "shutdown-gracefully-partition.sh",
+                "path": "terminate-partition.sh",
                 "arguments": [ "Leader", "3" ]
             }
         }
