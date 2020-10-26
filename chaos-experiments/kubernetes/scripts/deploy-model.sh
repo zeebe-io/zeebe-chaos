@@ -13,4 +13,11 @@ bpmnPath=$scriptPath/../../bpmn/$processFileName
 
 kubectl cp $bpmnPath $pod:/tmp/$processFileName -n $namespace
 
-kubectl exec $pod -n $namespace -- zbctl deploy /tmp/$processFileName --insecure
+deployModel() {
+ kubectl exec $pod -n $namespace -- zbctl deploy /tmp/$processFileName --insecure
+}
+
+while ! deployModel ;
+do
+  true;
+done
