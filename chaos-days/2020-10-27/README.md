@@ -49,13 +49,15 @@ After I added a port forwarding I was able to open an JMX connection with Java M
 
 ### Conclusion
 
-I profiled the gateway with and without load but haven't found no memory leak so far.
+I profiled the gateway with and without load but haven't found any memory leak so far.
 
 ![](result.png)
 
 With VisualVM and triggering multiple GC's.
 
 ![](visualvm.png)
+
+In order to avoid that it uses too much memory and the memory continously grows we should set a limit for the Gateway ([#5699](https://github.com/zeebe-io/zeebe/issues/5699)).
 
 ### Other Observations
 
@@ -68,7 +70,7 @@ If we check the JVM properties we can see that as well.
 
 This is weird because we don't set any GC in our benchmarks, so I would suspect the G1 is used with Java 11. Unfortunately this depends on the available resources which are "detected" by the JVM.
 Related to that https://stackoverflow.com/questions/52474162/why-is-serialgc-chosen-over-g1gc
-I think we should investigate that further, because we can see in Java mission control that we have GC pauses up to 8 seconds! I created a new issue for it [5700](https://github.com/zeebe-io/zeebe/issues/5700).
+I think we should investigate that further, because we can see in Java mission control that we have GC pauses up to 8 seconds! I created a new issue for it [#5700](https://github.com/zeebe-io/zeebe/issues/5700).
 
 #### Unexpected responses
 
