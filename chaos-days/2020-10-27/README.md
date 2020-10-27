@@ -53,7 +53,7 @@ I profiled the gateway with and without load but haven't found any memory leak s
 
 ![](result.png)
 
-With VisualVM and triggering multiple GC's.
+Also with VisualVM and triggering multiple GC's I was not able to spot any thing problematic.
 
 ![](visualvm.png)
 
