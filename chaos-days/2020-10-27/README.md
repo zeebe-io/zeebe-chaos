@@ -26,12 +26,11 @@ Putting more load on it showed that it doesn't drastically increase the memory c
 ![](memory-gw-no-broker-high-load.png)
 
 I think the issue here is that we currently have no limits set for the gateway, which means it will use as many as it can. There is also no pressure for the GC to run or reclaim memory.
-We probably want to limit it at somepoint. In order to find out whether we have really a leak I have used an profiler.
+We probably want to limit it at somepoint. I created an issue for it [#5699](https://github.com/zeebe-io/zeebe/issues/5699) In order to find out whether we have a memory leak I used a profiler.
 
 I restarted the experiment with new settings:
 
 ```
-
 # JavaOpts:
 # DEFAULTS
 JavaOpts: >-
@@ -48,11 +47,13 @@ See https://github.com/zeebe-io/zeebe/blob/develop/benchmarks/docs/debug/README.
 
 After I added a port forwarding I was able to open an JMX connection with Java Mission Control.
 
+### Conclusion
+
 I profiled the gateway with and without load but haven't found no memory leak so far.
 
 ![](result.png)
 
-With VisualVM
+With VisualVM and triggering multiple GC's.
 
 ![](visualvm.png)
 
@@ -67,7 +68,7 @@ If we check the JVM properties we can see that as well.
 
 This is weird because we don't set any GC in our benchmarks, so I would suspect the G1 is used with Java 11. Unfortunately this depends on the available resources which are "detected" by the JVM.
 Related to that https://stackoverflow.com/questions/52474162/why-is-serialgc-chosen-over-g1gc
-I think we should investigate that further, because we can see in Java mission control that we have GC pauses up to 8 seconds!
+I think we should investigate that further, because we can see in Java mission control that we have GC pauses up to 8 seconds! I created a new issue for it [5700](https://github.com/zeebe-io/zeebe/issues/5700).
 
 #### Unexpected responses
 
@@ -110,8 +111,14 @@ Caused by: io.grpc.StatusRuntimeException: NOT_FOUND: Expected to execute comman
 	at java.lang.Thread.run(Unknown Source) ~[?:?]
 ```
 
-This doesn't make any sense.
+This doesn't make any sense. I created a new issue for it [#5702](https://github.com/zeebe-io/zeebe/issues/5702)
 
+## New Issues
+
+ * Limit Gateway https://github.com/zeebe-io/zeebe/issues/5699
+ * SerialGC usage https://github.com/zeebe-io/zeebe/issues/5700
+ * Wrong error response on deployment command https://github.com/zeebe-io/zeebe/issues/5702
+ 
 ## Participants
 
   * @zelldon
