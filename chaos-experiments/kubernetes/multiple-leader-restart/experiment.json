@@ -38,7 +38,7 @@
             "name": "Terminate leader of partition one",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition-three.sh",
+                "path": "terminate-partition.sh",
                 "arguments": ["Leader", "1"],
                 "status": "0"
             },
