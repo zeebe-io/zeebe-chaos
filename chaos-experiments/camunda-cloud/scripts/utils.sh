@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CHAOS_SETUP=${CHAOS_SETUP:-"helm"}
+CHAOS_SETUP=${CHAOS_SETUP:-"cloud"}
 
 function getNamespace()
 {
