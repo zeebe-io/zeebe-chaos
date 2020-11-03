@@ -44,7 +44,7 @@ io.zeebe.engine.processor.InconsistentReprocessingException: Reprocessing issue 
 	at io.zeebe.util.sched.ActorThread.run(ActorThread.java:204) [zeebe-util-0.24.4.jar:0.24.4]
 ```
 
-I think this is caused by #3124, because if the distribution succeeds we want to write a `DISTRUBITED` event on the log, with the stream writer from the context. This can happen concurrently with our reprocessing.
+I think this is caused by https://github.com/zeebe-io/zeebe/issues/3124, because if the distribution succeeds we want to write a `DISTRUBITED` event on the log, with the stream writer from the context. This can happen concurrently with our reprocessing.
 My assumption was that this is caused by a race condition, which might get fixed when we restart the pod. I restarted the `Broker-2`, which was leader for partition 3 and `Broker-1` took over and started the partition successfully.
 
 ```
@@ -60,9 +60,9 @@ indication that on reprocessing another exception happen, which caused an retry.
 ### Notes
 To investigate the disks I prepared the follwing commands, which I can use to downloaded the state of the brokers to my local machine.
 
-```
-k exec zell-chaos-0244-zeebe-2 -- tar -cf data.tar.gz data/ # compress the data dir
-k cp zell-chaos-0244-zeebe-2:/usr/local/zeebe/data.tar.gz broker-2/data.tar.gz # download the tarball
+```sh
+kubectl exec zell-chaos-0244-zeebe-2 -- tar -cf data.tar.gz data/ # compress the data dir
+kubectl cp zell-chaos-0244-zeebe-2:/usr/local/zeebe/data.tar.gz broker-2/data.tar.gz # download the tarball
 cd broker-2/
 tar -xvf broker-2-data.tar.gz
 
@@ -79,5 +79,3 @@ tar -xvf broker-2-data.tar.gz
   * @saig0
   * @npepinpe
   * @zelldon
-
-
