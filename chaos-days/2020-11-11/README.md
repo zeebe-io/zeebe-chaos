@@ -90,11 +90,37 @@ After looking at the [gke events](https://console.cloud.google.com/logs/viewer?i
 I checked the pods directly and saw no heap dumps in the data folder. After describing the pod I can see:
 
 ```
-    Last State:     Terminated
-      Reason:       OOMKilled
-      Exit Code:    137
-      Started:      Wed, 11 Nov 2020 14:49:11 +0100
-      Finished:     Wed, 11 Nov 2020 15:06:17 +0100
+[zell zeebe-cluster-testbench/ ns:99c029a3-b6ae-4e7b-a2aa-6496adebf94c-zeebe]$ k describe pod zeebe-1
+Name:         zeebe-1
+Namespace:    99c029a3-b6ae-4e7b-a2aa-6496adebf94c-zeebe
+Priority:     0
+Node:         gke-ultrachaos-compute-fea23edf-tqbm/10.132.0.58
+Start Time:   Wed, 11 Nov 2020 14:49:52 +0100
+Labels:       app.kubernetes.io/app=zeebe
+              app.kubernetes.io/component=gateway
+              controller-revision-hash=zeebe-66b694fbfc
+              statefulset.kubernetes.io/pod-name=zeebe-1
+Annotations:  <none>
+Status:       Running
+IP:           10.56.7.16
+IPs:
+  IP:           10.56.7.16
+Controlled By:  StatefulSet/zeebe
+Containers:
+  zeebe:
+    Container ID:   docker://a55fe90d3184bea064aec29d845680241096b0d971d66b05a35495857c5d7427
+    Image:          camunda/zeebe:0.25.0
+    Image ID:       docker-pullable://camunda/zeebe@sha256:1286086e786975837dcbf664daa29d41d2666af4daf4abd3192fff1426804dd6
+    Ports:          9600/TCP, 26500/TCP, 26501/TCP, 26502/TCP, 26503/TCP, 26504/TCP
+    Host Ports:     0/TCP, 0/TCP, 0/TCP, 0/TCP, 0/TCP, 0/TCP
+    State:          Waiting
+      Reason:       CrashLoopBackOff
+    Last State:     Terminated    <=====
+      Reason:       OOMKilled    <====
+      Exit Code:    137   
+      Started:      Wed, 11 Nov 2020 16:06:59 +0100
+      Finished:     Wed, 11 Nov 2020 16:16:19 +0100
+    Ready:          False
 ```
 
 Furthermore we can see the `JAVA_OPTIONS`, which are:
