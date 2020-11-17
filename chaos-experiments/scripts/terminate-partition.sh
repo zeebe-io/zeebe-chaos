@@ -29,8 +29,6 @@ index=$(($(echo "$topology" \
   | sed 's/\([0-9]*\).*/\1/') - 1))
 
 pod=$(getBroker "$index")
-#pod=${pod//-[0-9]*/}
-#pod="$pod$index"
 
 echo "$pod" will be stopped
 
