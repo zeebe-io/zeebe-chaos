@@ -31,3 +31,19 @@ function getGateway()
   echo "$pod"
 }
 
+function getIndexOfPodForPartitionInState()
+{
+  partition="$1"
+  state="$2"
+  pod=$(getGateway)
+  namespace=$(getNamespace)
+
+  # To print the topology in the journal
+  topology="$(kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure)"
+
+  index=$(($(echo "$topology" \
+    | grep "Partition $partition" \
+    | grep -n "$state" -m 1 \
+    | sed 's/\([0-9]*\).*/\1/') - 1))
+  echo "$index"
+}
