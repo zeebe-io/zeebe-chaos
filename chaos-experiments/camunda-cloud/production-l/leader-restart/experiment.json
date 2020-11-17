@@ -27,7 +27,7 @@
                     "type": "process",
                     "path": "verify-steady-state.sh",
                     "arguments": "3",
-                    "timeout": 60
+                    "timeout": 900
                 }
             }
         ]
