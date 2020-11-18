@@ -20,10 +20,16 @@ followers=$(kubectl get pods -n "$namespace" \
   | grep -o -E "${podPrefix}[0-9]" \
   | grep -v "$leader")
 
+
+function corruptSnapshot() {
+  follower="$1"
+  kubectl cp corruptSnapshot.sh "$follower":/usr/local/zeebe/corrupting.sh -n "$namespace"
+  kubectl exec "$follower" -- ./corrupting.sh "$partition" -n "$namespace"
+}
+
 for follower in $followers
 do
   echo Corrupt snapshot on "$follower";
-  kubectl cp corruptSnapshot.sh "$follower":/usr/local/zeebe/corrupting.sh -n "$namespace"
-  kubectl exec "$follower" -- ./corrupting.sh "$partition" -n "$namespace"
+  retryUntilSuccess corruptSnapshot "$follower"
 done
 

@@ -39,7 +39,10 @@ function getIndexOfPodForPartitionInState()
   namespace=$(getNamespace)
 
   # To print the topology in the journal
-  topology="$(kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure)"
+  until topology="$(kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure)"
+  do
+    true;
+  done
 
 
   # For cluster size 3 and replication factor 3
@@ -59,11 +62,12 @@ function getIndexOfPodForPartitionInState()
   echo "$index"
 }
 
+# This retries the given command until it succeeds
+# In kubernetes some commands can fail because pods are rescheduled, preempted etc. and we want to be more resilient in our tests
 function retryUntilSuccess() {
-  echo "Run '$*'"
-  until "$@";
+  echo "Run '$*'" >> /tmp/out.log
+  until "$@" >> /tmp/out.log;
   do
-    echo "Failed to execute: '$*'. Retry."
-    sleep 1
+    echo "Failed to execute: '$*'. Retry." >> /tmp/out.log
   done
 }
