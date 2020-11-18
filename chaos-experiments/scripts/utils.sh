@@ -65,9 +65,9 @@ function getIndexOfPodForPartitionInState()
 # This retries the given command until it succeeds
 # In kubernetes some commands can fail because pods are rescheduled, preempted etc. and we want to be more resilient in our tests
 function retryUntilSuccess() {
-  echo "Run '$*'" >> /tmp/out.log
-  until "$@" >> /tmp/out.log;
+  echo "Run '$*'"
+  until "$@"
   do
-    echo "Failed to execute: '$*'. Retry." >> /tmp/out.log
+    echo "Failed to execute: '$*'. Retry."
   done
 }
