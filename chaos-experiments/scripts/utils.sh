@@ -58,3 +58,12 @@ function getIndexOfPodForPartitionInState()
     | sed 's/\([0-9]*\).*/\1/') - 1))
   echo "$index"
 }
+
+function retryUntilSuccess() {
+  echo "Run '$*'"
+  until "$@";
+  do
+    echo "Failed to execute: '$*'. Retry."
+    sleep 1
+  done
+}
