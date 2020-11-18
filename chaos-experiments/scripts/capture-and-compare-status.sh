@@ -9,7 +9,7 @@ pod=$(getGateway)
 
 if [ -f /tmp/captured-cluster-state.data ]; then
     echo "Comparing cluster status"
-    kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure > /tmp/current-cluster-state.data    
+    retryUntilSuccess kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure > /tmp/current-cluster-state.data
 
     status="$(cmp --silent /tmp/current-cluster-state.data /tmp/captured-cluster-state.data; echo $?)"
     
@@ -21,5 +21,5 @@ if [ -f /tmp/captured-cluster-state.data ]; then
 else
     echo "Capturing cluster status"
 
-    kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure > /tmp/captured-cluster-state.data    
+    retryUntilSuccess kubectl exec "$pod" -n "$namespace" -- zbctl status --insecure > /tmp/captured-cluster-state.data
 fi 

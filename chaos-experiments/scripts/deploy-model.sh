@@ -11,13 +11,11 @@ pod=$(getGateway)
 processFileName=one_task.bpmn
 bpmnPath="$scriptPath/../bpmn/$processFileName"
 
-kubectl cp "$bpmnPath" "$pod:/tmp/$processFileName" -n "$namespace"
-
-deployModel() {
- kubectl exec "$pod" -n "$namespace" -- zbctl deploy "/tmp/$processFileName" --insecure
+# we put both together in one function to retry both, because it might be that pod has been restarted
+# then the model is not longer on the node, which cause endless retries of deployments
+function deployModel() {
+  kubectl cp "$bpmnPath" "$pod:/tmp/$processFileName" -n "$namespace"
+  kubectl exec "$pod" -n "$namespace" -- zbctl deploy "/tmp/$processFileName" --insecure
 }
 
-while ! deployModel ;
-do
-  true;
-done
+retryUntilSuccess deployModel
