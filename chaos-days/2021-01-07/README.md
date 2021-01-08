@@ -1,8 +1,12 @@
 # Chaos Day Summary
 
-Happy new year :tada: This time I wanted verify the following hypothesis "Disconnecting Leader and one Follower should not make cluster disruptive" ([#45](https://github.com/zeebe-io/zeebe-chaos/issues/45)).
-But in order to do that we need to extract the Leader and Follower node for a partition from the Topology. Luckily in December we got an external contribution which allows us to print `zbctl status` as json.
-This gives us now more possibilities since we can extract values much better out.
+Happy new year everyone:tada:
+
+This time I wanted to verify the following hypothesis `Disconnecting Leader and one Follower should not make cluster disruptive` ([#45](https://github.com/zeebe-io/zeebe-chaos/issues/45)).
+But in order to do that we need to extract the Leader and Follower node for a partition from the Topology. Luckily in December we got an [external contribution](https://github.com/zeebe-io/zeebe/pull/5943) which allows us to print `zbctl status` as json.
+This gives us now more possibilities, since we can extract values much better out of it.
+
+**TL;DR** The experiment was successful :+1:
 
 ## Preparation
 
@@ -106,14 +110,14 @@ $ cat test.json
 }
 ```
 
-I had a really hard time to find the correct expression, but here is it:
+I had a really hard time to find the correct `jq` expression, but here is it:
 
 ```shell script
 $ cat test.json | jq ".brokers[]|select(.partitions[]| select(.partitionId == 3) and .role == \"LEADER\")"
 ```
 
-You may ask why there are multiple selects. I tried it previous with one and the issue is that it then works like an cartesian-product. It takes broker objects which take part of the partition 3 and it will put also broker objects which are leader for an partition into the output. This is obviously not that what I want.
-The current expression filters brokers for partitions which have partitionId and the leader role. This [gist comment](https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810) helped me here.
+You may ask why there are multiple [selects](https://stedolan.github.io/jq/manual/#select(boolean_expression)). I tried it previous with one and the issue is that it then works like an cartesian-product. It takes broker objects, which take part of the partition 3 and it will take broker objects, which are leader for an partition into the output. This is obviously not that what I want.
+The current expression filters brokers for partitions which have the partitionId and are leader for that partition. This [gist comment](https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810) helped me here.
 
 
 Examples:
@@ -131,6 +135,23 @@ https://stackoverflow.com/questions/38500363/get-the-first-or-nth-element-in-a-j
 ```shell script
 jq "[.brokers[]|select(.partitions[]| select(.partitionId == $partition) and .role == \"$state\")][0].nodeId
 ```
+
+As you can see `jq` is quite powerful and I learned a lot about it this day. If you interested you can also check [the manual](https://stedolan.github.io/jq/manual/) which has ton's of examples.
+
+
+#### Resources
+
+Here some resources I used and found during my experimenting with `jq`.
+
+ * https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq
+ * https://unix.stackexchange.com/questions/404699/using-multiple-wildcards-in-jq-to-select-objects-in-a-json-file
+ * https://stedolan.github.io/jq/manual/#Builtinoperatorsandfunctions
+ * https://stackoverflow.com/questions/33057420/jq-select-multiple-conditions
+ * https://github.com/stedolan/jq/issues/319
+ * https://unix.stackexchange.com/questions/491669/jq-get-attribute-of-nested-object
+ * https://stackoverflow.com/questions/27562424/jq-nested-object-extract-top-level-id-and-lift-a-value-from-internal-object
+ * _false track_ https://stackoverflow.com/questions/28615174/jq-filter-on-sub-object-value
+ * final key: https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810
 
 ### Script
 
@@ -235,17 +256,6 @@ retryUntilSuccess disconnect "$leader" "$followerIp"
 retryUntilSuccess disconnect "$follower" "$leaderIp" 
 ```
 
-### Resources
-
- * https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq
- * https://unix.stackexchange.com/questions/404699/using-multiple-wildcards-in-jq-to-select-objects-in-a-json-file
- * https://stedolan.github.io/jq/manual/#Builtinoperatorsandfunctions
- * https://stackoverflow.com/questions/33057420/jq-select-multiple-conditions
- * https://github.com/stedolan/jq/issues/319
- * https://unix.stackexchange.com/questions/491669/jq-get-attribute-of-nested-object
- * https://stackoverflow.com/questions/27562424/jq-nested-object-extract-top-level-id-and-lift-a-value-from-internal-object
- * _false track_ https://stackoverflow.com/questions/28615174/jq-filter-on-sub-object-value
- * final key: https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810
 
 ## Chaos Experiment
 
@@ -254,11 +264,11 @@ We want to disconnect a leader and a follower from a specific partition.
 ### Hypothesis 
 
 We expect that even if the leader and the follower can't talk with each other the follower is not able to disrupt the cluster and no new election is started, such that he becomes the leader.
-On reconnect we expect that the follower keeps up again and is eventually is on the same page with the other follower and leader.
+On reconnect we expect that the follower keeps up again and is eventually on the same page with the other follower and leader.
 
 ### Actual
 
-We deployed a cluster with one partition for simplicity. We run the above posted script to disconnect one leader with a follower and a the same follower with the leader.
+We deployed a cluster with one partition for simplicity. We run the above posted script to disconnect one leader with a follower and the same follower with the leader.
 
 #### Disconnect
 
