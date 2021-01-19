@@ -34,6 +34,7 @@ plugins:
   - jemoji
 
 plainwhite:
+  dark_mode: true
   name: Zeebe Chaos Days
   tagline: Chaos Engineering meets Zeebe
   date_format: "%b %-d, %Y"
