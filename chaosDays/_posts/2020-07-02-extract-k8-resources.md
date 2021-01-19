@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Extract K8 resources from namespace"
+date:   2020-07-02
+categories: kubernetes
+---
+
 # Chaos Day Summary:
 
  * Research: Read about DiRT (Disaster Recovery Tests) @ google - gave me same new ideas for more game days
@@ -6,7 +13,7 @@
 Unfortunately I had no time today for new chaos experiment, but I spent with @pihme some time to investigate how we can run the cluster plans in our gke.
 We did a bit of progress. I'm finally able to create cluster plans in the ultratest and can extract all resource definitions via command line.
 
-```
+```shell
 kubectl get pvc,configmap,service,deployment,statefulset,cronjob,storageclasses -o yaml --export | sed -e '/resourceVersion: "[0-9]\+"/d' -e '/uid: [a-z0-9-]\+/d' -e '/selfLink: [a-z0-9A-Z/]\+/d' -e '/status:/d' -e '/phase:/d' -e '/creationTimestamp:/d' > s-cluster.yaml
 ```
 
