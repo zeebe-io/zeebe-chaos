@@ -22,8 +22,8 @@ title: Zeebe Chaos Days
 email: christopher.zell@camunda.com
 description: >- # this means to ignore newlines until "baseurl:"
     "We will spent a day in a week to explore our system, documenting failure cases, building a hypothesis backlog and running chaos experiments, such that we can build more confidence in our system. For each chaos day we will create a blog entry. The entry will contain: what we have done and results of the chaos experiments. With that we can share the knowledge, whether we found a weakness or the confidence that we were able to withstand a failure scenario."
-#baseurl: "" # the subpath of your site, e.g. /blog
-#url: "" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/zeebe-chaos" # the subpath of your site, e.g. /blog
+url: "zeebe-io.github.com" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ChristopherZell
 github_username:  zelldon
 markdown: kramdown
