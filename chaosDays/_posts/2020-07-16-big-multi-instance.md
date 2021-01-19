@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Big Multi Instance"
+date:   2020-07-16
+categories: chaos_experiment
+---
+
 # Chaos Day Summary
 
  * investigate and fix automated chaos experiments - works again with [88c404f](https://github.com/zeebe-io/zeebe-chaos/commit/88c404f97514d4a7a511ce9751085acdd1720cd9) and [cd8d685](https://github.com/zeebe-io/zeebe-chaos/commit/cd8d685b83eaa1ac9050ad3d16868389e1c0c36d)
@@ -6,7 +13,7 @@
 
 ## Chaos Experiment
 
- We wanted to run a chaos experiment, which covers https://github.com/zeebe-io/zeebe-chaos/issues/33.
+ We wanted to run a chaos experiment, which covers [#33](https://github.com/zeebe-io/zeebe-chaos/issues/33).
 
 ### Expected
 
@@ -16,17 +23,17 @@
 
  The experiment uses parallel multiInstance service tasks, to create a lot of tasks which should be completed with big variables.
 
- ![multiInstance](multiInstance.png)
+ ![multiInstance](/assets/2020-07-16/multiInstance.png)
 
  On collecting the output the `maxMessageSize` should be reached and we expected either an incident or exception for this instance. This should not affect other workflow instance creations.
 
- ![overview](overview.png)
+ ![overview](/assets/2020-07-16/overview.png)
 
  In operate we can see that we have two running workflow instances, one was started after the first failed. Later we created multiple instance's in a loop, without issues. This means we are not breaking partition processing, otherwise we would see timeouts.
  
  The problem we have is that we are not able to see in Operate that the workflow instance is actually broken. We have no indication for that.
 
- ![broken-multi](broken-multi.png)
+ ![broken-multi](/assets/2020-07-16/broken-multi.png)
 
  The instances seem still to be in starting the multi instance, but actually they are already blacklisted. If we check the logs we can find the following:
 
@@ -40,7 +47,7 @@ I 2020-07-16T13:05:26.793523Z Error event was committed, we continue with proces
 
 ```
 
-I created a feature request for operate https://jira.camunda.com/browse/OPE-1037
+I created a feature request for operate [OPE-1037](https://jira.camunda.com/browse/OPE-1037)
 
 In general chaos experiment succeeded, since we not breaking processing and we are still able to process other instances, but we only see that the instance is blacklisted in the logs not in operate, which is a problem from my POV. Furthermore a bit unexpected was, that we already failed before, we are not able to activate jobs, since the size of the multi instance was already to big.
 
