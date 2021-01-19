@@ -1,10 +1,17 @@
-# Chaos Day Summary
+---
+layout: post
+title:  "Gateway Network Partition"
+date:   2020-06-25
+categories: chaos_experiment
+---
+
+# Chaos Day Summary
 
  * Documented failure cases for AsyncSnasphortDirector. Gave me some ideas where it might make sense to reinstall partition. Discussed a bit with @Deepthi
- * Still our automated chaos experiments are not running. I need some time for that, but I had no time for that today.
- * Run a chaos experiment together with @pihme, where we do a network partition with the gateway.
+ * Still our automated chaos experiments are not running. I need some time for that, but I had no time for that today.
+ * Run a chaos experiment together with @pihme, where we do a network partition with the gateway.
 
-## Chaos experiment:
+## Chaos experiment:
 
 Actually we already have an network partition experiment with the standalone Gateway, where we completely isolate the gateway and take a look whether it comes back after the network partition. Today we wanted to explore how it behaves when only one node and the gateway has a network partition, so Broker 0 and Gateway can't talk to each other.
 
@@ -24,7 +31,7 @@ Unfortunately we need multiple metrics to correlate somehow that it might be due
 What else is missing on the metrics side from my point of view:
 
  * a panel which shows me that all requests to a specific partition currently time out.
- * metrics for the transport between gateway and broker to better analyze problems like that. Would be nice to have https://github.com/zeebe-io/zeebe/issues/4487 
+ * metrics for the transport between gateway and broker to better analyze problems like that. Would be nice to have [#4487](https://github.com/zeebe-io/zeebe/issues/4487) 
   * Liveness and Health stats of the Gateway in the metrics. I think this is currently not supported?
 
 After reconnecting the nodes we saw that the related partition started to process again. Interesting was that it seems that there piled some traffic up and after reconnecting we saw a burst against partition one (partition 2 was disconnected), but this caused no issues.
@@ -32,9 +39,9 @@ After reconnecting the nodes we saw that the related partition started to proces
 I think was good and interesting experiment again and gave us a bit more insights what else we need.
 
 
-![feedback](feedback.png)
+![feedback](/assets/2020-06-25/feedback.png)
 
-![reduce2](reduce2.png)
+![reduce2](/assets/2020-06-25/reduce2.png)
 
 ## Participants
 
