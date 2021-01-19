@@ -233,11 +233,11 @@ gateway=$(getGateway)
 # determine leader for partition
 index=$(getIndexOfPodForPartitionInState "$partition" "LEADER")
 leader=$(getBroker "$index")
-leaderIp=$(kubectl get pod "$leader" -n "$namespace" --template="{{.status.podIP}}")
+leaderIp=$(kubectl get pod "$leader" -n "$namespace" --template="{ {.status.podIP} }")
 
 index=$(getIndexOfPodForPartitionInState "$partition" "FOLLOWER")
 follower=$(getBroker "$index")
-followerIp=$(kubectl get pod "$follower" -n "$namespace" --template="{{.status.podIP}}")
+followerIp=$(kubectl get pod "$follower" -n "$namespace" --template="{ {.status.podIP} }")
 
 # To print the topology in the journal
 retryUntilSuccess kubectl exec "$gateway" -n "$namespace" -- zbctl status --insecure
