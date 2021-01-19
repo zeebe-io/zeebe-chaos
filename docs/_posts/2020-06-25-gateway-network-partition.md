@@ -39,9 +39,9 @@ After reconnecting the nodes we saw that the related partition started to proces
 I think was good and interesting experiment again and gave us a bit more insights what else we need.
 
 
-![feedback](/assets/2020-06-25/feedback.png)
+![feedback]({{ site.baseurl }}/assets/2020-06-25/feedback.png)
 
-![reduce2](/assets/2020-06-25/reduce2.png)
+![reduce2]({{ site.baseurl }}/assets/2020-06-25/reduce2.png)
 
 ## Participants
 

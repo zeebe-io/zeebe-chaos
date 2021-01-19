@@ -276,11 +276,11 @@ We deployed a cluster with one partition for simplicity. We run the above posted
 
 After running the disconnect script we see in general no disruption. The processing is still continuing.
 
-![](/assets/2021-01-07/general.png)
+![]({{ site.baseurl }}/assets/2021-01-07/general.png)
 
 We can see that the followers misses a lot of heartbeats, which is expected.
 
-![](/assets/2021-01-07/heartbeats.png)
+![]({{ site.baseurl }}/assets/2021-01-07/heartbeats.png)
 
 This is also visible in the logs:
 
@@ -305,15 +305,15 @@ RaftServer{raft-partition-partition-1} - AppendRequest{term=1, leader=1, prevLog
 The follower is failing  to send poll requests to Broker-1, which is the leader. I assume we don't see that the follower sends the other follower poll requests because our log level is to high. 
 Furthermore we can see that the leader is not able to send append requests. We have a panel where we can see how many entries the follower lags behind.
 
-![](/assets/2021-01-07/slow-follower.png)
+![]({{ site.baseurl }}/assets/2021-01-07/slow-follower.png)
 
 Interesting that the java heap of the follower is growing.
 
-![](/assets/2021-01-07/resources-follower.png)
+![]({{ site.baseurl }}/assets/2021-01-07/resources-follower.png)
 
 But after some time GC steps in and it goes back to normal.
 
-![](/assets/2021-01-07/later-gc.png)
+![]({{ site.baseurl }}/assets/2021-01-07/later-gc.png)
 
 #### Connect
 
@@ -331,19 +331,19 @@ D 2021-01-07T19:26:24.089900Z zeebe-chaos-zeebe-0 Consume snapshot snapshotChunk
 
 This is also visible in the metrics
 
-![](/assets/2021-01-07/raft-snap.png)
+![]({{ site.baseurl }}/assets/2021-01-07/raft-snap.png)
 
 We see a healed raft.
 
-![](/assets/2021-01-07/healed-raft.png)
+![]({{ site.baseurl }}/assets/2021-01-07/healed-raft.png)
 
 What I was wondering is why the metric which shows the lag of the follower is not really recovering.
 
-![](/assets/2021-01-07/metrics-is-not-correct.png)
+![]({{ site.baseurl }}/assets/2021-01-07/metrics-is-not-correct.png)
 
 Even after almost 12 hours it is still showing ~4K
 
-![](/assets/2021-01-07/failing-metric.png)
+![]({{ site.baseurl }}/assets/2021-01-07/failing-metric.png)
 
 ## Result
 

@@ -19,9 +19,9 @@ On our steady state we saw that we are able to start and complete 100 workflow i
 
 We expected when we introduce stress on the standalone gateway CPU that the latency of the processing goes up and the throughput goes down, but there should be no cluster wide failures happening. We expected that after removing the stress the system should come back to normal and the baseline should be reached again.
 
-![/assets/2020-06-11/gw-stress-proc](/assets/2020-06-11/gw-stress-proc.png)
-![/assets/2020-06-11/gw-cpu](/assets/2020-06-11/gw-cpu.png)
-![/assets/2020-06-11/gw-stress-proc-latency](/assets/2020-06-11/gw-stress-proc-latency.png)
+![/assets/2020-06-11/gw-stress-proc]({{ site.baseurl }}/assets/2020-06-11/gw-stress-proc.png)
+![/assets/2020-06-11/gw-cpu]({{ site.baseurl }}/assets/2020-06-11/gw-cpu.png)
+![/assets/2020-06-11/gw-stress-proc-latency]({{ site.baseurl }}/assets/2020-06-11/gw-stress-proc-latency.png)
 
 The results look promising. We have seen no outage.
 We tested it twice and saw that the throughput goes down and latency up on stress, but comes back to normal after removing it.

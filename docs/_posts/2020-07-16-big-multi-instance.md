@@ -23,17 +23,17 @@ categories: chaos_experiment bpmn
 
  The experiment uses parallel multiInstance service tasks, to create a lot of tasks which should be completed with big variables.
 
- ![multiInstance](/assets/2020-07-16/multiInstance.png)
+ ![multiInstance]({{ site.baseurl }}/assets/2020-07-16/multiInstance.png)
 
  On collecting the output the `maxMessageSize` should be reached and we expected either an incident or exception for this instance. This should not affect other workflow instance creations.
 
- ![overview](/assets/2020-07-16/overview.png)
+ ![overview]({{ site.baseurl }}/assets/2020-07-16/overview.png)
 
  In operate we can see that we have two running workflow instances, one was started after the first failed. Later we created multiple instance's in a loop, without issues. This means we are not breaking partition processing, otherwise we would see timeouts.
  
  The problem we have is that we are not able to see in Operate that the workflow instance is actually broken. We have no indication for that.
 
- ![broken-multi](/assets/2020-07-16/broken-multi.png)
+ ![broken-multi]({{ site.baseurl }}/assets/2020-07-16/broken-multi.png)
 
  The instances seem still to be in starting the multi instance, but actually they are already blacklisted. If we check the logs we can find the following:
 

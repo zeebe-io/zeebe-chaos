@@ -31,25 +31,25 @@ categories: chaos_experiment exporters
 
 | Default | Without exporters |
 |---|---|
-| ![default-pvc](/assets/2020-07-30/default-pvc.png) | ![without-exporter-pvc](/assets/2020-07-30/without-exporter-pvc.png) |
+| ![default-pvc]({{ site.baseurl }}/assets/2020-07-30/default-pvc.png) | ![without-exporter-pvc]({{ site.baseurl }}/assets/2020-07-30/without-exporter-pvc.png) |
 
 The resource consumption seem to be kind of similar, but we still see that the memory usage increases overtime. This seems to be related to [#4812](https://github.com/zeebe-io/zeebe/issues/4812)
 
 | Default | Metric Exporter | Without exporters |
 |---|---|---|
-| ![default](/assets/2020-07-30/default-resources.png) | ![metric](/assets/2020-07-30/metric-exporter-resources.png) | ![without](/assets/2020-07-30/without-exporter-resources.png) |
+| ![default]({{ site.baseurl }}/assets/2020-07-30/default-resources.png) | ![metric]({{ site.baseurl }}/assets/2020-07-30/metric-exporter-resources.png) | ![without]({{ site.baseurl }}/assets/2020-07-30/without-exporter-resources.png) |
 
  Unexpected was that we see a difference in throughput. The benchmark without exporters seem to have a better throughput overall. It is able to complete ~ 30 workflow instances more per second, then the other benchmarks.
 
 | Default | Metric Exporter | Without exporters |
 |---|---|---|
-| ![default](/assets/2020-07-30/default-general.png) | ![metric](/assets/2020-07-30/metric-exporter-general.png) | ![without](/assets/2020-07-30/without-exporter-general.png) |
+| ![default]({{ site.baseurl }}/assets/2020-07-30/default-general.png) | ![metric]({{ site.baseurl }}/assets/2020-07-30/metric-exporter-general.png) | ![without]({{ site.baseurl }}/assets/2020-07-30/without-exporter-general.png) |
 
   We compared also other benchmarks which we have currently running, e.g. a snapshot from 24-07-2020 or from the 0.24.1 release. 
 
 | Snapshot 24-07 | Release 0.24.1 |
 |---|---|
-| ![snapshot](/assets/2020-07-30/snapshot-24-7-general.png) | ![release-241](/assets/2020-07-30/release-0241-general.png) |
+| ![snapshot]({{ site.baseurl }}/assets/2020-07-30/snapshot-24-7-general.png) | ![release-241]({{ site.baseurl }}/assets/2020-07-30/release-0241-general.png) |
 
   All benchmarks with exporters seem to have a throughput around ~140 workflow instance completions per second, but the benchmarks without exporters reaches ~170 workflow instance completions per second.
  When we check the metrics we can see that sometimes brokers are leader for all partition and sometimes it is good distributed, but even this makes not that huge difference as the fact to having no exporter.
@@ -64,9 +64,9 @@ The resource consumption seem to be kind of similar, but we still see that the m
 After taking a look at the metrics of the different benchmarks we can see that at one benchmark we have a higher live data size, which is unexepected.
 
 
-  ![without-exporter-rocksdb](/assets/2020-07-30/without-exporter-rocksdb.png)
-  ![default-rocksdb](/assets/2020-07-30/default-rocksdb.png)
-  ![metric-exporter-rocksdb](/assets/2020-07-30/default-rocksdb.png)
+  ![without-exporter-rocksdb]({{ site.baseurl }}/assets/2020-07-30/without-exporter-rocksdb.png)
+  ![default-rocksdb]({{ site.baseurl }}/assets/2020-07-30/default-rocksdb.png)
+  ![metric-exporter-rocksdb]({{ site.baseurl }}/assets/2020-07-30/default-rocksdb.png)
 
 Created an issue for it [#5081](https://github.com/zeebe-io/zeebe/issues/5081)
 
