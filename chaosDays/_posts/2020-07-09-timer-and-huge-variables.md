@@ -2,7 +2,7 @@
 layout: post
 title:  "Experiment with Timers and Huge Variables"
 date:   2020-07-09
-categories: chaos_experiment
+categories: chaos_experiment bpmn
 ---
 
 # Chaos Day Summary

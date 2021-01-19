@@ -2,7 +2,7 @@
 layout: post
 title:  "First Chaos Day!"
 date:   2020-06-04
-categories: chaos_experiment
+categories: chaos_experiment broker
 ---
 
 # Chaos Day Summary

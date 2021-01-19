@@ -2,7 +2,7 @@
 layout: post
 title:  "Correlate Message after failover"
 date:   2020-06-18
-categories: chaos_experiment
+categories: chaos_experiment bpmn
 ---
 
 # Chaos day Summary:
