@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Play around with ToxiProxy"
+date:   2020-08-20
+categories: chaos_experiment cloud
+---
+
 # Chaos Day Summary
 
 First chaos day since my parental leave :tada:.
@@ -160,7 +167,7 @@ Actually I would expect here an error instead of just returning null.
  Peter volunteered for automating a new chaos experiment, where we put high load on a broker and expect that we have no leader change. This was previous an issue, since the leaders were not able to send heartbeats in time. Related issue #7.
 
 ### Time reset
-I wanted to work on the clock reset https://github.com/zeebe-io/zeebe-chaos/issues/3.
+I wanted to work on the clock reset [#3](https://github.com/zeebe-io/zeebe-chaos/issues/3).
 This seems to be not easily possible in kubernetes or at least with our current images, since we need for that root privilges.
 
 ```sh
