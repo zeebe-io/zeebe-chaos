@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Many Job Timeouts"
+date:   2020-11-11
+categories: chaos_experiment broker
+---
+
 # Chaos Day Summary
 
 In the last game day (on friday 06.11.2020) I wanted to test whether we can break a partition if many messages time out at the same time. What I did was I send many many messages with a decreasing TTL, which all targeting a specific point in time, such that they will all timeout at the same time. I expected that if this happens that the processor will try to time out all at once and break because the batch is to big. Fortunately this didn't happen, the processor was able to handle this.
@@ -46,8 +53,8 @@ I setup an Production S cluster in camunda cloud. Deployed an normal starter, wh
 I experienced a lot of pod restarts during the experiment, but at 3 pm the processor seems to handle the situation correctly and has no problems with so many events.
 
 
-![timebomb](timeout-bomb.png)
-![timebomb-general](timeout-bomb-general.png)
+![timebomb](/assets/2020-11-11/timeout-bomb.png)
+![timebomb-general](/assets/2020-11-11/timeout-bomb-general.png)
 
 ## Related issues
 
@@ -81,7 +88,7 @@ After adding the worker name it works, but begins with lot of resource exhausted
 
 ## Pod restarts
 
-![preempt](preemptions.png)
+![preempt](/assets/2020-11-11/preemptions.png)
 
 Every 10 min it seems to be a node dying, which causes resource exhausted then.
 
@@ -187,7 +194,7 @@ I think we should give the production s cluster plans a bit more memory, current
 
 ## New Issues
 
- * https://github.com/zeebe-io/zeebe/issues/5812 
+ * [#5812](https://github.com/zeebe-io/zeebe/issues/5812) 
  
 ## Participants
 
