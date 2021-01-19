@@ -1,8 +1,15 @@
+---
+layout: post
+title:  "Multiple Leader Changes"
+date:   2020-10-13
+categories: chaos_experiment broker
+---
+
 # Chaos Day Summary
 
 Today I wanted to add new chaostoolkit experiment, which we can automate.
 We already have experiments like restarting followers and leaders for a partition, but in the past what also caused issues was multiple restarts/leader changes
-in a short period of time. This is the reason why I created https://github.com/zeebe-io/zeebe-chaos/issues/39. 
+in a short period of time. This is the reason why I created [#39](https://github.com/zeebe-io/zeebe-chaos/issues/39). 
 
 ## Chaos Experiment: Multiple Leader Elections
 
@@ -23,20 +30,20 @@ We requesting the Topology, determine the leader for partition one restart that 
 
 ### Result
 
-The corresponding experiment was added via this commit https://github.com/zeebe-io/zeebe-chaos/commit/11c3a96fc87991f649fb1559363ba335b2bf42a1 .
+The corresponding experiment was added via this [commit](https://github.com/zeebe-io/zeebe-chaos/commit/11c3a96fc87991f649fb1559363ba335b2bf42a1).
 We were able to prove that our hypothesis is true. we are able to handle multiple leader changes even in a short period of time.
 
 #### Metrics
 
 In the metrics we can see the behavior during the experiment and also we can see that it becomes healthy at the end.
 
-![general.png](general.png)
+![general.png](/assets/2020-10-13/general.png)
 
-![atomix.png](atomix.png)
+![atomix.png](/assets/2020-10-13/atomix.png)
 
 I also run this with a cluster plan M cluster with the same results:
 
-![multiple.png](multiple.png)
+![multiple.png](/assets/2020-10-13/multiple.png)
 
 #### Chaostoolkit
 
@@ -89,14 +96,14 @@ Put high load on the cluster for several minutes, via creating workflow instance
 
 ### Result
 
-@pihme create a new PR to add the experiment https://github.com/zeebe-io/zeebe-chaos/pull/41 
+@pihme create a new PR to add the experiment [#41](https://github.com/zeebe-io/zeebe-chaos/pull/41) 
 
 
 #### Metrics
 
 We see that we already put some load on the cluster but it is not enough to exhaust the request limits and reach back pressure.
 
-![highload](highload.png)
+![highload](/assets/2020-10-13/highload.png)
 
 We neeed to find a good way how put high load on the Zeebe cluster. We will continue on this.
 
