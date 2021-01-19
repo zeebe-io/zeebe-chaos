@@ -1,6 +1,13 @@
+---
+layout: post
+title:  "Disconnect Leader and one Follower"
+date:   2021-01-07
+categories: chaos_experiment broker bpmn
+---
+
 # Chaos Day Summary
 
-Happy new year :tada: This time I wanted verify the following hypothesis "Disconnecting Leader and one Follower should not make cluster disruptive" ([#45](https://github.com/zeebe-io/zeebe-chaos/issues/45)).
+Happy new year :tada: This time I wanted to verify the following hypothesis "Disconnecting Leader and one Follower should not make cluster disruptive" ([#45](https://github.com/zeebe-io/zeebe-chaos/issues/45)).
 But in order to do that we need to extract the Leader and Follower node for a partition from the Topology. Luckily in December we got an external contribution which allows us to print `zbctl status` as json.
 This gives us now more possibilities since we can extract values much better out.
 
@@ -10,7 +17,7 @@ Before we start with the experiment I wanted to extract the right node id's for 
 
 I stored the `zbctl` json output in a file, to make the lines a bit more readable and that I can focus on the jq stuff. The tested output looks like this:
 
-```shell script
+```shell
 $ cat test.json 
 {
   "brokers": [
@@ -108,7 +115,7 @@ $ cat test.json
 
 I had a really hard time to find the correct expression, but here is it:
 
-```shell script
+```shell
 $ cat test.json | jq ".brokers[]|select(.partitions[]| select(.partitionId == 3) and .role == \"LEADER\")"
 ```
 
@@ -118,7 +125,7 @@ The current expression filters brokers for partitions which have partitionId and
 
 Examples:
 
-```shell script
+```shell
 $ cat test.json | jq ".brokers[]|select(.partitions[]| select(.partitionId == 3) and .role == \"LEADER\")|.nodeId"
 1
 $ cat test.json | jq ".brokers[]|select(.partitions[]| select(.partitionId == 2) and .role == \"LEADER\")|.nodeId"
@@ -128,7 +135,7 @@ $ cat test.json | jq ".brokers[]|select(.partitions[]| select(.partitionId == 2)
 Later I realized that this doesn't work for followers, since you can have multiple ones, BUT also this can be solved. [Just put it in an array and get the first entry](
 https://stackoverflow.com/questions/38500363/get-the-first-or-nth-element-in-a-jq-json-parsing).
 
-```shell script
+```shell
 jq "[.brokers[]|select(.partitions[]| select(.partitionId == $partition) and .role == \"$state\")][0].nodeId
 ```
 
@@ -136,7 +143,7 @@ jq "[.brokers[]|select(.partitions[]| select(.partitionId == $partition) and .ro
 
 I was able to replace the old utility:
 
-```shell script
+```shell
 function getIndexOfPodForPartitionInState()
 {
   partition="$1"
@@ -171,7 +178,7 @@ function getIndexOfPodForPartitionInState()
 
 With this:
 
-```shell script
+```shell
 function getIndexOfPodForPartitionInState()
 {
   partition="$1"
@@ -196,7 +203,7 @@ I wrote a new script based on the [older disconnect/connect gateway scripts](htt
 
 Disconnect Leader-Follower:
 
-```shell script
+```shell
 #!/bin/bash
 set -exuo pipefail
 
@@ -237,15 +244,15 @@ retryUntilSuccess disconnect "$follower" "$leaderIp"
 
 ### Resources
 
- * https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq
- * https://unix.stackexchange.com/questions/404699/using-multiple-wildcards-in-jq-to-select-objects-in-a-json-file
- * https://stedolan.github.io/jq/manual/#Builtinoperatorsandfunctions
- * https://stackoverflow.com/questions/33057420/jq-select-multiple-conditions
- * https://github.com/stedolan/jq/issues/319
- * https://unix.stackexchange.com/questions/491669/jq-get-attribute-of-nested-object
- * https://stackoverflow.com/questions/27562424/jq-nested-object-extract-top-level-id-and-lift-a-value-from-internal-object
- * _false track_ https://stackoverflow.com/questions/28615174/jq-filter-on-sub-object-value
- * final key: https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810
+ * [https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq](https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq)
+ * [https://unix.stackexchange.com/questions/404699/using-multiple-wildcards-in-jq-to-select-objects-in-a-json-file](https://unix.stackexchange.com/questions/404699/using-multiple-wildcards-in-jq-to-select-objects-in-a-json-file)
+ * [https://stedolan.github.io/jq/manual/#Builtinoperatorsandfunctions](https://stedolan.github.io/jq/manual/#Builtinoperatorsandfunctions)
+ * [https://stackoverflow.com/questions/33057420/jq-select-multiple-conditions](https://stackoverflow.com/questions/33057420/jq-select-multiple-conditions)
+ * [https://github.com/stedolan/jq/issues/319](https://github.com/stedolan/jq/issues/319)
+ * [https://unix.stackexchange.com/questions/491669/jq-get-attribute-of-nested-object](https://unix.stackexchange.com/questions/491669/jq-get-attribute-of-nested-object)
+ * [https://stackoverflow.com/questions/27562424/jq-nested-object-extract-top-level-id-and-lift-a-value-from-internal-object](https://stackoverflow.com/questions/27562424/jq-nested-object-extract-top-level-id-and-lift-a-value-from-internal-object)
+ * _false track_ [https://stackoverflow.com/questions/28615174/jq-filter-on-sub-object-value](https://stackoverflow.com/questions/28615174/jq-filter-on-sub-object-value)
+ * final key: [https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810](https://gist.github.com/olih/f7437fb6962fb3ee9fe95bda8d2c8fa4#gistcomment-3257810)
 
 ## Chaos Experiment
 
@@ -264,15 +271,15 @@ We deployed a cluster with one partition for simplicity. We run the above posted
 
 After running the disconnect script we see in general no disruption. The processing is still continuing.
 
-![](general.png)
+![](/assets/2021-01-07/general.png)
 
 We can see that the followers misses a lot of heartbeats, which is expected.
 
-![](heartbeats.png)
+![](/assets/2021-01-07/heartbeats.png)
 
 This is also visible in the logs:
 
-```shell script
+```shell
 2021-01-07 20:22:28.320 CET
 zeebe-chaos-zeebe-0
 RaftServer{raft-partition-partition-1}{role=FOLLOWER} - No heartbeat from null in the last PT2.98S (calculated from last 2980 ms), sending poll requests
@@ -293,21 +300,21 @@ RaftServer{raft-partition-partition-1} - AppendRequest{term=1, leader=1, prevLog
 The follower is failing  to send poll requests to Broker-1, which is the leader. I assume we don't see that the follower sends the other follower poll requests because our log level is to high. 
 Furthermore we can see that the leader is not able to send append requests. We have a panel where we can see how many entries the follower lags behind.
 
-![](slow-follower.png)
+![](/assets/2021-01-07/slow-follower.png)
 
 Interesting that the java heap of the follower is growing.
 
-![](resources-follower.png)
+![](/assets/2021-01-07/resources-follower.png)
 
 But after some time GC steps in and it goes back to normal.
 
-![](later-gc.png)
+![](/assets/2021-01-07/later-gc.png)
 
 #### Connect
 
 After running the connect script we can see in the log that almost immediately a snapshot is send to the follower.
 
-```shell script
+```shell
 D 2021-01-07T19:26:24.042908Z zeebe-chaos-zeebe-0 Consume snapshot snapshotChunk 000333.log of snapshot 2643199-1-1610047230637-3215713-3214967  zeebe-chaos-zeebe-0
 D 2021-01-07T19:26:24.045690Z zeebe-chaos-zeebe-0 Consume snapshot snapshotChunk 000334.sst of snapshot 2643199-1-1610047230637-3215713-3214967  zeebe-chaos-zeebe-0
 D 2021-01-07T19:26:24.052229Z zeebe-chaos-zeebe-0 Consume snapshot snapshotChunk 000335.log of snapshot 2643199-1-1610047230637-3215713-3214967  zeebe-chaos-zeebe-0
@@ -319,19 +326,19 @@ D 2021-01-07T19:26:24.089900Z zeebe-chaos-zeebe-0 Consume snapshot snapshotChunk
 
 This is also visible in the metrics
 
-![](raft-snap.png)
+![](/assets/2021-01-07/raft-snap.png)
 
 We see a healed raft.
 
-![](healed-raft.png)
+![](/assets/2021-01-07/healed-raft.png)
 
 What I was wondering is why the metric which shows the lag of the follower is not really recovering.
 
-![](metrics-is-not-correct.png)
+![](/assets/2021-01-07/metrics-is-not-correct.png)
 
 Even after almost 12 hours it is still showing ~4K
 
-![](failing-metric.png)
+![](/assets/2021-01-07/failing-metric.png)
 
 ## Result
 
