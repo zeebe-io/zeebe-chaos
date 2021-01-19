@@ -260,9 +260,9 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  github-pages
-  jekyll-feed (~> 0.12)
-  jemoji
+  github-pages (~> 209)
+  jekyll-feed (~> 0.15.1)
+  jemoji (~> 0.12.0)
   plainwhite
   tzinfo (~> 1.2)
   tzinfo-data
