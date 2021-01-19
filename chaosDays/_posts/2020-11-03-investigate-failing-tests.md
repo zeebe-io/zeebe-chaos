@@ -1,7 +1,14 @@
+---
+layout: post
+title:  "Investigate failing Chaos Tests"
+date:   2020-11-03
+categories: investigation
+---
+
 # Chaos Day Summary
 
 Today as part of the Chaos Day I wanted to investigate why our current Chaos Tests are failing and why our targeting cluster has been broken by them,
-see the related issue https://github.com/zeebe-io/zeebe/issues/5688.
+see the related issue [#5688](https://github.com/zeebe-io/zeebe/issues/5688).
 
 **TL;DR**
 
@@ -9,25 +16,25 @@ We found three new bugs regarding the reprocessing detection and deployment dist
 
 ## Investigation
 
-I started already yesterday with the investigation and found out that two brokers (`Broker-0` and `Broker-2`) are failing to restart on partition three, but `Broker-0` is able to start the processing on partition three. See this comment https://github.com/zeebe-io/zeebe/issues/5688#issuecomment-720401612 for more information. Note that partition three is receiving deployment from partition one via deployment distribution.
+I started already yesterday with the investigation and found out that two brokers (`Broker-0` and `Broker-2`) are failing to restart on partition three, but `Broker-0` is able to start the processing on partition three. See this [comment](https://github.com/zeebe-io/zeebe/issues/5688#issuecomment-720401612) for more information. Note that partition three is receiving deployment from partition one via deployment distribution.
 
-Together with @saig0 I looked at the code and we found out that reprocessing can be a bit problematic in some situations regarding the `WorkflowPersistenceCache`, see related comment https://github.com/zeebe-io/zeebe/issues/5688#issuecomment-721021464 .
+Together with @saig0 I looked at the code and we found out that reprocessing can be a bit problematic in some situations regarding the `WorkflowPersistenceCache`, see related [comment](https://github.com/zeebe-io/zeebe/issues/5688#issuecomment-721021464).
 
 The cache is used in the `DeploymentCreateProcessor` to verify that the deployment is new and to add it to the state. If this deployment with the same key already exists (in-memory) then the processor rejects the `CREATE` command.
-Now we can have situations which might be problematic. Say we have two of the `CREATE` commands on normal processing, this can happen when the first partition re-distributes the deployment. When the first one is processed we create a follow up event (`CREATED`), on the second `CREATE` we will write a rejection, since it is already in-memory. If a leader change happens, then it is crucial where the snapshot was taken. If the snapshot position is **AFTER** the first `CREATE` this means that we will handle the second `CREATE` as the first one, which means we will generate on reprocessing a `CREATE` but on the log is a rejection written. This is because the in-memory state doesn't reflect the real state. Opened an issue for this https://github.com/zeebe-io/zeebe/issues/5753.
+Now we can have situations which might be problematic. Say we have two of the `CREATE` commands on normal processing, this can happen when the first partition re-distributes the deployment. When the first one is processed we create a follow up event (`CREATED`), on the second `CREATE` we will write a rejection, since it is already in-memory. If a leader change happens, then it is crucial where the snapshot was taken. If the snapshot position is **AFTER** the first `CREATE` this means that we will handle the second `CREATE` as the first one, which means we will generate on reprocessing a `CREATE` but on the log is a rejection written. This is because the in-memory state doesn't reflect the real state. Opened an issue for this [#5753](https://github.com/zeebe-io/zeebe/issues/5753).
 
 The bug which we found was not the real issue we currently have with the broken cluster, since we have two nodes which have the **same** snapshot, but on one Broker it fails and another it doesn't. To really understand what the issue is we need the related log, so we need to reproduce this issue.
 
 ### Reproducing Chaos
 
-I created a benchmark with the Zeebe version `0.24.4`. Check this https://github.com/zeebe-io/zeebe/tree/develop/benchmarks/setup for how to setup a benchmark. I realized that creating a benchmark for an earlier version is currently not working because we set the `useMMap` flag in the `zeebe-values.yaml` file. After removing that it works without problems.
+I created a benchmark with the Zeebe version `0.24.4`. Check [this](https://github.com/zeebe-io/zeebe/tree/develop/benchmarks/setup) for how to setup a benchmark. I realized that creating a benchmark for an earlier version is currently not working because we set the `useMMap` flag in the `zeebe-values.yaml` file. After removing that it works without problems.
 
 To run all experiments in a loop I used in the `chaos-experiments/kubernetes` folder
 ```
  while [ $? -eq 0 ]; do for ex in */experiment.json; do chaos run $ex; done; done
 
 ```
-During running the experiments I found a bug in our chaos experiments, where it seems that some experiments are not executed correctly, see https://github.com/zeebe-io/zeebe-chaos/issues/43.
+During running the experiments I found a bug in our chaos experiments, where it seems that some experiments are not executed correctly, see [#43](https://github.com/zeebe-io/zeebe-chaos/issues/43).
 
 
 It took a while, but at some point the experiments start to fail. Interesting is that if you look at the pods all seem to be ready, but in the metrics we can see that one partition is unhealthy (Partition one this time).
@@ -48,7 +55,7 @@ io.zeebe.engine.processor.InconsistentReprocessingException: Reprocessing issue 
 	at io.zeebe.util.sched.ActorThread.run(ActorThread.java:204) [zeebe-util-0.24.4.jar:0.24.4]
 ```
 
-I think this is caused by https://github.com/zeebe-io/zeebe/issues/3124, because if the distribution succeeds we want to write a `DISTRUBITED` event on the log, with the stream writer from the context. This can happen concurrently with our reprocessing.
+I think this is caused by [#3124](https://github.com/zeebe-io/zeebe/issues/3124), because if the distribution succeeds we want to write a `DISTRUBITED` event on the log, with the stream writer from the context. This can happen concurrently with our reprocessing.
 My assumption was that this is caused by a race condition, which might get fixed when we restart the pod. I restarted the `Broker-2`, which was leader for partition 3 and `Broker-1` took over and started the partition successfully.
 
 ```
@@ -62,7 +69,7 @@ Before we retry we normally rollback the current transaction to discard all chan
 indication that on reprocessing another exception happen, which caused an retry. In anyway we need to fix the cache to avoid the bugs we have described. We concluded that we need the log of the failing cluster to really understand what was happening. We will try to fix the bugs above soon as possible and in parallel run the experiments endless until they fail again.
 
 ### Notes
-To investigate the disks I prepared the follwing commands, which I can use to downloaded the state of the brokers to my local machine.
+To investigate the disks I prepared the follwing commands, which I can use to download the state of the brokers to my local machine.
 
 ```sh
 kubectl exec zell-chaos-0244-zeebe-2 -- tar -cf data.tar.gz data/ # compress the data dir
@@ -75,8 +82,8 @@ tar -xvf broker-2-data.tar.gz
 
 ## New Issues
 
- * Gateway experiments are not executed https://github.com/zeebe-io/zeebe-chaos/issues/43
- * Deployment Reprocessing inconsistencies https://github.com/zeebe-io/zeebe/issues/5753
+ * Gateway experiments are not executed [#43](https://github.com/zeebe-io/zeebe-chaos/issues/43)
+ * Deployment Reprocessing inconsistencies [#5753](https://github.com/zeebe-io/zeebe/issues/5753)
  
 ## Participants
 
