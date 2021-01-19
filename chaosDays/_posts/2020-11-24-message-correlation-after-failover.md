@@ -1,7 +1,14 @@
+---
+layout: post
+title:  "Message Correlation after Failover"
+date:   2020-11-24
+categories: chaos_experiment broker bpmn
+---
+
 # Chaos Day Summary
 
-Today I wanted to finally implement an experiment which I postponed for long time, see https://github.com/zeebe-io/zeebe-chaos/issues/24.
-The problem was that previous we were not able to determine on which partition the message was published, so we were not able to assert that it was published on the correct partition. With this https://github.com/zeebe-io/zeebe/issues/4794 it is now possible, which was btw an community contribution. :tada:
+Today I wanted to finally implement an experiment which I postponed for long time, see [#24](https://github.com/zeebe-io/zeebe-chaos/issues/24).
+The problem was that previous we were not able to determine on which partition the message was published, so we were not able to assert that it was published on the correct partition. With this [#4794](https://github.com/zeebe-io/zeebe/issues/4794) it is now possible, which was btw an community contribution. :tada:
 
 ## Chaos Experiment
 
@@ -18,7 +25,7 @@ We expect that even due to a leader change messages can be correlated to a workf
 
 The process is quite simple, we just have one intermediate message catch event and we will create an new instance and await the result. With that we make sure that the message was correlated correctly.
 
-![oneReceiveMsgEvent](oneReceiveMsgEvent.png)
+![oneReceiveMsgEvent](/assets/2020-11-24/oneReceiveMsgEvent.png)
 
 On testing the separate scripts I had at the begining problems with the `awaitResult`. I got always timeouts.
 
@@ -28,7 +35,7 @@ command terminated with exit code 1
 + echo 'Failed to execute: '\''awaitInstance'\''. Retry.'
 ```
 
-![operate](operate.png)
+![operate](/assets/2020-11-24/operate.png)
 
 Via operate nor via zbctl it is easy to find out what is the real issue. I'm not able to see any details regarding the intermediate message catch event in operate. With help of [zdb](https://github.com/Zelldon/zdb) I was able to track down the issue. The time to live was to small. The published messages have been already deleted before I created the corresponding workflow instancs. Per default the time to live is `5s` with `zbctl`. It is not easy to find out why the message doesn't correlate. After setting the `ttl` quite high it works and I can run my experiment successfully.
 
@@ -63,7 +70,7 @@ Experiment added to all cluster plans:
 
 ## New Issues
 
- * Operate: Show details of an intermediate catch event https://jira.camunda.com/browse/OPE-1165
+ * Operate: Show details of an intermediate catch event [OPE-1165](https://jira.camunda.com/browse/OPE-1165)
 
 ## Participants
 
