@@ -1,11 +1,18 @@
+---
+layout: post
+title:  "Experiment without Exporters"
+date:   2020-07-30
+categories: chaos_experiment
+---
+
 # Chaos Day Summary
 
  * Run a chaos experiment without exporters
 
 ## Chaos Experiment
 
- We wanted to run a chaos experiment, which covers https://github.com/zeebe-io/zeebe-chaos/issues/20.
- Furthermore it was recently asked in the forum whether it makes a difference performance wise to run a broker without exporters, see https://forum.zeebe.io/t/zeebe-low-performance/1356/17 
+ We wanted to run a chaos experiment, which covers [#20](https://github.com/zeebe-io/zeebe-chaos/issues/20).
+ Furthermore, it was recently asked in the forum whether it makes a difference performance wise to run a broker without exporters, see [here](https://forum.zeebe.io/t/zeebe-low-performance/1356/17) 
 
 ### Expected
 
@@ -24,28 +31,29 @@
 
 | Default | Without exporters |
 |---|---|
-| ![default-pvc](default-pvc.png) | ![without-exporter-pvc](without-exporter-pvc.png) |
+| ![default-pvc](/assets/2020-07-30/default-pvc.png) | ![without-exporter-pvc](/assets/2020-07-30/without-exporter-pvc.png) |
 
-The resource consumption seem to be kind of similar, but we still see that the memory usage increases overtime. This seems to be related to https://github.com/zeebe-io/zeebe/issues/4812
+The resource consumption seem to be kind of similar, but we still see that the memory usage increases overtime. This seems to be related to [#4812](https://github.com/zeebe-io/zeebe/issues/4812)
+
 | Default | Metric Exporter | Without exporters |
 |---|---|---|
-| ![default](default-resources.png) | ![metric](metric-exporter-resources.png) | ![without](without-exporter-resources.png) |
+| ![default](/assets/2020-07-30/default-resources.png) | ![metric](/assets/2020-07-30/metric-exporter-resources.png) | ![without](/assets/2020-07-30/without-exporter-resources.png) |
 
  Unexpected was that we see a difference in throughput. The benchmark without exporters seem to have a better throughput overall. It is able to complete ~ 30 workflow instances more per second, then the other benchmarks.
 
 | Default | Metric Exporter | Without exporters |
 |---|---|---|
-| ![default](default-general.png) | ![metric](metric-exporter-general.png) | ![without](without-exporter-general.png) |
+| ![default](/assets/2020-07-30/default-general.png) | ![metric](/assets/2020-07-30/metric-exporter-general.png) | ![without](/assets/2020-07-30/without-exporter-general.png) |
 
   We compared also other benchmarks which we have currently running, e.g. a snapshot from 24-07-2020 or from the 0.24.1 release. 
 
 | Snapshot 24-07 | Release 0.24.1 |
 |---|---|
-| ![snapshot](snapshot-24-7-general.png) | ![release-241](release-0241-general.png) |
+| ![snapshot](/assets/2020-07-30/snapshot-24-7-general.png) | ![release-241](/assets/2020-07-30/release-0241-general.png) |
 
   All benchmarks with exporters seem to have a throughput around ~140 workflow instance completions per second, but the benchmarks without exporters reaches ~170 workflow instance completions per second.
  When we check the metrics we can see that sometimes brokers are leader for all partition and sometimes it is good distributed, but even this makes not that huge difference as the fact to having no exporter.
- This is unexpected and we need to investigate further, created new issue for this https://github.com/zeebe-io/zeebe/issues/5085
+ This is unexpected and we need to investigate further, created new issue for this [#5085](https://github.com/zeebe-io/zeebe/issues/5085)
  
  The latency seems to be not affected by this.
 
@@ -56,11 +64,11 @@ The resource consumption seem to be kind of similar, but we still see that the m
 After taking a look at the metrics of the different benchmarks we can see that at one benchmark we have a higher live data size, which is unexepected.
 
 
-  ![without-exporter-rocksdb](without-exporter-rocksdb.png)
-  ![default-rocksdb](default-rocksdb.png)
-  ![metric-exporter-rocksdb](default-rocksdb.png)
+  ![without-exporter-rocksdb](/assets/2020-07-30/without-exporter-rocksdb.png)
+  ![default-rocksdb](/assets/2020-07-30/default-rocksdb.png)
+  ![metric-exporter-rocksdb](/assets/2020-07-30/default-rocksdb.png)
 
-Created an issue for it https://github.com/zeebe-io/zeebe/issues/5081
+Created an issue for it [#5081](https://github.com/zeebe-io/zeebe/issues/5081)
 
 ##### Atomix Bootstrap
 
@@ -78,7 +86,7 @@ I 2020-07-30T10:17:54.229856Z Started
 I 2020-07-30T10:17:54.231121Z Started 
 ```
 
-Created an issue for it https://github.com/zeebe-io/zeebe/issues/5080
+Created an issue for it [#5080](https://github.com/zeebe-io/zeebe/issues/5080)
 
 ##### Merged log statement
 
@@ -94,10 +102,10 @@ I 2020-07-30T09:16:47.053379451Z
 
 ```
 
-Created an issue for it https://github.com/zeebe-io/zeebe/issues/5079
+Created an issue for it [#5079](https://github.com/zeebe-io/zeebe/issues/5079)
 
 ##### Wrong Exporter Configuration
-When Exporter is configured falsly it breaks the start up, which means the exporter can't be loaded and we see an exception.
+When Exporter is configured falsely it breaks the start up, which means the exporter can't be loaded and we see an exception.
 
 ```
 {
