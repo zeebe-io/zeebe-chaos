@@ -1,7 +1,7 @@
 {
     "version": "0.1.0",
-    "title": "Zeebe follower graceful restart experiment",
-    "description": "Zeebe should be fault-tolerant. Zeebe should be able to handle follower restarts.",
+    "title": "Zeebe deployment distribution",
+    "description": "Zeebe deployment distribution should be fault-tolerant. Zeebe should be able to handle network outages and fail-overs and distribute the deployments after partitions are available again.",
     "contributions": {
         "reliability": "high",
         "availability": "high"
@@ -18,28 +18,66 @@
                     "path": "verify-readiness.sh",
                     "timeout": 900
                 }
-            },
-            {
-                "name": "Should be able to create workflow instances on partition 3",
-                "type": "probe",
-                "tolerance": 0,
-                "provider": {
-                    "type": "process",
-                    "path": "verify-steady-state.sh",
-                    "arguments": "3",
-                    "timeout": 900
-                }
             }
         ]
     },
     "method": [
         {
             "type": "action",
-            "name": "Restart follower of partition 3 gracefully",
+            "name": "Create network partition between leaders",
             "provider": {
                 "type": "process",
-                "path": "shutdown-gracefully-partition.sh",
+                "path": "disconnect-leaders.sh"
+            }
+        },
+        {
+            "type": "action",
+            "name": "Deploy different deployment versions.",
+            "provider": {
+                "type": "process",
+                "path": "deploy-different-versions.sh",
                 "arguments": ["Follower", "3"]
+            }
+        },
+        {
+            "type": "action",
+            "name": "Delete network partition",
+            "provider": {
+                "type": "process",
+                "path": "connect-leaders.sh"
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Create workflow instance of latest version on partition one",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "start-instance-on-partition-with-version.sh",
+                "arguments": ["1", "10"],
+                "timeout": 900
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Create workflow instance of latest version on partition two",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "start-instance-on-partition-with-version.sh",
+                "arguments": ["2", "10"],
+                "timeout": 900
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Create workflow instance of latest version on partition three",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "start-instance-on-partition-with-version.sh",
+                "arguments": ["3", "10"],
+                "timeout": 900
             }
         }
     ],
