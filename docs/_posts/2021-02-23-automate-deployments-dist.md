@@ -2,7 +2,7 @@
 layout: post
 title:  "Automating Deployment Distribution Chaos Experiment"
 date:   2021-02-23
-categories: chaos_experiment broker network
+categories: chaos_experiment broker network deployment
 author: Christopher Zell ([@zelldon](https://github.com/zelldon))
 ---
 
