@@ -23,7 +23,7 @@ function startInstancesOnPartition() {
   partition=0
   until [[ "$partition" -eq "$requiredPartition" ]]; do
     workflowInstanceKey=$(kubectl exec "$pod" -n "$namespace" -- zbctl create instance benchmark --insecure)
-    workflowInstanceKey=$(echo "$workflowInstanceKey" | jq '.workflowInstanceKey')
+    workflowInstanceKey=$(echo "$workflowInstanceKey" | jq '.workflowInstanceKey|tonumber')
     partition=$(( workflowInstanceKey >> 51 ))
     echo "Started workflow with key $workflowInstanceKey, corresponding partition $partition"
   done
