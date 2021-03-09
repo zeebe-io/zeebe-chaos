@@ -15,7 +15,7 @@ bpmnPath="$scriptPath/../bpmn/specific"
 # then the model is not longer on the node, which cause endless retries of deployments
 function deployModel() {
   kubectl cp "$bpmnPath" "$pod:/tmp/" -n "$namespace"
-  kubectl exec "$pod" -n "$namespace" -- sh -c "zbctl deploy /tmp/$modelName --insecure"
+  kubectl exec "$pod" -n "$namespace" -- sh -c "zbctl deploy /tmp/specific/$modelName --insecure"
 }
 
 retryUntilSuccess deployModel
