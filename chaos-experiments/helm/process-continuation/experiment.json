@@ -1,0 +1,57 @@
+
+{
+    "version": "0.1.0",
+    "title": "Zeebe process instance continuation",
+    "description": "Zeebe processing of process instances should be fault-tolerant. Zeebe should be able to handle fail-overs and continue process instances after a new leader starts with processing.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "verify-readiness.sh",
+                    "timeout": 900
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Deploy process model",
+            "provider": {
+                "type": "process",
+                "path": "deploy-specific-model.sh",
+                "arguments": [ "chaosTimerStart.bpmn" ]
+            }
+        },
+        {
+            "type": "action",
+            "name": "Restart partition leader",
+            "provider": {
+                "type": "process",
+                "path": "shutdown-gracefully-partition.sh",
+                "arguments": [ "Leader", "1" ]
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Complete process instance",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "complete-instance.sh",
+                "arguments": ["chaos"],
+                "timeout": 900
+            }
+        }
+    ],
+    "rollbacks": []
+}
