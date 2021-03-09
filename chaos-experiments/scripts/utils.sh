@@ -34,7 +34,8 @@ function getGateway()
 function getIndexOfPodForPartitionInState()
 {
   partition="$1"
-  state="$2"
+  # expect caps for raft roles
+  state=${2^^}
   pod=$(getGateway)
   namespace=$(getNamespace)
 
