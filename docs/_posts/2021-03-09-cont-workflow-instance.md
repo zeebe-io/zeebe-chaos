@@ -159,8 +159,9 @@ Tbd.
 
 We have currently some problems with running the chaos experiments against camunda cloud, like [testbench#247](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/247) or [testbench#248](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/248). This is the reason why I postponed it.
 
-#### Other
+#### Found Bugs
 
+##### Chaos Experiments not working correctly
 I realized that most of the experiments are no longer run correctly, since they referring to `"Leader"` as the raft role, where the raft role in the topology is `LEADER`. This causes that on some experiments pods are not really restarted.
 
 Almost everywhere we use constructs like:
@@ -216,6 +217,10 @@ function getIndexOfPodForPartitionInState()
   state=${2^^}
 ```
 
+##### Redeployment causes retrigger timer
+
+During running the chaos experiment and testing the scripts I realized that the timer start event is retriggered everytime I redeployed the exact deployment, which was kind of unexpected.
+I created a bug issue for that [zeebe#6515](https://github.com/camunda-cloud/zeebe/issues/6515).
 
 
 {% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
