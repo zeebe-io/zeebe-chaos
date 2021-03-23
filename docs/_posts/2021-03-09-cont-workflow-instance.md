@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Fault-tolerant processing of process instances"
-date:   2021-02-23
+date:   2021-03-09
 categories: chaos_experiment broker processing
 author: Christopher Zell ([@zelldon](https://github.com/zelldon))
 ---
