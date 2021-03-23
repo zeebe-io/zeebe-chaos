@@ -36,18 +36,17 @@ fi
 # To print the topology in the journal
 retryUntilSuccess kubectl exec "$gateway" -n "$namespace" -- zbctl status --insecure
 
-# we put all into one function because we need to make sure that even after preemption the 
+# we put all into one function because we need to make sure that even after preemption the
 # dependency is installed
 function connect() {
  toChangedPod="$1"
  targetIp="$2"
 
- # update to have access to ip
- kubectl exec -n "$namespace" "$toChangedPod" -- apt update
- kubectl exec -n "$namespace" "$toChangedPod" -- apt install -y iproute2
- kubectl exec "$toChangedPod" -n "$namespace" -- ip route del unreachable "$targetIp"
-
+ if command -v ip
+ then
+     kubectl exec "$toChangedPod" -n "$namespace" -- ip route del unreachable "$targetIp"
+ fi
 }
 
 retryUntilSuccess connect "$leader" "$leaderTwoIp"
-retryUntilSuccess connect "$leaderTwo" "$leaderIp" 
+retryUntilSuccess connect "$leaderTwo" "$leaderIp"
