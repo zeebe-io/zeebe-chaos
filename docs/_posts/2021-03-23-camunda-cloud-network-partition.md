@@ -15,7 +15,7 @@ This time [Deepthi](https://github.com/deepthidevaki) was joining me on my regul
 
 **TL;DR;**
 
-We were able to enhance the deployment distribution experiment but it is still failing if we run it via testbench, since have not enough rights to access the zeebe controller resources with the related service account.
+We were able to enhance the deployment distribution experiment and run it in the camunda cloud via testbench. We have enabled the experiment for Production M and L cluster plans. We had to adjust the rights for the testbench service account to make this work.
 
 ## Chaos Experiment
 
@@ -166,7 +166,15 @@ In the logs we also saw that the patch didn't worked as expected with the used s
 'Error from server (Forbidden): zeebeclusters.cloud.camunda.io "XXX" is forbidden: User "system:serviceaccount:zeebe-chaos:zeebe-chaos-sa" cannot get resource "zeebeclusters" in API group "cloud.camunda.io" at the cluster scope\n'
 ```
 
-We will continue with that on another day. Thanks for participating [Deepthi](https://github.com/deepthidevaki).
+After checking with Immi, we were sure that we need to adjust the [serviceaccount roles](https://github.com/zeebe-io/zeebe-cluster-testbench/blob/develop/core/chaos-workers/deployment/service-account/zeebe-chaos-role.yaml#L9). After changing the apiGroups to `["*"]` the experiments are running in testbench and the patch can be applied. We can now see in the log the following:
+
+```shell
+[2021-03-23 14:21:24 DEBUG] [process:53] Running: ['/home/chaos/zeebe-chaos/chaos-experiments/camunda-cloud/../scripts/apply_net_admin.sh']
+[2021-03-23 14:21:25 DEBUG] [__init__:142] Data encoding detected as 'ascii' with a confidence of 1.0
+[2021-03-23 14:21:25 DEBUG] [activity:180]   => succeeded with '{'status': 0, 'stdout': 'zeebecluster.cloud.camunda.io/cc108db7-768c-45cc-a6c5-098dc28f260c patched\nstatefulset.apps/zeebe patched\n', 'stderr': ''}'
+```
+
+Thanks for participating [Deepthi](https://github.com/deepthidevaki).
 
 #### Found Bugs
 
