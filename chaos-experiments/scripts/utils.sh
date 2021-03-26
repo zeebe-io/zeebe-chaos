@@ -8,6 +8,25 @@ function getNamespace()
  echo "$namespace"
 }
 
+function runOnAllBrokers()
+{
+  namespace=$(getNamespace)
+
+  if [ "${CHAOS_SETUP}" == "cloud" ]
+  then
+    pods=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/app=zeebe -o jsonpath="{.items[*].metadata.name}")
+#    count=$(kubectl get pods -n "$namespace" -l app.kubernetes.io/app=zeebe --output json | jq '.items | length')
+  else
+    pods=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/component=broker -o jsonpath="{.items[*].metadata.name}")
+  fi
+
+  set +e
+  for pod in $pods
+  do
+    kubectl -n "$namespace" exec "$pod" -- "$@"
+  done
+  set -e
+}
 
 function getBroker()
 {
