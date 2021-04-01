@@ -8,7 +8,6 @@ import java.util.concurrent.CountDownLatch
 const val ROOT_PATH="../../chaos-experiments"
 
 fun main(args: Array<String>) {
-
     val latch = CountDownLatch(1)
 
     val zeebeClient = ZeebeClient.newClientBuilder().usePlaintext().build()
@@ -42,25 +41,36 @@ fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
 }
 
 fun handler(client: JobClient, activatedjob: ActivatedJob) {
-//    println(activatedjob.variablesAsMap)
     val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
-
-    val args = provider["arguments"]
-    args?.let {
-        println("Arguments: $it")
-    }
 
     val command = provider["path"]!!.toString()
     val scriptPath = File("$ROOT_PATH/scripts/")
     println("Path: ${scriptPath.absolutePath}")
 
     val rootCommand = "$scriptPath/$command"
-    val commands = args?.let { listOf(rootCommand, it.toString()) } ?: listOf(rootCommand)
-    val processBuilder = ProcessBuilder(commands)
+    val commandList = mutableListOf(rootCommand)
+
+    val args = provider["arguments"]
+    args?.let {
+        println("Arguments: $it")
+        when (it) {
+            is List<*> -> {
+                commandList.addAll(it as List<String>)
+            }
+            is String -> {
+                commandList.add(it)
+            }
+            else -> {
+                // ?!
+            }
+        }
+    }
+
+    val processBuilder = ProcessBuilder(commandList)
         .inheritIO()
         .directory(scriptPath)
 
-    processBuilder.environment().put("CHAOS_SETUP", "helm");
+    processBuilder.environment()["CHAOS_SETUP"] = "helm";
     val process = processBuilder.start()
     val exitValue = process.waitFor()
 
