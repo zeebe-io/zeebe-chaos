@@ -7,10 +7,22 @@ import java.util.concurrent.CountDownLatch
 fun main(args: Array<String>) {
 
     val latch = CountDownLatch(1)
+
     val zeebeClient = ZeebeClient.newClientBuilder().usePlaintext().build()
-    (zeebeClient.newWorker().jobType("verify-readiness.sh").handler(::handler).open()).use {
-     latch.await()
+    println("Connected to ${zeebeClient.configuration.gatewayAddress}")
+
+    val scriptPath = File("chaos-experiments/scripts/")
+    println("Fetch script from folder ${scriptPath.absolutePath}")
+
+    scriptPath.listFiles{ file -> file.extension == "sh" }!!
+            .map { it.name }
+            .filterNot { it.contains("utils") }
+            .forEach { script ->
+        println("Start worker with type `$script`")
+        zeebeClient.newWorker().jobType(script).handler(::handler).open()
     }
+
+    latch.await()
 }
 
 fun handler(client: JobClient, activatedjob: ActivatedJob) {
