@@ -80,6 +80,22 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>1.4.10</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.zeebe</groupId>
+            <artifactId>zeebe-client-java</artifactId>
+            <version>0.26.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
     </dependencies>
 
 </project>
