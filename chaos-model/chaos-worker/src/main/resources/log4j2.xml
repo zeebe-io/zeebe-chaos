@@ -10,6 +10,7 @@ xsi:schemaLocation="http://logging.apache.org/log4j/2.0/config https://raw.githu
 <Loggers>
   <Logger name="io.zeebe.bpmnspec" level="trace"/>
   <Logger name="io.zeebe" level="info"/>
+  <Logger name="io.zeebe.client.job.poller" level="error"/>
   <Root level="error">
     <AppenderRef ref="Console"/>
   </Root>

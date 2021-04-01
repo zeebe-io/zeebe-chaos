@@ -30,6 +30,7 @@ fun main(args: Array<String>) {
 
 fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
     val clusterPlan = activatedjob.variablesAsMap["clusterPlan"]!!.toString()
+    println("Read experiments for cluster plan: $clusterPlan")
 
     val clusterPlanDir = File("$ROOT_PATH/camunda-cloud/$clusterPlan")
 
@@ -41,11 +42,10 @@ fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
 }
 
 fun handler(client: JobClient, activatedjob: ActivatedJob) {
-    val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
 
+    val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
     val command = provider["path"]!!.toString()
     val scriptPath = File("$ROOT_PATH/scripts/")
-    println("Path: ${scriptPath.absolutePath}")
 
     val rootCommand = "$scriptPath/$command"
     val commandList = mutableListOf(rootCommand)
@@ -66,6 +66,7 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
         }
     }
 
+    println("Commands to run: $commandList")
     val processBuilder = ProcessBuilder(commandList)
         .inheritIO()
         .directory(scriptPath)
