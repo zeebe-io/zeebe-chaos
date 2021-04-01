@@ -2,7 +2,10 @@ import io.zeebe.client.ZeebeClient
 import io.zeebe.client.api.response.ActivatedJob
 import io.zeebe.client.api.worker.JobClient
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.CountDownLatch
+
+const val ROOT_PATH="../../chaos-experiments"
 
 fun main(args: Array<String>) {
 
@@ -11,7 +14,7 @@ fun main(args: Array<String>) {
     val zeebeClient = ZeebeClient.newClientBuilder().usePlaintext().build()
     println("Connected to ${zeebeClient.configuration.gatewayAddress}")
 
-    val scriptPath = File("chaos-experiments/scripts/")
+    val scriptPath = File("$ROOT_PATH/scripts/")
     println("Fetch script from folder ${scriptPath.absolutePath}")
 
     scriptPath.listFiles{ file -> file.extension == "sh" }!!
@@ -22,7 +25,20 @@ fun main(args: Array<String>) {
         zeebeClient.newWorker().jobType(script).handler(::handler).open()
     }
 
+    zeebeClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
     latch.await()
+}
+
+fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
+    val clusterPlan = activatedjob.variablesAsMap["clusterPlan"]!!.toString()
+
+    val clusterPlanDir = File("$ROOT_PATH/$clusterPlan")
+
+    val experiments = clusterPlanDir.listFiles()!!.map {
+        Files.readString(File(it, "experiment.json").toPath())
+    }
+
+    client.newCompleteCommand(activatedjob.key).variables(mapOf("experiments" to experiments)).send()
 }
 
 fun handler(client: JobClient, activatedjob: ActivatedJob) {
@@ -36,7 +52,7 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
 
 
     val command = provider["path"]!!.toString()
-    val scriptPath = File("../../chaos-experiments/scripts/")
+    val scriptPath = File("$ROOT_PATH/scripts/")
     println("Path: ${scriptPath.absolutePath}")
 
     val processBuilder = ProcessBuilder("$scriptPath/$command")
