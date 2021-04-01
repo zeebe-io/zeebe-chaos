@@ -32,17 +32,17 @@ fun main(args: Array<String>) {
 fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
     val clusterPlan = activatedjob.variablesAsMap["clusterPlan"]!!.toString()
 
-    val clusterPlanDir = File("$ROOT_PATH/$clusterPlan")
+    val clusterPlanDir = File("$ROOT_PATH/camunda-cloud/$clusterPlan")
 
     val experiments = clusterPlanDir.listFiles()!!.map {
         Files.readString(File(it, "experiment.json").toPath())
     }
 
-    client.newCompleteCommand(activatedjob.key).variables(mapOf("experiments" to experiments)).send()
+    client.newCompleteCommand(activatedjob.key).variables("{\"experiments\": $experiments}").send()
 }
 
 fun handler(client: JobClient, activatedjob: ActivatedJob) {
-    println(activatedjob.variablesAsMap)
+//    println(activatedjob.variablesAsMap)
     val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
 
     val args = provider["arguments"]
@@ -50,14 +50,16 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
         println("Arguments: $it")
     }
 
-
     val command = provider["path"]!!.toString()
     val scriptPath = File("$ROOT_PATH/scripts/")
     println("Path: ${scriptPath.absolutePath}")
 
-    val processBuilder = ProcessBuilder("$scriptPath/$command")
+    val rootCommand = "$scriptPath/$command"
+    val commands = args?.let { listOf(rootCommand, it.toString()) } ?: listOf(rootCommand)
+    val processBuilder = ProcessBuilder(commands)
         .inheritIO()
         .directory(scriptPath)
+
     processBuilder.environment().put("CHAOS_SETUP", "helm");
     val process = processBuilder.start()
     val exitValue = process.waitFor()
