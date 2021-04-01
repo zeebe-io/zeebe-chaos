@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_06vr52u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.10.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_06vr52u" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.11.0">
   <bpmn:process id="chaosExperiment" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Run Chaos Experiment">
       <bpmn:outgoing>Flow_1pafdp2</bpmn:outgoing>
@@ -14,7 +14,7 @@
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1pafdp2</bpmn:incoming>
       <bpmn:outgoing>Flow_0wcimpy</bpmn:outgoing>
-      <bpmn:multiInstanceLoopCharacteristics isSequential="true" >
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
         <bpmn:extensionElements>
           <zeebe:loopCharacteristics inputCollection="=steadyState.probes" inputElement="probe" />
         </bpmn:extensionElements>
@@ -24,6 +24,9 @@
     <bpmn:serviceTask id="Activity_0xf717t" name="Introduce Chaos">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="chaosIntroduction" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=action.provider" target="provider" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0wcimpy</bpmn:incoming>
       <bpmn:outgoing>Flow_1pvnuxd</bpmn:outgoing>
@@ -37,6 +40,9 @@
     <bpmn:serviceTask id="Activity_13pbj3v" name="Steady State Hypothesis">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="steadyState" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=probe.provider" target="provider" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1pvnuxd</bpmn:incoming>
       <bpmn:outgoing>Flow_023z0vj</bpmn:outgoing>
@@ -53,21 +59,21 @@
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="chaosExperiment">
-      <bpmndi:BPMNEdge id="Flow_1pafdp2_di" bpmnElement="Flow_1pafdp2">
-        <di:waypoint x="215" y="117" />
-        <di:waypoint x="270" y="117" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0wcimpy_di" bpmnElement="Flow_0wcimpy">
-        <di:waypoint x="370" y="117" />
-        <di:waypoint x="430" y="117" />
+      <bpmndi:BPMNEdge id="Flow_023z0vj_di" bpmnElement="Flow_023z0vj">
+        <di:waypoint x="690" y="117" />
+        <di:waypoint x="752" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1pvnuxd_di" bpmnElement="Flow_1pvnuxd">
         <di:waypoint x="530" y="117" />
         <di:waypoint x="590" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_023z0vj_di" bpmnElement="Flow_023z0vj">
-        <di:waypoint x="690" y="117" />
-        <di:waypoint x="752" y="117" />
+      <bpmndi:BPMNEdge id="Flow_0wcimpy_di" bpmnElement="Flow_0wcimpy">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="430" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pafdp2_di" bpmnElement="Flow_1pafdp2">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="99" width="36" height="36" />
