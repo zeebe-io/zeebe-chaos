@@ -20,7 +20,7 @@
           <zeebe:input source="=experiment.title" target="title" />
           <zeebe:input source="=experiment.description" target="description" />
           <zeebe:input source="=experiment.`steady-state-hypothesis`" target="steadyState" />
-          <zeebe:input source="=experiments.method" target="method" />
+          <zeebe:input source="=experiment.method" target="method" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_19dyj0t</bpmn:incoming>
