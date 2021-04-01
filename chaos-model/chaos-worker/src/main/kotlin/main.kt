@@ -52,7 +52,6 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
 
     val args = provider["arguments"]
     args?.let {
-        println("Arguments: $it")
         when (it) {
             is List<*> -> {
                 commandList.addAll(it as List<String>)
@@ -68,7 +67,6 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
 
     println("Commands to run: $commandList")
     val processBuilder = ProcessBuilder(commandList)
-        .inheritIO()
         .directory(scriptPath)
 
     processBuilder.environment()["CHAOS_SETUP"] = "helm";
@@ -80,6 +78,9 @@ fun handler(client: JobClient, activatedjob: ActivatedJob) {
         client.newCompleteCommand(activatedjob.key).send()
     }
     else {
-        client.newFailCommand(activatedjob.key).retries(0).send();
+        val output = String(process.inputStream.readAllBytes())
+        val errorOutput = String(process.errorStream.readAllBytes())
+        val errorMessage = "Expected to run $commandList, but failed. Standard output: '$output' standard error: '$errorOutput'"
+        client.newFailCommand(activatedjob.key).retries(0).errorMessage(errorMessage).send();
     }
 }
