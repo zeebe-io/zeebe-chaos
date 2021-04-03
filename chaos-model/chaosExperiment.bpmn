@@ -23,7 +23,7 @@
     <bpmn:sequenceFlow id="Flow_0wcimpy" sourceRef="Activity_0hu4x4p" targetRef="Activity_0xf717t" />
     <bpmn:serviceTask id="Activity_0xf717t" name="Introduce Chaos">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="chaosIntroduction" />
+        <zeebe:taskDefinition type="=action.provider.path" />
         <zeebe:ioMapping>
           <zeebe:input source="=action.provider" target="provider" />
         </zeebe:ioMapping>
@@ -39,7 +39,7 @@
     <bpmn:sequenceFlow id="Flow_1pvnuxd" sourceRef="Activity_0xf717t" targetRef="Activity_13pbj3v" />
     <bpmn:serviceTask id="Activity_13pbj3v" name="Steady State Hypothesis">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="steadyState" />
+        <zeebe:taskDefinition type="=probe.provider.path" />
         <zeebe:ioMapping>
           <zeebe:input source="=probe.provider" target="provider" />
         </zeebe:ioMapping>
