@@ -22,7 +22,7 @@ In order to understand this blogpost make sure that you have a little understand
 
 ## Previous Chaos Automation 
 
-In the previous Chaos Days I described that we use [ChaosToolkit](https://chaostoolkit.org/) to run our chaos experiments. The chaos experiments have as prerequisite that an Zeebe cluster is already running, on which they should be executed. ChaosToolkit needs uses specific DSL to execute Chaos Experiments. An example experiment looks like the following:
+In the previous Chaos Days I described that we use [ChaosToolkit](https://chaostoolkit.org/) to run our chaos experiments. The chaos experiments have as prerequisite that an Zeebe cluster is already running, on which they should be executed. ChaosToolkit needs/uses a specific DSL to execute Chaos Experiments. An example experiment looks like the following:
 
 ```json
 {
@@ -76,7 +76,7 @@ In the previous Chaos Days I described that we use [ChaosToolkit](https://chaost
 
 The DSL describes a chaos experiment where a follower of partition one is terminated, and where we expect that we can create a process instance before and after this termination. The follower termination should not affect our steady state.
 
-In the json structure we can see the defined steady state of the Zeebe Cluster and the method/action which should be executed (the chaos which should be injected). The defined steady state is verified at the beginning of the experiment and at the end, after the methods are executed. The execution logic is quite simple. You can also define rollback actions, which should be executed if the experiment fails. Timeouts can be defined for each action and probe. Since the chaos toolkit is written in Python you can reference python modules/functions, which should be called during execution. Additionally, it supports Bash scripts, which we normally use. These scripts are sometimes not easy to understand and to maintain. 
+In the json structure we can see the defined steady state of the Zeebe Cluster and the method/action which should be executed (the chaos which should be injected). The defined steady state is verified at the beginning of the experiment and at the end, after the methods are executed. The execution logic is quite simple. You can also define rollback actions, which should be executed if the experiment fails. Timeouts can be defined for each action and probe. Since the chaos toolkit is written in Python you can reference python modules/functions, which should be called during execution. Additionally, it supports Bash scripts, which we normally use. These scripts are sometimes not easy to understand and to maintain. This is one of the reason why we already thought more than once to replace the ChaosToolkit with something different.
 
 The Chaos Toolkit has more features and extensions, but these are not used by us. 
 
@@ -127,38 +127,43 @@ With our Hackday Project we had two goals:
     
 For that we wanted to replace chaos toolkit with a BPMN Process, which should be executed by Zeebe. We wanted to stick with the experiment description (the chaostoolkit/openchaos DSL) for our chaos experiments.
 
-We modeled two processes. One root process which reads for the specific cluster plan all experiments and run then each experiment, this is done via a multi instance call activity.
+We modeled two processes. One root process, which reads for the specific cluster plan all experiments and runs then each experiment. This is done via a multi instance call activity.
 
 ![ChaosOutput]({{ site.baseurl }}/assets/2021-04-01/chaosToolkit.png)
 
 The other process model is used for the real chaos experiment execution. As the chaos toolkit execution itself was quite simple, the resulting bpmn model is as well. All activities are
-sequential multi instances, since we can have multiple probes/actions for the steady state, but also for the injection of chaos. On the root level of the process we have an interrupting event sub process to timeout the chaos experiment if it takes to long.
+sequential multi instances, since we can have multiple probes/actions for the steady state, but also for the injection of chaos. On the root level of the process we have an interrupting event sub process to timeout the chaos experiment if the experiment takes to long.
 
 ![ChaosExperiment]({{ site.baseurl }}/assets/2021-04-01/chaosExperiment.png)
 
-The payload of the process instances are our defined chaos experiment in json, which we have seen earlier. In this DSL we have all information we need to orchestrate this experiment.
+As payload of the process instances we have the defined chaos experiment in json, which we have seen earlier. In this DSL we have all information we need to orchestrate this experiment.
 
-We implemented two Kotlin workers, one to read all experiment files and one to execute the scripts which are referenced in the chaos experiment descriptions. You can fine the code [here](https://github.com/zeebe-io/zeebe-chaos/tree/master/chaos-model/chaos-worker), it is just 100 lines long.
+We have implemented two Kotlin workers, one to read all experiment files and one to execute the scripts, which are referenced in the chaos experiment descriptions. You can find the code [here](https://github.com/zeebe-io/zeebe-chaos/tree/master/chaos-model/chaos-worker), it is just 100 lines long.
 
 ### Results
 
-We orchestrated via Camunda Cloud and the created the process models, against another Zeebe cluster the follower and leader termination and graceful shutdown experiments successfully.
+We orchestrated the follower and leader termination and graceful shutdown experiments via Camunda Cloud and the created the process models. The experiments have been executed against another Zeebe cluster successfully.
 
-PICTURE
+![success]({{ site.baseurl }}/assets/2021-04-01/success-run.png)
 
-In the tests we have run we also failed an experiment to see how does it look like in operate or simple monitor. As we can see the observability improved here a lot. We are able to understand why it failed based on the error message, since the complete error output is printed here and we can see the progress of the process instance in running the chaos experiment. 
+To see how we improved the observability we also provoked an experiment to fail. 
 
-FAILURE PICTURE
+**FAILURE PICTURE**
 
-With these models we were able to completely replace the chaos toolkit usage, so remove an additional dependency.
+An timeout of an experiment will look like this:
+
+![timeout]({{ site.baseurl }}/assets/2021-04-01/timeout-run.png)
+
+As we can see the observability improved here a lot. We are able to understand why it failed based on the error message, since the complete error output is printed and we can see the progress of the process instance in running the chaos experiment. 
+
+With these models we were able to completely replace the chaos toolkit usage, so in the end we can remove an additional dependency.
 
 ### Further Work
 
-We plan to extend this, such that we replace step by step the current worker, which calls the scripts, by workers which have the logic inside. For example with go or kotlin workers. This should improve the adoption further. 
+We plan to extend this, such that we replace step by step the current worker, which calls the scripts, by workers which have the script logic inside. For example with workers written in go or kotlin. This should improve the adoption further. 
 
-For simplicity and to make progress we modeled quite generic process models, which are feed with the chaos experiment dsl. In future we could also think of modeling the chaos experiments directly as bpmn model.
+For simplicity and to make progress we modeled quite generic process models, which are feed with the chaos experiment DSL. In the future we can also think of modeling the chaos experiments directly as BPMN model.
 
-
-Thanks to [Peter](https://github.com/pihme) for giving me the impulse and [Philipp](https://github.com/saig0) which worked with me on this Hackday project.
+Thanks to [Peter](https://github.com/pihme) for giving me the impulse and his awesome work on `testbench` and [Philipp](https://github.com/saig0) which worked with me on this Hackday project.
 
 {% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
