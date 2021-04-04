@@ -8,7 +8,7 @@ author: Christopher Zell ([@zelldon](https://github.com/zelldon))
 
 # BPMN meets Chaos Engineering
 
-On the first of April (2021) we ran our Spring Hackday at Camunda. This time we wanted to orchestrate our Chaos Experiments with BPMN. If you already know how we automated our chaos experiments before, you can skip the next section
+On the first of April (2021) we ran our Spring Hackday at Camunda. This is an event where the developers at camunda come together to work on projects they like or on new ideas/approaches they want to try out. This time we ([Philipp](https://github.com/saig0) and [me](https://github.com/zelldon)) wanted to orchestrate our Chaos Experiments with BPMN. If you already know how we automated our chaos experiments before, you can skip the next section
 and jump directly to the [Hackday Project section](#hackday-project).
 
 In order to understand this blogpost make sure that you have a little understanding of Zeebe, Camunda Cloud and Chaos Engineering. Read the following resources to get a better understanding.
@@ -22,7 +22,7 @@ In order to understand this blogpost make sure that you have a little understand
 
 ## Previous Chaos Automation 
 
-In the previous Chaos Days I described that we use [ChaosToolkit](https://chaostoolkit.org/) to run our chaos experiments. The chaos experiments have as prerequisite that an Zeebe cluster is already running, on which they should be executed. ChaosToolkit needs/uses a specific DSL to describe and execute Chaos Experiments. An example experiment looks like the following:
+In the previous Chaos Day summaries I described that we use [ChaosToolkit](https://chaostoolkit.org/) to run our chaos experiments. The chaos experiments have as prerequisite that an Zeebe cluster is already running, on which they should be executed. ChaosToolkit needs/uses a specific DSL to describe and execute Chaos Experiments. An example experiment looks like the following:
 
 ```json
 {
@@ -142,7 +142,7 @@ We have implemented two Kotlin workers, one to read all experiment JSON files an
 
 ### Results
 
-We orchestrated the follower and leader termination and graceful shutdown experiments via Camunda Cloud and the created the process models. The experiments have been executed against another Zeebe cluster successfully.
+We orchestrated the follower/leader termination and graceful shutdown experiments via Camunda Cloud and the created process models. The experiments have been executed against another Zeebe cluster successfully.
 
 ![success]({{ site.baseurl }}/assets/2021-04-01/success-run.png)
 
@@ -164,7 +164,9 @@ With these models we were able to completely replace the `chaosToolkit` usage, s
 
 ### Further Work
 
-We plan to extend this, such that we replace step by step the current worker, which calls the scripts, by workers which have the script logic inside. For example with workers written in go or kotlin. This should improve the adoption and maintainability further.
+Next step would be to integrate this in `testbench`, such that we can replace the old `chaos worker`.
+
+Furthermore, we plan to replace step by step the new worker, which calls the scripts, by workers which have the script logic inside. For example with workers written in go or kotlin. This should improve the adoption and maintainability further.
 
 For simplicity and to make progress we modeled quite generic process models, which are feed with the chaos experiment DSL. In the future we can also think of modeling the chaos experiments directly as BPMN model.
 
