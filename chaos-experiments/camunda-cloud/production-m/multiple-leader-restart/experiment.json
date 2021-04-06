@@ -47,16 +47,50 @@
             }
         },
         {
-            "ref": "All pods should be ready"
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "verify-readiness.sh",
+                "timeout": 900
+            }
         },
         {
-            "ref": "Terminate leader of partition one"
+            "type": "action",
+            "name": "Terminate leader of partition one",
+            "provider": {
+                "type": "process",
+                "path": "terminate-partition.sh",
+                "arguments": ["Leader", "1"],
+                "status": "0"
+            },
+            "pauses": {
+                "after": 5
+            }
         },
         {
-            "ref": "All pods should be ready"
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "verify-readiness.sh",
+                "timeout": 900
+            }
         },
         {
-            "ref": "Terminate leader of partition one"
+            "type": "action",
+            "name": "Terminate leader of partition one",
+            "provider": {
+                "type": "process",
+                "path": "terminate-partition.sh",
+                "arguments": ["Leader", "1"],
+                "status": "0"
+            },
+            "pauses": {
+                "after": 5
+            }
         }
     ],
     "rollbacks": []
