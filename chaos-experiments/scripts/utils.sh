@@ -4,7 +4,12 @@ CHAOS_SETUP=${CHAOS_SETUP:-"cloud"}
 
 function getNamespace()
 {
- namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+  if [ -z "${NAMESPACE}" ]
+  then
+   namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+  else
+   namespace=$NAMESPACE
+  fi
  echo "$namespace"
 }
 
