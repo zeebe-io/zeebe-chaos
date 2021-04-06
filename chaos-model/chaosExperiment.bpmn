@@ -48,7 +48,7 @@
       <bpmn:outgoing>Flow_023z0vj</bpmn:outgoing>
       <bpmn:multiInstanceLoopCharacteristics isSequential="true">
         <bpmn:extensionElements>
-          <zeebe:loopCharacteristics inputCollection="=steady-state-hypothesis.probes" inputElement="probe" />
+          <zeebe:loopCharacteristics inputCollection="=steadyState.probes" inputElement="probe" />
         </bpmn:extensionElements>
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:serviceTask>
