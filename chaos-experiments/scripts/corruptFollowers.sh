@@ -32,9 +32,9 @@ function corruptSnapshot() {
     return 1
   fi
 
-  kubectl cp "$corruptFollowersScript" "$follower":/usr/local/zeebe/corrupting.sh -n "$namespace"
-  kubectl exec "$follower" -- ls -la
-  kubectl exec "$follower" -- ./corrupting.sh "$partition" -n "$namespace"
+  kubectl -n "$namespace" cp "$corruptFollowersScript" "$follower":/usr/local/zeebe/corrupting.sh
+  kubectl -n "$namespace" exec "$follower" -- ls -la
+  kubectl -n "$namespace" exec "$follower" -- ./corrupting.sh "$partition"
 }
 
 for follower in $followers
