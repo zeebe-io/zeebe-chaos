@@ -17,17 +17,18 @@ function deployModel() {
 
   for i in {1..5}
   do
-    retryUntilSuccess deployBothModels
-  done
-}
-
-function deployBothModels() {
     # the models differ in one line, the share the same name and process id
     # if we deploy them after another it will create two different deployment versions
     # the deploy command only compares the last applied deployment - so we can do that in a loop to cause
     # multiple deployments
     kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel.bpmn --insecure
-    kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel_v2.bpmn --insecure
+    if [ $? -eq 0 ]
+    then
+      kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel_v2.bpmn --insecure
+    else
+      return 1 # if the previous deployment failed we need to retry from the begining
+    fi
+  done
 }
 
 retryUntilSuccess deployModel
