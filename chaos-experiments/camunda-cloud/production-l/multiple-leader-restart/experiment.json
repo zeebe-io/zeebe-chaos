@@ -20,7 +20,7 @@
                 }
             },
             {
-                "name": "Should be able to create workflow instances on partition one",
+                "name": "Should be able to create process instances on partition one",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
@@ -54,7 +54,7 @@
             }
         },
         {
-            "name": "Should be able to create workflow instances on partition one",
+            "name": "Should be able to create process instances on partition one",
             "type": "probe",
             "tolerance": 0,
             "provider": {
@@ -85,7 +85,7 @@
             }
         },
         {
-            "name": "Should be able to create workflow instances on partition one",
+            "name": "Should be able to create process instances on partition one",
             "type": "probe",
             "tolerance": 0,
             "provider": {

@@ -306,5 +306,5 @@
 #  message = false
 #  messageSubscription = false
 #  raft = false
-#  workflowInstance = true
-#  workflowInstanceSubscription = false
+#  processInstance = true
+#  processInstanceSubscription = false

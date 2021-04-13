@@ -70,7 +70,7 @@
         },
         {
             "type": "probe",
-            "name": "Create workflow instance of latest version on partition one",
+            "name": "Create process instance of latest version on partition one",
             "tolerance": 0,
             "provider": {
                 "type": "process",
@@ -81,7 +81,7 @@
         },
         {
             "type": "probe",
-            "name": "Create workflow instance of latest version on partition two",
+            "name": "Create process instance of latest version on partition two",
             "tolerance": 0,
             "provider": {
                 "type": "process",
@@ -92,7 +92,7 @@
         },
         {
             "type": "probe",
-            "name": "Create workflow instance of latest version on partition three",
+            "name": "Create process instance of latest version on partition three",
             "tolerance": 0,
             "provider": {
                 "type": "process",
