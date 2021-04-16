@@ -21,7 +21,7 @@
         }
       },
       {
-        "name": "Should be able to create workflow instances",
+        "name": "Should be able to create process instances",
         "type": "probe",
         "tolerance": 0,
         "provider": {

@@ -42,7 +42,7 @@
             }
         },
         {
-                "name": "Should be able to create a workflow and await the message correlation",
+                "name": "Should be able to create a process and await the message correlation",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
