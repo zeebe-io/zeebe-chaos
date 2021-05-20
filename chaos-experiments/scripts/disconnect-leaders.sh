@@ -29,6 +29,7 @@ then
     # We could try to kill the pod and hope that he is not able to become leader again,
     # but there is a high chance that it is able to do so after restart. It can make our test fragile,
     # especially if we want to connect again, which is the reason why we do nothing in that case.
+    echo "Skip disconnecting leaders for simplicity."
     exit
   fi
 fi
