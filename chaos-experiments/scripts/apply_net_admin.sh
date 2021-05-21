@@ -10,3 +10,4 @@ CLUSTERID=${namespace%-zeebe}
 
 kubectl patch zb "$CLUSTERID" --type merge --patch='{"spec":{"controller":{"reconcileDisabled":true}}}'
 kubectl patch statefulset zeebe -n "$namespace" --patch "$(cat $scriptPath/net_admin_patch.yaml)"
+kubectl delete pod -l "$(getLabel)"
