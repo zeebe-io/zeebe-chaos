@@ -13,17 +13,19 @@ function getNamespace()
  echo "$namespace"
 }
 
+function getLabel() {
+  if [ "${CHAOS_SETUP}" == "cloud" ]; then
+    echo "app.kubernetes.io/app=zeebe"
+  else
+    echo "app.kubernetes.io/component=broker"
+  fi
+}
+
 function runOnAllBrokers()
 {
   namespace=$(getNamespace)
 
-  if [ "${CHAOS_SETUP}" == "cloud" ]
-  then
-    pods=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/app=zeebe -o jsonpath="{.items[*].metadata.name}")
-#    count=$(kubectl get pods -n "$namespace" -l app.kubernetes.io/app=zeebe --output json | jq '.items | length')
-  else
-    pods=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/component=broker -o jsonpath="{.items[*].metadata.name}")
-  fi
+  pods=$(kubectl get pod -n "$namespace" -l  "$(getLabel)" -o jsonpath="{.items[*].metadata.name}")
 
   set +e
   for pod in $pods
@@ -38,11 +40,7 @@ function getBroker()
   index=${1:-0}
 
   namespace=$(getNamespace)
-  if [ "${CHAOS_SETUP}" == "cloud" ]; then
-    pod=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/app=zeebe -o jsonpath="{.items[$index].metadata.name}")
-  else
-    pod=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/component=broker -o jsonpath="{.items[$index].metadata.name}")
-  fi
+  pod=$(kubectl get pod -n "$namespace" -l "$(getLabel)" -o jsonpath="{.items[$index].metadata.name}")
 
   echo "$pod"
 }
