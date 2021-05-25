@@ -236,4 +236,6 @@ Operate was not operating normal, the exceptions were not expected.
 
 It seems that changing the time on INT, causes some unexpected problems for Operate. We need to investigate that further and resolve them before we can continue here and make that an automated test. Furthermore, we need to investigate how problematic it is that our exporting lags behind, which is related to [zeebe#6747](https://github.com/camunda-cloud/zeebe/issues/6747), and how we can resolve that.
 
+In general, we saw that Zeebe has no real issues with time shifts and that timers can be triggered by changing the underlying system time. Still we should make sure that our containers are running on UTC time nodes (which we do), such that we avoid issues with daylight saving time.
+
 {% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
