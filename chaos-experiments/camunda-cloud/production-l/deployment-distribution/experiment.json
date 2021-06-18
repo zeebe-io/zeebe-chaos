@@ -48,7 +48,7 @@
             "name": "Create network partition between leaders",
             "provider": {
                 "type": "process",
-                "path": "disconnect-leaders.sh"
+                "path": "disconnect-leaders-one-way.sh"
             }
         },
         {
