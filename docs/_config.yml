@@ -27,23 +27,76 @@ url: "zeebe-io.github.io" # the base hostname & protocol for your site, e.g. htt
 twitter_username: ChristopherZell
 github_username:  zelldon
 markdown: kramdown
+
+
 # Build settings
-theme: plainwhite
+#theme: plainwhite
 #remote_theme: samarsault/plainwhite-jekyll
+  #plugins:
+  #  - jekyll-feed
+  #  - jemoji
+  #  - jekyll-include-cache
+
+  #plainwhite:
+  #  dark_mode: true
+  #  name: Zeebe Chaos Days
+  #  tagline: Chaos Engineering meets Zeebe
+  # date_format: "%b %-d, %Y"
+  #  portfolio_image: "assets/zeebe-logo.png"
+  #  social_links:
+  # twitter: zeebeHQ
+  # github: zeebe-io
+
+
+remote_theme: mmistakes/minimal-mistakes@4.24.0
+
 plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
   - jekyll-feed
   - jemoji
+  - jekyll-include-cache
 
-plainwhite:
-  dark_mode: true
-  name: Zeebe Chaos Days
-  tagline: Chaos Engineering meets Zeebe
-  date_format: "%b %-d, %Y"
-  portfolio_image: "assets/zeebe-logo.png"
-  social_links:
-    twitter: zeebeHQ
-    github: zeebe-io
 
+
+author:
+  name   : "Christopher Zell"
+  avatar : "/assets/zeebe-logo.png"
+  bio    : "There're no problems, only challenges."
+  links:
+    - label: "Zeebe Docs"
+      icon: "fas fa-fw fa-link"
+      url: "https://docs.camunda.io/docs/product-manuals/zeebe/zeebe-overview"
+    - label: "Twitter"
+      icon: "fab fa-fw fa-twitter-square"
+      url: "https://twitter.com/ChristopherZell"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/zeebe-io/zeebe-chaos"
+
+footer:
+  links:
+    - label: "Twitter"
+      icon: "fab fa-fw fa-twitter-square"
+      url: "https://twitter.com/ChristopherZell"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/zeebe-io/zeebe-chaos"
+
+minimal_mistakes_skin: dirt
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: true
+      share: true
+      related: true
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
