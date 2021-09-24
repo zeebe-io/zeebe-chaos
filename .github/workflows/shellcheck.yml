@@ -15,3 +15,5 @@ jobs:
       uses: ludeeus/action-shellcheck@master
       with:
         scandir: './chaos-experiments/scripts'
+      env:
+        SHELLCHECK_OPTS: -x
