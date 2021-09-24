@@ -14,4 +14,4 @@ jobs:
     - name: Install xmllint
       run: sudo apt-get install shellcheck
     - name: Run shellcheck
-      run: shellcheck -x chaos-experiments/scripts/*
+      run: shellcheck -x chaos-experiments/scripts/* -P chaos-experiments/scripts/
