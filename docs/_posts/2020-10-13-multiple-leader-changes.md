@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Multiple Leader Changes"
 date:   2020-10-13
 categories: chaos_experiment broker

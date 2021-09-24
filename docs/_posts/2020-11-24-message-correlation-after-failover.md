@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Message Correlation after Failover"
 date:   2020-11-24
 categories: chaos_experiment broker bpmn

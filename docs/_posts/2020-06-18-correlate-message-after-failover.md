@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Correlate Message after failover"
 date:   2020-06-18
 categories: chaos_experiment bpmn

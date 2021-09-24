@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Slow Network"
 date:   2021-07-06
 categories: chaos_experiment broker network leader

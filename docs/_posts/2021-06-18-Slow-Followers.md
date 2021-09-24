@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Slow followers"
 date:   2021-06-18
 categories: chaos_experiment broker performance follower

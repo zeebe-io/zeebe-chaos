@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "TITLE"
 date:   YYYY-MM-DD
 categories: chaos_experiment bpmn

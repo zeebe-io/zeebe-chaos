@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "BPMN meets Chaos Engineering"
 date:   2021-04-03
 categories: chaos_experiment bpmn

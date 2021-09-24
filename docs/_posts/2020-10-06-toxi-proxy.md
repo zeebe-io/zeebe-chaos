@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Play around with ToxiProxy"
 date:   2020-10-06
 categories: chaos_experiment toxiProxy

@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Time travel Experiment"
 date:   2021-05-25
 categories: chaos_experiment broker time

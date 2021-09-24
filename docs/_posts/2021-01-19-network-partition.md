@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Network partitions"
 date:   2021-01-19
 categories: chaos_experiment broker network

@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "High CPU load on Standalone Gateway"
 date:   2020-06-11
 categories: chaos_experiment gateway

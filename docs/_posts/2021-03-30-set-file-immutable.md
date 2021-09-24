@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Set file immutable"
 date:   2021-03-30
 categories: chaos_experiment filesystem immutable

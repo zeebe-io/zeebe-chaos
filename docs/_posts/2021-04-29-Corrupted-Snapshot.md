@@ -1,5 +1,5 @@
 ---
-layout: post
+
 title:  "Corrupted Snapshot Experiment Investigation"
 date:   2021-04-29
 categories: chaos_experiment broker snapshots

@@ -1,8 +1,11 @@
 ---
-layout: post
 title:  "Old-Clients"
 date:   2021-09-23
-categories: chaos_experiment clients
+categories: 
+  - chaos_experiment
+  - clients
+tags:
+  - availability
 author: Christopher Zell ([@zelldon](https://github.com/zelldon))
 ---
 

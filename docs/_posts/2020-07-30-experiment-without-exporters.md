@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Experiment without Exporters"
 date:   2020-07-30
 categories: chaos_experiment exporters
