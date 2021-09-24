@@ -28,8 +28,8 @@ twitter_username: ChristopherZell
 github_username:  zelldon
 markdown: kramdown
 # Build settings
-#theme: plainwhite
-remote_theme: samarsault/plainwhite-jekyll
+theme: plainwhite
+#remote_theme: samarsault/plainwhite-jekyll
 plugins:
   - jekyll-feed
   - jemoji
