@@ -11,9 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Run ShellCheck
-      uses: ludeeus/action-shellcheck@master
-      with:
-        scandir: './chaos-experiments/scripts'
-      env:
-        SHELLCHECK_OPTS: -x
+    - name: Install xmllint
+      run: sudo apt-get install shellcheck
+    - name: Run shellcheck
+      run: shellcheck -x './chaos-experiments/scripts'
