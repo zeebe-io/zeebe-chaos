@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 (module.exports = {
   title: 'Zeebe Chaos',
   tagline: 'Chaos Day Summaries',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://zeebe-io.github.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -45,9 +45,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         },
         items: [
 
-          {to: '/blog', label: 'Chaos Summaries', position: 'left'},
+          {to: '/', label: 'Chaos Summaries', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/zeebe-io/zeebe-chaos',
             label: 'GitHub',
             position: 'right',
           },
@@ -64,7 +64,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                 href: 'https://stackoverflow.com/questions/tagged/zeebe',
               },
               {
-                label: 'Forum'
+                label: 'Forum',
                 href: 'https://forum.camunda.io/'
               },
               {

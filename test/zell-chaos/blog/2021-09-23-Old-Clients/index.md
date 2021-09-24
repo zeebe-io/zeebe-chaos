@@ -7,7 +7,7 @@ categories:
   - clients
 tags:
   - availability
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+authors: zell
 ---
 
 # Chaos Day Summary
@@ -48,14 +48,14 @@ second, it doesn't seem to make any effect. *Side note:* The
 [starters](https://github.com/camunda-cloud/zeebe/tree/develop/benchmarks/project) have been
 modified, such they only start instances without deploying the model.
 
-![old26-general]({{ site.baseurl }}/assets/2021-09-23/old26-general.png)
+![old26-general](old26-general.png)
 
 The drops we see in the processing are related to restart's.
 
 The gateway and grpc metrics doesn't indicate that more requests are sent. 
 
-![old26-grpc]({{ site.baseurl }}/assets/2021-09-23/old26-grpc.png)
-![old26-gateway]({{ site.baseurl }}/assets/2021-09-23/old26-gateway.png)
+![old26-grpc](old26-grpc.png)
+![old26-gateway](old26-gateway.png)
 
 If we take a look in the clients log, we can see that the request are failing because the RPC Method names have been changed between 0.26 and 1.0. 
 
@@ -72,15 +72,15 @@ In order to experiment a bit further I created a starter image with version 1.0 
 
 We can see in the metrics right after starting the starter that the throughput goes up and we can reach our 200 pi/s.
 
-![old10-general]({{ site.baseurl }}/assets/2021-09-23/old10-general.png)
+![old10-general](old10-general.png)
 
 We run the benchmark overnight, and we haven't seen any issues. Be aware that the throughput is calculated over the 24h which makes is lower than 200.
 
-![general]({{ site.baseurl }}/assets/2021-09-23/general.png)
+![general](general.png)
 
 Furthermore, taking a look at the resource consumption, especially at the gateway, gives no evidence that something wrong is going on.
 
-![res]({{ site.baseurl }}/assets/2021-09-23/res.png)
+![res](res.png)
 
 ### Result
 
@@ -90,4 +90,3 @@ We were able to confirm the hypothesis written in [zeebe-chaos#34](https://githu
 
 None this time :) 
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
