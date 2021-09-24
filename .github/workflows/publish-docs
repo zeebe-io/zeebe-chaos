@@ -20,15 +20,15 @@ jobs:
           node-version: 12
       - name: Install Dependencies
         run: |
-          cd docs
+          cd chaos-days
           npm ci
       - name: Build
         run: |
-          cd docs
+          cd chaos-days
           npm run build
       - name: Publish
         run: |
-          cd docs
+          cd chaos-days
           # Configure git client
           echo "Git repo - $REPO"
           echo "Git user - $GIT_USERNAME"
