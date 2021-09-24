@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
   title: 'Zeebe Chaos',
   tagline: 'Chaos Day Summaries',
   url: 'https://zeebe-io.github.io',
-  baseUrl: '/',
+  baseUrl: '/zeebe-chaos/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/zeebe-logo.png',
