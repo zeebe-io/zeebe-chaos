@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkzell_chaos=self.webpackChunkzell_chaos||[]).push([[535],{5641:function(e){e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Old-Clients","permalink":"/zeebe-chaos/2021/09/23/Old-Clients"}]}')}}]);
