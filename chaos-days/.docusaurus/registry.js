@@ -1,0 +1,15 @@
+export default {
+  '01a85c17': [() => import(/* webpackChunkName: '01a85c17' */ "@theme/BlogTagsListPage"), "@theme/BlogTagsListPage", require.resolveWeak("@theme/BlogTagsListPage")],
+  '13ae6271': [() => import(/* webpackChunkName: '13ae6271' */ "@site/blog/2021-09-23-Old-Clients/index.md"), "@site/blog/2021-09-23-Old-Clients/index.md", require.resolveWeak("@site/blog/2021-09-23-Old-Clients/index.md")],
+  '1f391b9e': [() => import(/* webpackChunkName: '1f391b9e' */ "@theme/MDXPage"), "@theme/MDXPage", require.resolveWeak("@theme/MDXPage")],
+  '2e801cce': [() => import(/* webpackChunkName: '2e801cce' */ "~blog/default/archive-3ef.json"), "~blog/default/archive-3ef.json", require.resolveWeak("~blog/default/archive-3ef.json")],
+  '393be207': [() => import(/* webpackChunkName: '393be207' */ "@site/src/pages/markdown-page.md"), "@site/src/pages/markdown-page.md", require.resolveWeak("@site/src/pages/markdown-page.md")],
+  '6875c492': [() => import(/* webpackChunkName: '6875c492' */ "@theme/BlogTagsPostsPage"), "@theme/BlogTagsPostsPage", require.resolveWeak("@theme/BlogTagsPostsPage")],
+  '814f3328': [() => import(/* webpackChunkName: '814f3328' */ "~blog/default/blog-post-list-prop-default.json"), "~blog/default/blog-post-list-prop-default.json", require.resolveWeak("~blog/default/blog-post-list-prop-default.json")],
+  '9e4087bc': [() => import(/* webpackChunkName: '9e4087bc' */ "@theme/BlogArchivePage"), "@theme/BlogArchivePage", require.resolveWeak("@theme/BlogArchivePage")],
+  'a5557bb9': [() => import(/* webpackChunkName: 'a5557bb9' */ "~blog/default/index.json"), "~blog/default/index.json", require.resolveWeak("~blog/default/index.json")],
+  'a6aa9e1f': [() => import(/* webpackChunkName: 'a6aa9e1f' */ "@theme/BlogListPage"), "@theme/BlogListPage", require.resolveWeak("@theme/BlogListPage")],
+  'b9cfdb00': [() => import(/* webpackChunkName: 'b9cfdb00' */ "~blog/default/tags-availability-c08.json"), "~blog/default/tags-availability-c08.json", require.resolveWeak("~blog/default/tags-availability-c08.json")],
+  'c1ff45eb': [() => import(/* webpackChunkName: 'c1ff45eb' */ "@site/blog/2021-09-23-Old-Clients/index.md?truncated=true"), "@site/blog/2021-09-23-Old-Clients/index.md?truncated=true", require.resolveWeak("@site/blog/2021-09-23-Old-Clients/index.md?truncated=true")],
+  'c573638f': [() => import(/* webpackChunkName: 'c573638f' */ "~blog/default/tags-tags-c2b.json"), "~blog/default/tags-tags-c2b.json", require.resolveWeak("~blog/default/tags-tags-c2b.json")],
+  'ccc49370': [() => import(/* webpackChunkName: 'ccc49370' */ "@theme/BlogPostPage"), "@theme/BlogPostPage", require.resolveWeak("@theme/BlogPostPage")],};
