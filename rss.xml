@@ -36,6 +36,20 @@
             <description><![CDATA[Recently we run a Game day where a lot of messages with high TTL have been stored in the state. This was based on an earlier incident, which we had seen in production. One suggested approach to resolve that incident was to increase the time, such that all messages are removed from the state. This and the fact that summer and winter time shifts can cause in other systems evil bugs, we wanted to find out how our system can handle time shifts. Phil joined me as participant and observer. There was a related issue which covers this topic as well, zeebe-chaos#3.]]></description>
         </item>
         <item>
+            <title><![CDATA[Corrupted Snapshot Experiment Investigation]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/04/29/Corrupted-Snapshot</link>
+            <guid>Corrupted Snapshot Experiment Investigation</guid>
+            <pubDate>Thu, 29 Apr 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[A while ago we have written an experiment, which should verify that followers are not able to become leader, if they have a corrupted snapshot. You can find that specific experiment here. This experiment was executed regularly against Production-M and Production-S Camunda Cloud cluster plans. With the latest changes, in the upcoming 1.0 release, we changed some behavior in regard to detect snapshot corruption on followers.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[BPMN meets Chaos Engineering]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/04/03/bpmn-meets-chaos-engineering</link>
+            <guid>BPMN meets Chaos Engineering</guid>
+            <pubDate>Sat, 03 Apr 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[On the first of April (2021) we ran our Spring Hackday at Camunda. This is an event where the developers at camunda come together to work on projects they like or on new ideas/approaches they want to try out. This time we (Philipp and me) wanted to orchestrate our Chaos Experiments with BPMN. If you already know how we automated our chaos experiments before, you can skip the next section]]></description>
+        </item>
+        <item>
             <title><![CDATA[Play around with ToxiProxy]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy</link>
             <guid>Play around with ToxiProxy</guid>

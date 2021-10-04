@@ -52,6 +52,28 @@
         </author>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Corrupted Snapshot Experiment Investigation]]></title>
+        <id>Corrupted Snapshot Experiment Investigation</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/04/29/Corrupted-Snapshot"/>
+        <updated>2021-04-29T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[A while ago we have written an experiment, which should verify that followers are not able to become leader, if they have a corrupted snapshot. You can find that specific experiment here. This experiment was executed regularly against Production-M and Production-S Camunda Cloud cluster plans. With the latest changes, in the upcoming 1.0 release, we changed some behavior in regard to detect snapshot corruption on followers.]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[BPMN meets Chaos Engineering]]></title>
+        <id>BPMN meets Chaos Engineering</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/04/03/bpmn-meets-chaos-engineering"/>
+        <updated>2021-04-03T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[On the first of April (2021) we ran our Spring Hackday at Camunda. This is an event where the developers at camunda come together to work on projects they like or on new ideas/approaches they want to try out. This time we (Philipp and me) wanted to orchestrate our Chaos Experiments with BPMN. If you already know how we automated our chaos experiments before, you can skip the next section]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Play around with ToxiProxy]]></title>
         <id>Play around with ToxiProxy</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy"/>
