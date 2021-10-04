@@ -1,9 +1,14 @@
 ---
-
+layout: posts
 title:  "Corrupted Snapshot Experiment Investigation"
 date:   2021-04-29
-categories: chaos_experiment broker snapshots
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories: 
+- chaos_experiment 
+- broker 
+- snapshots
+tags:
+- availability
+authors: zell
 ---
 
 # Chaos Day Summary
