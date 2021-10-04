@@ -3,7 +3,7 @@
 title:  "TITLE"
 date:   YYYY-MM-DD
 categories: chaos_experiment bpmn
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+authors: zell
 ---
 
 # Chaos Day Summary
