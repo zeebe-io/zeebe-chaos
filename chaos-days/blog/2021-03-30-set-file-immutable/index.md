@@ -1,9 +1,13 @@
 ---
-
+layout: posts
 title:  "Set file immutable"
 date:   2021-03-30
-categories: chaos_experiment filesystem immutable
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories: 
+  - chaos_experiment 
+  - filesystem 
+  - immutable
+
+authors: zell
 ---
 
 # Chaos Day Summary
