@@ -1,15 +1,21 @@
 ---
-
+layout: posts
 title:  "Slow Network"
 date:   2021-07-06
-categories: chaos_experiment broker network leader
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories:
+  - chaos_experiment
+  - broker
+  - network
+  - leader
+tags:
+  - availability
+authors: zell
 ---
 
 # Chaos Day Summary
 
 
-On a previous [Chaos Day]({{ site.baseurl }}{% link _posts/2020-10-06-toxi-proxy.md %}) we played around with [ToxiProxy](https://github.com/Shopify/toxiproxy) , which allows injecting failures on the network level. For example dropping packages, causing latency etc.
+On a previous [Chaos Day](../2020-10-06-toxi-proxy/index.md) we played around with [ToxiProxy](https://github.com/Shopify/toxiproxy) , which allows injecting failures on the network level. For example dropping packages, causing latency etc.
 
 Last week [@Deepthi](https://github.com/deepthidevaki) mentioned to me that we can do similar things with [tc](https://man7.org/linux/man-pages/man8/tc.8.html), which is a built-in linux command. Today I wanted to experiment with latency between leader and followers using `tc`.
 
@@ -58,17 +64,17 @@ In order to reduce the blast radius we will run the experiment with one partitio
 
  As we can see in the benchmark we are able to reach in avg. ~77 process instance creation and completions per second.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/general.png)
+![base](general.png)
 
 The process instance execution time (from start to end) is under 1 second.
-![base]({{ site.baseurl }}/assets/2021-07-06/latency.png)
+![base](latency.png)
 
 The commit latency is about 100 ms.
-![base]({{ site.baseurl }}/assets/2021-07-06/commit-lat.png)
+![base](commit-lat.png)
 
 We can see that one of the followers is a bit lagging behind, but not too far.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/raft-follower.png)
+![base](raft-follower.png)
 
 ##### 100 ms
 
@@ -107,31 +113,31 @@ qdisc netem 8001: dev eth0 root refcnt 2 limit 1000 delay 100.0ms
 
 Almost immediately we see a drop in our general section of the Grafana Dashboard.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-general.png)
+![base](100ms-general.png)
 
 The backpressure increased significantly. As expected the commit latency increased.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-commit-lat.png)
+![base](100ms-commit-lat.png)
 
 The processing latency as well.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-latency.png)
+![base](100ms-latency.png)
 
 It was unexpected that the throughput breaks down so much. We can see in the send request that a lot of the requests are ended with timeouts or with resource exhausted.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-grpc.png)
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-gateway.png)
+![base](100ms-grpc.png)
+![base](100ms-gateway.png)
 
 Interesting is that no worker is able to activate nor complete any job. This cause increasing of the running process instances, so the state is growing.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-running-proc.png)
+![base](100ms-running-proc.png)
 
 Taking a look at the raft metrics we see that this already caused some heartbeat misses, but no leader change.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-heartbeats.png)
+![base](100ms-heartbeats.png)
 
 
-![base]({{ site.baseurl }}/assets/2021-07-06/100ms-follower.png)
+![base](100ms-follower.png)
 
 The follower is now lagging far more behind. We can see in the logs that the Leader tries to send `InstallRequests`, but these are also timing out.
 
@@ -169,24 +175,22 @@ In order to verify whether 250 ms, will cause a leader election we reconfigured 
 After several minutes (~30) of running this configuration we were able to observe that one of the other followers missed heartbeats as well. This finally caused a leader change.
 
 
-![base]({{ site.baseurl }}/assets/2021-07-06/250ms-raft.png)
+![base](250ms-raft.png)
 
 The throughput came back, it was similar to what is was before.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/250ms-general.png)
+![base](250ms-general.png)
 
 The processing execution latency was higher than usual.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/250ms-latency.png)
+![base](250ms-latency.png)
 
 Similar to the commit latency, interesting to see such an affect caused by a follower with network issues.
 
-![base]({{ site.baseurl }}/assets/2021-07-06/250ms-commit-lat.png)
+![base](250ms-commit-lat.png)
 
 ### Result
 
 As written before the experiment failed, the hypothesis was not met. We were not able to add latency to the network, which is much lower than our deadlines (heartbeat timeout is 2.5 seconds), without causing any harm to our processing throughput/latency.
 
 Still we had some interesting observations we can use for our next experiments and insight which we need to consider on setting up Zeebe in environment where the network might be unreliable/slow.
-
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
