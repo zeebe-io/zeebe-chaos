@@ -1,9 +1,14 @@
 ---
-
+layout: posts
 title:  "Time travel Experiment"
 date:   2021-05-25
-categories: chaos_experiment broker time
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories: 
+  - chaos_experiment
+  - broker
+  - time 
+tags:
+  - data 
+authors: zell
 ---
 
 # Chaos Day Summary
@@ -88,13 +93,13 @@ Brokers:
 ```
 
 **On Broker 0 we increased the time by one hour.** After doing this we observed the metrics, but we haven't noticed any issues. We verified logs in stackdriver, but no errors were thrown.
-![inc-1-hour-general]({{ site.baseurl }}/assets/2021-05-25/inc-1-hour-general.png)
+![inc-1-hour-general](inc-1-hour-general.png)
 
 We noticed, looking at the metrics, that the snapshot was triggered when we moved the time forward. This was what we actually expected. Plus also new scheduled snapshot have been triggered and created.
-![inc-1-hour-snapshot]({{ site.baseurl }}/assets/2021-05-25/inc-1-hour-snapshot.png)
+![inc-1-hour-snapshot](inc-1-hour-snapshot.png)
 
 On the elastic exporter we can see that flushing has happened earlier than usual, because we increased the time. This was also expected.  
-![inc-1-hour-export]({{ site.baseurl }}/assets/2021-05-25/inc-1-hour-export.png)
+![inc-1-hour-export](inc-1-hour-export.png)
 
 **Experiment succeeded** :heavy_check_mark:
 
@@ -111,13 +116,13 @@ Broker 1 - zell-phil-chaos-zeebe-1.zell-phil-chaos-zeebe.zell-phil-chaos.svc.clu
 ```
 
 No general issues have been detected, as expected no longer snapshots were taken.
-![dec-1-hour-general]({{ site.baseurl }}/assets/2021-05-25/dec-1-hour-general.png)
+![dec-1-hour-general](dec-1-hour-general.png)
 
 We have run the benchmark for a bit longer, to see whether the snapshot will be triggered later, which was indeed the case.
-![dec-1-hour-snapshot-later]({{ site.baseurl }}/assets/2021-05-25/dec-1-hour-snapshot-later.png)
+![dec-1-hour-snapshot-later](dec-1-hour-snapshot-later.png)
 
 We could also observe how the journal segments increased until we took the next snapshot.
-![dec-1-hour-snapshot-segments]({{ site.baseurl }}/assets/2021-05-25/dec-1-hour-snapshot-segments.png)
+![dec-1-hour-snapshot-segments](dec-1-hour-snapshot-segments.png)
 
 **Experiment succeeded** :heavy_check_mark:
 
@@ -176,13 +181,13 @@ Tue May 25 10:55:01 UTC 2021
 ```
 
 In the general section of our Grafana Dashboard everything looks fine. We can't see any issues here, except that the exporting is much less than the processing.
-![int-inc-1-hour-general]({{ site.baseurl }}/assets/2021-05-25/int-inc-1-hour-general.png)
+![int-inc-1-hour-general](int-inc-1-hour-general.png)
 
 We took a closer look at the processing panels and saw that the exporter lag a lot behind, which causes Operate lagging behind and that fewer segments are deleted.
-![int-inc-1-hour-exporting]({{ site.baseurl }}/assets/2021-05-25/int-inc-1-hour-exporting.png)
+![int-inc-1-hour-exporting](int-inc-1-hour-exporting.png)
 
 On moving the time forward we see as expected the snapshotting has been triggered.
-![int-inc-1-hour-snapshot]({{ site.baseurl }}/assets/2021-05-25/int-inc-1-hour-snapshot.png)
+![int-inc-1-hour-snapshot](int-inc-1-hour-snapshot.png)
 
 Stackdriver shows no errors for the Zeebe service. But later, in operate we observed that no new data was imported after 11:50, we moved the time at 11:55 forward. In the logs we found the following exceptions, which need to be investigated further.
 
