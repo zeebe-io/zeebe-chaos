@@ -2,7 +2,10 @@
 layout: posts
 title:  "Fault-tolerant processing of process instances"
 date:   2021-03-09
-categories: chaos_experiment broker processing
+categories: 
+  - chaos_experiment 
+  - broker 
+  - processing
 authors: zell
 ---
 
@@ -222,5 +225,3 @@ function getIndexOfPodForPartitionInState()
 During running the chaos experiment and testing the scripts I realized that the timer start event is retriggered everytime I redeployed the exact deployment, which was kind of unexpected.
 I created a bug issue for that [zeebe#6515](https://github.com/camunda-cloud/zeebe/issues/6515).
 
-
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
