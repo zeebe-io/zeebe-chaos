@@ -14,5 +14,26 @@
             <pubDate>Thu, 23 Sep 2021 00:00:00 GMT</pubDate>
             <description><![CDATA[It has been awhile since the last post, I'm happy to be back.]]></description>
         </item>
+        <item>
+            <title><![CDATA[Slow Network]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/07/06/Slow-Network</link>
+            <guid>Slow Network</guid>
+            <pubDate>Tue, 06 Jul 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[On a previous Chaos Day we played around with ToxiProxy , which allows injecting failures on the network level. For example dropping packages, causing latency etc.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Full Disk Recovery]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/06/08/Full-Disk</link>
+            <guid>Full Disk Recovery</guid>
+            <pubDate>Tue, 08 Jun 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[On this chaos day we wanted to experiment with OOD recovery and ELS connection issues. This is related to the following issues from our hypothesis backlog: zeebe-chaos#32 and zeebe-chaos#14. This time @Nico joined me.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Play around with ToxiProxy]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy</link>
+            <guid>Play around with ToxiProxy</guid>
+            <pubDate>Tue, 06 Oct 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[First chaos day since my parental leave.]]></description>
+        </item>
     </channel>
 </rss>
