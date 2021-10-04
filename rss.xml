@@ -50,6 +50,13 @@
             <description><![CDATA[On the first of April (2021) we ran our Spring Hackday at Camunda. This is an event where the developers at camunda come together to work on projects they like or on new ideas/approaches they want to try out. This time we (Philipp and me) wanted to orchestrate our Chaos Experiments with BPMN. If you already know how we automated our chaos experiments before, you can skip the next section]]></description>
         </item>
         <item>
+            <title><![CDATA[Set file immutable]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/03/30/set-file-immutable</link>
+            <guid>Set file immutable</guid>
+            <pubDate>Tue, 30 Mar 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[This chaos day was a bit different. Actually I wanted to experiment again with camunda cloud and verify that our high load chaos experiments are now working with the newest cluster plans, see zeebe-cluster-testbench#135.]]></description>
+        </item>
+        <item>
             <title><![CDATA[Play around with ToxiProxy]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy</link>
             <guid>Play around with ToxiProxy</guid>

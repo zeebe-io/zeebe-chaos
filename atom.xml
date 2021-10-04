@@ -74,6 +74,17 @@
         </author>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Set file immutable]]></title>
+        <id>Set file immutable</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/03/30/set-file-immutable"/>
+        <updated>2021-03-30T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[This chaos day was a bit different. Actually I wanted to experiment again with camunda cloud and verify that our high load chaos experiments are now working with the newest cluster plans, see zeebe-cluster-testbench#135.]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Play around with ToxiProxy]]></title>
         <id>Play around with ToxiProxy</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy"/>
