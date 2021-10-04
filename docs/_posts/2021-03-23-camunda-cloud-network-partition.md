@@ -1,5 +1,5 @@
 ---
-
+layout: posts
 title:  "Camunda Cloud network partition"
 date:   2021-03-23
 categories: chaos_experiment camunda_cloud network

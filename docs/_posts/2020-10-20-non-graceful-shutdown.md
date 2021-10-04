@@ -1,5 +1,5 @@
 ---
-
+layout: posts
 title:  "Non-graceful Shutdown Broker"
 date:   2020-10-20
 categories: chaos_experiment broker

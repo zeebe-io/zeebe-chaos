@@ -1,5 +1,5 @@
 ---
-
+layout: posts
 title:  "Disconnect Leader and one Follower"
 date:   2021-01-07
 categories: chaos_experiment broker bpmn

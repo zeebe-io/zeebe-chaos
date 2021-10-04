@@ -1,5 +1,5 @@
 ---
-
+layout: posts
 title:  "Fault-tolerant processing of process instances"
 date:   2021-03-09
 categories: chaos_experiment broker processing
