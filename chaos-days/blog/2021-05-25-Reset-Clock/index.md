@@ -243,4 +243,4 @@ It seems that changing the time on INT, causes some unexpected problems for Oper
 
 In general, we saw that Zeebe has no real issues with time shifts and that timers can be triggered by changing the underlying system time. Still we should make sure that our containers are running on UTC time nodes (which we do), such that we avoid issues with daylight saving time.
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

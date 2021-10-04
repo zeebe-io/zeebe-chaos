@@ -176,4 +176,4 @@ For simplicity and to make progress we modeled quite generic process models, whi
 
 **Thanks to [Peter](https://github.com/pihme) for giving the impulse and his awesome work on `testbench` and [Philipp](https://github.com/saig0) which worked with me on this Hackday project.**
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

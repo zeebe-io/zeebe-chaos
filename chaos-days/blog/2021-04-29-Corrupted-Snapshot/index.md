@@ -225,4 +225,4 @@ One problem with this approach we have if we actually fix the bug above, where w
 
  * Broker is not shutting down properly [camunda-cloud/zeebe#6702](https://github.com/camunda-cloud/zeebe/issues/6702)
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

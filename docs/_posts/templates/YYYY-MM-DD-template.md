@@ -18,4 +18,4 @@ authors: zell
 
 ## Found Bugs
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

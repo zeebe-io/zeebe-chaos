@@ -277,4 +277,4 @@ We saw that snapshots are created, but the Snapshot replication panel show no da
 The JVM panel has the legend on the right side, which makes it hard to see the metrics if you have multiple windows open on one screen.
 
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

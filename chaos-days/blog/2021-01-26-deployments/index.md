@@ -313,4 +313,4 @@ Further possible experiments would be to restart the leader of partition one to 
 
 During the experiment we have observed some leader changes. It needs to be investigated further, whether this was related to the deployments or something different. It is probably also interesting to see how it behaves with larger deployments, also resource consumption wise.
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+

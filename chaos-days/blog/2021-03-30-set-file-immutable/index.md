@@ -147,4 +147,4 @@ We need to investigate this issue [camunda-cloud/zeebe#6702](https://github.com/
  * Zbctl human output looks broken [#6692](https://github.com/camunda-cloud/zeebe/issues/6692)
  * Broker is not correctly shutdown [#6702](https://github.com/camunda-cloud/zeebe/issues/6702)
 
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
+
