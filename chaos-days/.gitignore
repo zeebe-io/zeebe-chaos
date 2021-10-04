@@ -1,4 +1,4 @@
 # ignore build folder
 build/
-
+node_modules/
 .docusaurus/
