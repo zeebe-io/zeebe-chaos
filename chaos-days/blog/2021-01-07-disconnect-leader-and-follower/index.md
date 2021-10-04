@@ -218,7 +218,7 @@ function getIndexOfPodForPartitionInState()
 }
 ```
 
-The previous function worked only with homogeneous clusters, which means where the partitions are equally distributed. This caused issues on experiments on Production L clusters, where partitions are heterogeneous distributed, see related issue [zeebe-io/zeebe-cluster-testbench#154](/testbehttps://github.com/zeebe-io/zeebe-cluster-testbench/issues/154). With this new utility we can create some new experiments also for Production - L clusters.
+The previous function worked only with homogeneous clusters, which means where the partitions are equally distributed. This caused issues on experiments on Production L clusters, where partitions are heterogeneous distributed, see related issue [zeebe-io/zeebe-cluster-testbench#154](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/154). With this new utility we can create some new experiments also for Production - L clusters.
 
 I wrote a new script based on the [older disconnect/connect gateway scripts](https://github.com/zeebe-io/zeebe-chaos/blob/master/chaos-experiments/scripts/disconnect-standalone-gateway.sh), where we disconnect the gateway with the brokers. The new one disconnects an leader for an partition with the follower and vice-versa.
 
