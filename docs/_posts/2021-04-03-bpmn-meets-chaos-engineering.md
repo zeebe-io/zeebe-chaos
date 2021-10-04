@@ -88,7 +88,7 @@ The experiment above is just one experiment of our continuous growing collection
 
 Chaos experiments need to be executed continously, not only once. For that we have build an automated pipeline, which runs the chaos experiments every night or if requested. We did that with help of the [Zeebe Cluster Testbench](https://github.com/zeebe-io/zeebe-cluster-testbench), we call it just `testbench`. The `testbench` creates for each cluster plan, in camunda cloud, a Zeebe cluster and runs the corresponding experiments against these clusters. The process model looks quite simple.
 
-![chaos-test]({{ site.baseurl }}/assets/2021-04-01/chaos-test.png)
+![chaos-test](chaos-test.png)
 
 It is executed via a [zbctl chaos worker](https://github.com/zeebe-io/zeebe-cluster-testbench/tree/develop/core/chaos-workers), which is part of the `testbench`. The `chaos worker` polls for new jobs at the `testbench`. On new jobs it executes, based on the cluster plan, against the given/created Zeebe cluster the chaos experiments, via the `chaostoolkit`.
 
@@ -106,15 +106,15 @@ With the `chaosToolkit` we had an additional dependency. If you want to implemen
 
 Due to our setup it was a bit more challenging todo the root cause analysis.
 
-![ChaosOutput]({{ site.baseurl }}/assets/2021-04-01/ChaosOutput.png)
+![ChaosOutput](ChaosOutput.png)
 
 We run a `zbctl` worker in a docker image, which picks up the `chaos` typed jobs. An `zbctl` worker will complete jobs with the output of the called handler script. This means that everything, which you want to log, needs to be logged in a separate file. The `chaosToolkit` will print its output into an own log file. The output of the bash scripts, which are executed by the `chaosToolkit`, will also end in that `chaosToolkit.log` file. I tried to visualize this a bit with the image above.
 
-![chaos-test]({{ site.baseurl }}/assets/2021-04-01/failed-chaos-experiment-testbench.png)
+![chaos-test](failed-chaos-experiment-testbench.png)
 
 If the chaos worker completes a job, the process instance in `testbench` is continued. If a chaos experiment fails, then the job is still completed normally, but with an error result. In the process instance execution this means that a different path is taken. The `testbench` will write a slack notification to a specific channel, such that the current Zeebe medic can look at it. 
 
-![run-test]({{ site.baseurl }}/assets/2021-04-01/run-test-in-camunda-cloud.png)
+![run-test](run-test-in-camunda-cloud.png)
 
 After the notification the medic needs to find out which experiment has failed, this is part of the payload of the completed job at least, but he also needs to find out why the experiment failed. For this root cause analysis he has to check the log of the `chaostoolkit`, which is stored somewhere in the chaos worker pod (`data/chaostoolkit.log` it is an ever growing log).
 
@@ -129,12 +129,12 @@ For that we wanted to replace `chaosToolkit` with a BPMN Process, which should b
 
 We modeled two processes. One root process, which reads for a given cluster plan all experiments and runs then each experiment. This is done via a [multi instance](https://docs.camunda.io/docs/0.25/product-manuals/zeebe/bpmn-workflows/multi-instance/multi-instance/) [call activity](https://docs.camunda.io/docs/reference/bpmn-workflows/call-activities/call-activities/).
 
-![ChaosOutput]({{ site.baseurl }}/assets/2021-04-01/chaosToolkit.png)
+![ChaosOutput](chaosToolkit.png)
 
 The other process model is used for the real chaos experiment execution. As the `chaosToolkit` execution itself was quite simple, the resulting BPMN model is as well. All activities are
 sequential multi instances, since we can have multiple probes/actions for the steady state, but also for the injection of chaos. On the root level of the process we have an interrupting [event sub process](https://docs.camunda.io/docs/reference/bpmn-workflows/event-subprocesses/event-subprocesses/) to timeout the chaos experiment if the experiment takes to long.
 
-![ChaosExperiment]({{ site.baseurl }}/assets/2021-04-01/chaosExperiment.png)
+![ChaosExperiment](chaosExperiment.png)
 
 As payload of the process instances we have the defined chaos experiment in JSON, which we have seen earlier. In this JSON we have all information we need to orchestrate this experiment.
 
@@ -144,19 +144,19 @@ We have implemented two Kotlin workers, one to read all experiment JSON files an
 
 We orchestrated the follower/leader termination and graceful shutdown experiments via Camunda Cloud and the created process models. The experiments have been executed against another Zeebe cluster successfully.
 
-![success]({{ site.baseurl }}/assets/2021-04-01/success-run.png)
+![success](success-run.png)
 
 To see how we improved the observability, we provoked an experiment to fail. Operate shows use via an incident that an experiment failed, and exactly at which step. 
 
-![failure]({{ site.baseurl }}/assets/2021-04-01/fail-run.png)
+![failure](fail-run.png)
 
 We can even see the standard output and error output of the executed script in operate, without searching different log files.
 
-![failuremsg]({{ site.baseurl }}/assets/2021-04-01/fail-run-output.png)
+![failuremsg](fail-run-output.png)
 
 An timeout of an experiment will look like this:
 
-![timeout]({{ site.baseurl }}/assets/2021-04-01/timeout-run.png)
+![timeout](timeout-run.png)
 
 As we can see the observability improved here a lot. We are able to understand why it failed based on the error message, since the complete error output is printed, and we can see the progress of the process instance on running the chaos experiment. 
 

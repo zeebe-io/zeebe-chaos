@@ -86,8 +86,8 @@ This time we look at an already existing experiment. I will run our normal setup
 ```
 
 As written before we have our normal benchmark setup and I will run the referenced scripts manually and observe the behavior via grafana. The panels below show the base or steady state.
-![before-general]({{ site.baseurl }}/assets/2021-04-29/before-general.png)
-![before-snap]({{ site.baseurl }}/assets/2021-04-29/before-snap.png)
+![before-general](before-general.png)
+![before-snap](before-snap.png)
 
 
 The first script we will run, corrupts for a certain partition the snapshots of all followers. It does it via just simply deleting some `*.sst` files.
@@ -125,21 +125,21 @@ pod "zell-chaos-zeebe-1" deleted
 
 On the first try we had the "luck" that there was a snapshot replication in between, such that the follower was able to become Leader, since it had again a valid snapshot. 
 
-![luck-general]({{ site.baseurl }}/assets/2021-04-29/luck-general.png)
-![luck-replication]({{ site.baseurl }}/assets/2021-04-29/luck-replication.png)
+![luck-general](luck-general.png)
+![luck-replication](luck-replication.png)
 
 On the second try we were actually able to reproduce the behavior we want to see. We have corrupted the snapshot and restarted the Leader and the partition can make only progress - if the previous leader comes back. This is because the others have a corrupted snapshot and can't take over.
 
-![no-luck-restart-general]({{ site.baseurl }}/assets/2021-04-29/no-luck-restart-general.png)
-![no-luck-restart]({{ site.baseurl }}/assets/2021-04-29/no-luck-restart.png)
+![no-luck-restart-general](no-luck-restart-general.png)
+![no-luck-restart](no-luck-restart.png)
 
 In all cases above we were able to make progress. The issue now arises when one of the affected follower is restarted. For our experiment I restarted Broker-2, which was at this point in time follower for Partition 3. After I restarted the follower it first looked like the partition one was completely down.
 
-![follower-restart-partition-1]({{ site.baseurl }}/assets/2021-04-29/follower-restart-partition-1.png)
+![follower-restart-partition-1](follower-restart-partition-1.png)
 
 After serveral minutes the system recovered and continued.
 
-![follower-restart-partition-1-cont]({{ site.baseurl }}/assets/2021-04-29/follower-restart-partition-1-cont.png)
+![follower-restart-partition-1-cont](follower-restart-partition-1-cont.png)
 
 Via Grafana but also via `kubectl` we can see that the pod doesn't become ready again.
 
@@ -210,7 +210,7 @@ With this current behavior we could easily fix the snapshot corruption experimen
 
 I tried this and it worked, after some minutes the Broker-2 was able to come back.
 
-![success-after-fix.png]({{ site.baseurl }}/assets/2021-04-29/success-after-fix.png)
+![success-after-fix.png](success-after-fix.png)
 
 Why does it work you may ask. If we remove the corrupted partition data from the follower and restart it, then it will join the cluster with an empty state. The Leader for that partition will immediately replicate the snapshot for that partition, such that the follower is up to date again. This allows the follower then to bootstrap without issues again.
 

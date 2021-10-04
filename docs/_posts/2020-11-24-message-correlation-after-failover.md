@@ -25,7 +25,7 @@ We expect that even due to a leader change messages can be correlated to a workf
 
 The process is quite simple, we just have one intermediate message catch event and we will create an new instance and await the result. With that we make sure that the message was correlated correctly.
 
-![oneReceiveMsgEvent]({{ site.baseurl }}/assets/2020-11-24/oneReceiveMsgEvent.png)
+![oneReceiveMsgEvent](oneReceiveMsgEvent.png)
 
 On testing the separate scripts I had at the begining problems with the `awaitResult`. I got always timeouts.
 
@@ -35,7 +35,7 @@ command terminated with exit code 1
 + echo 'Failed to execute: '\''awaitInstance'\''. Retry.'
 ```
 
-![operate]({{ site.baseurl }}/assets/2020-11-24/operate.png)
+![operate](operate.png)
 
 Via operate nor via zbctl it is easy to find out what is the real issue. I'm not able to see any details regarding the intermediate message catch event in operate. With help of [zdb](https://github.com/Zelldon/zdb) I was able to track down the issue. The time to live was to small. The published messages have been already deleted before I created the corresponding workflow instancs. Per default the time to live is `5s` with `zbctl`. It is not easy to find out why the message doesn't correlate. After setting the `ttl` quite high it works and I can run my experiment successfully.
 

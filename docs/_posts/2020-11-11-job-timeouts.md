@@ -53,8 +53,8 @@ I setup an Production S cluster in camunda cloud. Deployed an normal starter, wh
 I experienced a lot of pod restarts during the experiment, but at 3 pm the processor seems to handle the situation correctly and has no problems with so many events.
 
 
-![timebomb]({{ site.baseurl }}/assets/2020-11-11/timeout-bomb.png)
-![timebomb-general]({{ site.baseurl }}/assets/2020-11-11/timeout-bomb-general.png)
+![timebomb](timeout-bomb.png)
+![timebomb-general](timeout-bomb-general.png)
 
 ## Related issues
 
@@ -88,7 +88,7 @@ After adding the worker name it works, but begins with lot of resource exhausted
 
 ## Pod restarts
 
-![preempt]({{ site.baseurl }}/assets/2020-11-11/preemptions.png)
+![preempt](preemptions.png)
 
 Every 10 min it seems to be a node dying, which causes resource exhausted then.
 

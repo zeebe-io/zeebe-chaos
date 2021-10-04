@@ -25,7 +25,7 @@ We expect if we partition two followers away that one part of the cluster can st
 
 ### Actual
 
-![general]({{ site.baseurl }}/assets/2021-01-19/general.png)
+![general](general.png)
 
 When partitioning two followers, this means we would have two groups. First group would be Broker-0 and Broker-1, the second group contains then Broker-2, Broker-3 and Broker-4. I adjusted the disconnect script from the last chaos day a bit. It looks now like this:
 
@@ -91,34 +91,34 @@ retryUntilSuccess disconnect "$broker4" "$broker1Ip"
 ```
 
 
-![general-network-partition]({{ site.baseurl }}/assets/2021-01-19/general-network-partition-0.png)
+![general-network-partition](general-network-partition-0.png)
 
 It works quite well, we can see that another broker took over the leadership and continues with processing. We reach almost the same throughput, interesting is that the activate job requests seem to scale up, which is totally unexpected! We drop now 82% of our requests because we are overloaded with activate job requests.
 
-![growing-request-network-partition]({{ site.baseurl }}/assets/2021-01-19/growing-requests-network-partition-0.png)
+![growing-request-network-partition](growing-requests-network-partition-0.png)
 
 In the atomix section we can see that the both nodes, which are partitioned away, miss a lot of heatbeats and we can see the leader change, which has happened earlier.
-![atomix-network-partition]({{ site.baseurl }}/assets/2021-01-19/atomix-network-partition-0.png)
+![atomix-network-partition](atomix-network-partition-0.png)
 
 Quite early after the network partition a node preemption happened.
 
-![node-died]({{ site.baseurl }}/assets/2021-01-19/node-died-0.png)
+![node-died](node-died-0.png)
 
 We see that the processing completely stops, two reasons here: one is that the gateway was restarted and another is that the leader was restarted and we lost quourum, since we already have the network partition in place. After the restart the Broker-4 actually should know again the other nodes, which is why the heartbeat misses stopped.
 
-![atomix-after-restart]({{ site.baseurl }}/assets/2021-01-19/atomix-after-restart.png)
+![atomix-after-restart](atomix-after-restart.png)
 
 After the Broker comes back the processing started again.
 
-![new-start-broker-4]({{ site.baseurl }}/assets/2021-01-19/new-start-broker-4.png)
+![new-start-broker-4](new-start-broker-4.png)
 
 As mentioned earlier the grpc requests increased significantly, we now drop 100% of the requests. We have ~3k incoming activate job requests.
 
-![grpc-after-restart]({{ site.baseurl }}/assets/2021-01-19/grpc-after-restart.png)
+![grpc-after-restart](grpc-after-restart.png)
 
 Some time later we can see that the grpc requests has stabilized again.
 
-![grpc-stabilized]({{ site.baseurl }}/assets/2021-01-19/grpc-stabilized.png)
+![grpc-stabilized](grpc-stabilized.png)
 
 This should be investigated further, but we will stop here with this experiment since it worked as expected that we kept processing even if we partition two brokers away.
 
@@ -136,19 +136,19 @@ Again same set up, 5 nodes, one partition and replication factor 3. I'm using th
 
 We can see no difference in processing throughput after setting up the network partition again.
 
-![new-partition]({{ site.baseurl }}/assets/2021-01-19/new-partition.png)
+![new-partition](new-partition.png)
 
 Furthermore, the grpc requests seem to be stable, so it must be something related to the gateway or leader restart.
 
-![new-grpc]({{ site.baseurl }}/assets/2021-01-19/new-grpc.png)
+![new-grpc](new-grpc.png)
 
 When we take a look at the atomix metrics we see that both brokers are missing heartbeats, which is expected. 
 
-![new-heartbeats]({{ site.baseurl }}/assets/2021-01-19/new-heartbeats.png)
+![new-heartbeats](new-heartbeats.png)
 
 Node preemption wanted to annoy me again... Broker 2 was restarted, because of node preemption. Since we had no quorum, a new election was started. Broker-2 came back voted for Broker-3, but missed soon also heartbeats, so it started an election again and became leader, because it was able to talk with all nodes again. This was not what we wanted to test, but it is nice to know that it works :laughing:
 
-![second-restart]({{ site.baseurl }}/assets/2021-01-19/second-restart.png)
+![second-restart](second-restart.png)
 
 So again, I re-deployed the cluster and created a snapshot by hand (via API).
 
@@ -165,7 +165,7 @@ On the leader we send the POST request to take a snapshot.
 
 We can see in the metrics that a snapshot was taken (probably two, because I accidently executed the command twice).
 
-![snapshot.png]({{ site.baseurl }}/assets/2021-01-19/snapshot.png)
+![snapshot.png](snapshot.png)
 
 For the Broker 2 we check whether it already received the snapshot:
 
@@ -193,7 +193,7 @@ After that, we start with the disconnection to group two and connect Broker-2 to
 
 We can see that we now have no leader at all, because I missed to connect the first group with Broker-2 in the reverse and disconnecting group 2 from Broker-2.
 
-![network-partition-happening.png]({{ site.baseurl }}/assets/2021-01-19/network-partition-happening.png)
+![network-partition-happening.png](network-partition-happening.png)
 
 After doing so:
 
@@ -208,19 +208,19 @@ retryUntilSuccess connect "$broker1" "$broker2Ip"
 
 We can see in the logs but also in the metrics that snapshots are replicated to Broker-0 and Broker-1.
 
-![snapshot-metrics.png]({{ site.baseurl }}/assets/2021-01-19/snapshot-metrics.png)
+![snapshot-metrics.png](snapshot-metrics.png)
 
 I would expect that we also see something in the atomix snapshot panels, but here it looks like only the duration is published.
 
-![atomix-snapshot-metrics.png]({{ site.baseurl }}/assets/2021-01-19/atomix-snapshot-metrics.png)
+![atomix-snapshot-metrics.png](atomix-snapshot-metrics.png)
 
 After connecting the Broker's we see that Broker-0 and Broker-1 are not missing heartbeats anymore and that a new leader has been chosen, Broker-2 which was the expected leader! 
 
-![after-connect-all.png]({{ site.baseurl }}/assets/2021-01-19/after-connect-all.png)
+![after-connect-all.png](after-connect-all.png)
 
 The processing started and cluster seem to look healthy again.
 
-![healed.png]({{ site.baseurl }}/assets/2021-01-19/healed.png)
+![healed.png](healed.png)
 
 Experiment was successful! :+1:
 

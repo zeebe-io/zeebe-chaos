@@ -308,7 +308,7 @@ After running this experiment we get the following output, which shows us that t
 
 I executed the new experiment via zeebe testbench, to verify that this works with the `Production - M` cluster plan and it was successful :muscle:
 
-![operate]({{ site.baseurl }}/assets/2021-02-23/operate-success.png)
+![operate](operate-success.png)
 
 ```json
 {"results":["production-m/deployment-distribution/experiment.json completed successfully","production-m/follower-restart/experiment.json completed successfully","production-m/follower-terminate/experiment.json completed successfully","production-m/leader-restart/experiment.json completed successfully","production-m/leader-terminate/experiment.json completed successfully","production-m/msg-correlation/experiment.json completed successfully","production-m/multiple-leader-restart/experiment.json completed successfully","production-m/snapshot-corruption/experiment.json completed successfully","production-m/stress-cpu-on-broker/experiment.json completed successfully","production-m/worker-restart/experiment.json completed successfully"]}

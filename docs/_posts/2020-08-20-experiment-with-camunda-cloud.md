@@ -34,21 +34,21 @@ In the following table I want to highlight the different configurations of the d
 
 | Name | Our Default | Prod S | Prod M | Prod L |
 |------|-------------|--------|--------|--------|
-|General|![base]({{ site.baseurl }}/assets/2020-08-20/base.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-s-general.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-m-general.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-l-general.png)|
-|Resources|![base]({{ site.baseurl }}/assets/2020-08-20/base-res.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-s-res.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-m-res.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-l-res.png)|
-|Disk usage||![prods]({{ site.baseurl }}/assets/2020-08-20/prod-s-disk.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-m-disk.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-l-disk.png)|
-|Latency|![base]({{ site.baseurl }}/assets/2020-08-20/base-latency.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-s-latency.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-m-latency.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-l-latency.png)|
-|Working|![base]({{ site.baseurl }}/assets/2020-08-20/base.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-s-working.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-m-working.png)|![prods]({{ site.baseurl }}/assets/2020-08-20/prod-l-working.png)|
+|General|![base](base.png)|![prods](prod-s-general.png)|![prods](prod-m-general.png)|![prods](prod-l-general.png)|
+|Resources|![base](base-res.png)|![prods](prod-s-res.png)|![prods](prod-m-res.png)|![prods](prod-l-res.png)|
+|Disk usage||![prods](prod-s-disk.png)|![prods](prod-m-disk.png)|![prods](prod-l-disk.png)|
+|Latency|![base](base-latency.png)|![prods](prod-s-latency.png)|![prods](prod-m-latency.png)|![prods](prod-l-latency.png)|
+|Working|![base](base.png)|![prods](prod-s-working.png)|![prods](prod-m-working.png)|![prods](prod-l-working.png)|
 
 In general we can see that the clusters haven't survived long. This is also visible in our Camunda Cloud status page.
-![status]({{ site.baseurl }}/assets/2020-08-20/status.png)
+![status](status.png)
 
 I think it is kind of related with the preemtable nodes, high load, long restarts and that pods are restarted after 15 minutes, when there are not getting ready.
 One of the reasons why restarting takes so long is fixed now with [#5189](https://github.com/zeebe-io/zeebe/pull/5189) so I hope that this gets better. But currently it is an issue, since you start replicating a snapshot and reprocess on start up. If this takes longer then 15 min the pod will be restarted because of this configuration: `Liveness:   http-get http://:9600/ready delay=900s timeout=1s period=15s #success=1 #failure=3` after restarting the pod you haven't gained any value you just need to start again the complete procedure. In k8 we can see a high restart count of the pods.
 
 Interesting is if we take a look at the working part of Prod S then we clearly see how often actually a pod is preemted or leader change happens.
 
-![prod-s]({{ site.baseurl }}/assets/2020-08-20/prod-s-working.png)
+![prod-s](prod-s-working.png)
 
 It is a known issue that currently the nodes are preemted quite often in Camunda Cloud and they working on a solution to it.
 
@@ -66,11 +66,11 @@ During the benchmark observations I saw that some metrics are missing.
 
 For example the Gateway metrics are not shown:
 
-![gw]({{ site.baseurl }}/assets/2020-08-20/missing-gw-metrics.png)
+![gw](missing-gw-metrics.png)
 
 Furthermore I saw that all container related and pvc related metrics are missing. I was not able to check the IO metrics nor the CPU metrics and other.
 
-![io]({{ site.baseurl }}/assets/2020-08-20/missing-io.png)
+![io](missing-io.png)
 
 If we want to run more tests and chaos experiments we need to fix these missing metrics before. Opened a new issue for it [#242](https://github.com/camunda-cloud/monitoring/issues/242)
 

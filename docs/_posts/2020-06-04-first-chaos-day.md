@@ -18,7 +18,7 @@ categories: chaos_experiment broker
  * We run the experiment with 2 partitions and put really high CPU load on the Leader (internally in the pod), we expected that this will not impact the complete cluster. That at most we have a leader change because the leader is not able to send heartbeats in time. After removing the cpu load we should be back on our throughput base line, where we start and complete around 70 - 80 workflow instances per second.
  * The results where quite promising we had no leader change at all. The leader was able to send heartbeats in time and the backpressure did a good job and drop more requests. After reducing the cpu load we went back to our steady state. 
 
-![img]({{ site.baseurl }}/assets/2020-06-04/result-chaos.png)
+![img](result-chaos.png)
 
 ## Participants
 

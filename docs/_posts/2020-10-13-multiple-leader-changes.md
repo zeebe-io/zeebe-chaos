@@ -37,13 +37,13 @@ We were able to prove that our hypothesis is true. we are able to handle multipl
 
 In the metrics we can see the behavior during the experiment and also we can see that it becomes healthy at the end.
 
-![general.png]({{ site.baseurl }}/assets/2020-10-13/general.png)
+![general.png](general.png)
 
-![atomix.png]({{ site.baseurl }}/assets/2020-10-13/atomix.png)
+![atomix.png](atomix.png)
 
 I also run this with a cluster plan M cluster with the same results:
 
-![multiple.png]({{ site.baseurl }}/assets/2020-10-13/multiple.png)
+![multiple.png](multiple.png)
 
 #### Chaostoolkit
 
@@ -103,7 +103,7 @@ Put high load on the cluster for several minutes, via creating workflow instance
 
 We see that we already put some load on the cluster but it is not enough to exhaust the request limits and reach back pressure.
 
-![highload]({{ site.baseurl }}/assets/2020-10-13/highload.png)
+![highload](highload.png)
 
 We neeed to find a good way how put high load on the Zeebe cluster. We will continue on this.
 

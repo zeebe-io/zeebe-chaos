@@ -20,7 +20,7 @@ In order to continue here we need to explain how the workflow deployment and dis
 
 If you deploy a workflow and you have multiple partitions, Zeebe needs to make sure that all partitions eventually have the same version of the deployment. This is done with via the deployment distribution.
 
-![distribution]({{ site.baseurl }}/assets/2021-01-26/distribution.png)
+![distribution](distribution.png)
 
 On deploying a workflow via a client, like the java client, we send a deployment command to the gateway. The gateway sends the received deployment to the "deployment partition", which is partition one. The partition one is in charge of distributing the deployment. When the client receives a response for the deployment command, this means that the deployment is written/created on partition one. It doesn't mean that it is distributed to all other partitions. The distribution is done asynchronously. 
 
@@ -296,7 +296,7 @@ We see the deadline exceeded, because the processor is not able to send the resp
 
 The resource consumption around that time look ok. We can see that the memory spikes a bit, but it recovers later. On the CPU graph we can see when we connected the nodes again.
 
-![res]({{ site.baseurl }}/assets/2021-01-26/res.png))
+![res](res.png))
 
 ### Result
 

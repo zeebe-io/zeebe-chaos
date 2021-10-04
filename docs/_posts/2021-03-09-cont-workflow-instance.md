@@ -34,7 +34,7 @@ We want to verify whether the processing of process instances continues even if 
 
 Model will look like this:
 
-![model]({{ site.baseurl }}/assets/2021-03-09/chaosTimerStart.png))
+![model](chaosTimerStart.png))
 
 ### Experiment Definition
 
