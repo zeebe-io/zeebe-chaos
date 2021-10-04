@@ -15,7 +15,7 @@ authors: zell
 # Chaos Day Summary
 
 
-On a previous [Chaos Day](../2020-10-06-toxi-proxy/index.md) we played around with [ToxiProxy](https://github.com/Shopify/toxiproxy) , which allows injecting failures on the network level. For example dropping packages, causing latency etc.
+On a previous [Chaos Day](/2020-10-06-toxi-proxy/index.md) we played around with [ToxiProxy](https://github.com/Shopify/toxiproxy) , which allows injecting failures on the network level. For example dropping packages, causing latency etc.
 
 Last week [@Deepthi](https://github.com/deepthidevaki) mentioned to me that we can do similar things with [tc](https://man7.org/linux/man-pages/man8/tc.8.html), which is a built-in linux command. Today I wanted to experiment with latency between leader and followers using `tc`.
 

@@ -1,8 +1,13 @@
 ---
-
+layout: posts
 title:  "Play around with ToxiProxy"
 date:   2020-10-06
-categories: chaos_experiment toxiProxy
+categories: 
+  - chaos_experiment
+  - toxiProxy
+tags:
+  - tools
+authors: zell
 ---
 
 # Chaos Day Summary
