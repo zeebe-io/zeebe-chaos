@@ -12,8 +12,7 @@ authors: zell
 
 # Chaos Day Summary
 
-This time I wanted to automate a chaos experiment via the [ChaosToolkit](https://chaostoolkit.org/), which I did on the last chaos day. For a recap check out the [last chaos day summary](
-{{ site.baseurl }}{% link _posts/2021-01-26-deployments.md %}).
+This time I wanted to automate a chaos experiment via the [ChaosToolkit](https://chaostoolkit.org/), which I did on the last chaos day. For a recap check out the [last chaos day summary](/2021-01-26-deployments/index.md).
 
 **TL;DR;**
 

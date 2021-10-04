@@ -134,7 +134,7 @@ We have set up a Production S cluster in our chaos cluster and run the [cloud be
 #### How to change the time on INT
 
 On INT, it is not that simple to get the `SYS_TIME` capability, which we need to change the time. Luckily we already have experience, with getting the necessary capability we need to have.
-On a previous chaos day we have added `NET_ADMIN` capability to a running zeebe container in order to experiment with network partitioning, you can read about that [here]({{ site.baseurl }}{% link _posts/2021-03-23-camunda-cloud-network-partition.md %}).
+On a previous chaos day we have added `NET_ADMIN` capability to a running zeebe container in order to experiment with network partitioning, you can read about that [here](/2021-03-23-camunda-cloud-network-partition/index.md).
 
 The following patch adds the `SYS_TIME` cap to our linux container.
 ```yaml

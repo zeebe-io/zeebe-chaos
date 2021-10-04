@@ -15,7 +15,7 @@ authors: zell
 This chaos day was a bit different. Actually I wanted to experiment again with camunda cloud and verify that our high load chaos experiments are now working with the newest cluster plans, see [zeebe-cluster-testbench#135](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/135). 
 Unfortunately I found out that our test chaos cluster was in a way broken, that we were not able to create new clusters. Luckily this was fixed at the end of the day, thanks to @immi :) 
 
-Because of these circumstances I thought about different things to experiment with, and I remembered that in the [last chaos day]({{ site.baseurl }}{% link _posts/2021-03-23-camunda-cloud-network-partition.md %}) we worked with patching running deployments, in order to add more capabilities.
+Because of these circumstances I thought about different things to experiment with, and I remembered that in the [last chaos day](/2021-03-23-camunda-cloud-network-partition/index.md) we worked with patching running deployments, in order to add more capabilities.
 This allowed us to create ip routes and experiment with the zeebe deployment distribution. During this I have read the [capabilities list of linux](https://man7.org/linux/man-pages/man7/capabilities.7.html), and found out that we can mark files as immutable, which might be interesting for a chaos experiment.
 
 In this chaos day I planned to find out how marking a file immutable affects our brokers and I made the hypothesis that: *If a leader has a write error, which is not recoverable, it will step down and another leader should take over.* I put this in our hypothesis backlog ([zeebe-chaos#52](https://github.com/zeebe-io/zeebe-chaos/issues/52)). 
