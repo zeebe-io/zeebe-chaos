@@ -29,6 +29,13 @@
             <description><![CDATA[On this chaos day we wanted to experiment with OOD recovery and ELS connection issues. This is related to the following issues from our hypothesis backlog: zeebe-chaos#32 and zeebe-chaos#14. This time @Nico joined me.]]></description>
         </item>
         <item>
+            <title><![CDATA[Time travel Experiment]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/05/25/Reset-Clock</link>
+            <guid>Time travel Experiment</guid>
+            <pubDate>Tue, 25 May 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[Recently we run a Game day where a lot of messages with high TTL have been stored in the state. This was based on an earlier incident, which we had seen in production. One suggested approach to resolve that incident was to increase the time, such that all messages are removed from the state. This and the fact that summer and winter time shifts can cause in other systems evil bugs, we wanted to find out how our system can handle time shifts. Phil joined me as participant and observer. There was a related issue which covers this topic as well, zeebe-chaos#3.]]></description>
+        </item>
+        <item>
             <title><![CDATA[Play around with ToxiProxy]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy</link>
             <guid>Play around with ToxiProxy</guid>

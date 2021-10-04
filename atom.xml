@@ -41,6 +41,17 @@
         </author>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Time travel Experiment]]></title>
+        <id>Time travel Experiment</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/05/25/Reset-Clock"/>
+        <updated>2021-05-25T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Recently we run a Game day where a lot of messages with high TTL have been stored in the state. This was based on an earlier incident, which we had seen in production. One suggested approach to resolve that incident was to increase the time, such that all messages are removed from the state. This and the fact that summer and winter time shifts can cause in other systems evil bugs, we wanted to find out how our system can handle time shifts. Phil joined me as participant and observer. There was a related issue which covers this topic as well, zeebe-chaos#3.]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Play around with ToxiProxy]]></title>
         <id>Play around with ToxiProxy</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2020/10/06/toxi-proxy"/>

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkzell_chaos=self.webpackChunkzell_chaos||[]).push([[829],{869:function(a){a.exports=JSON.parse('{"allTagsPath":"/zeebe-chaos/tags","slug":"/zeebe-chaos/tags/data","name":"data","count":1,"permalink":"/zeebe-chaos/tags/data"}')}}]);
