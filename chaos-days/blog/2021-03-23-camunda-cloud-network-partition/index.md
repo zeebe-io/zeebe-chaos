@@ -2,7 +2,10 @@
 layout: posts
 title:  "Camunda Cloud network partition"
 date:   2021-03-23
-categories: chaos_experiment camunda_cloud network
+categories: 
+  - chaos_experiment
+  - camunda_cloud 
+  - network
 authors: zell
 ---
 
@@ -10,7 +13,7 @@ authors: zell
 
 This time [Deepthi](https://github.com/deepthidevaki) was joining me on my regular Chaos Day. :tada:
 
-[In the second last chaos day]({{ site.baseurl }}{% link _posts/2021-02-23-automate-deployments-dist.md %}) I created an automated chaos experiment, which verifies that the deployments are distributed after a network partition. Later it turned out that this doesn't work for camunda cloud, only for our helm setup. [The issue](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/237) was that on our camunda cloud zeebe clusters we had no [NET_ADMIN](https://man7.org/linux/man-pages/man7/capabilities.7.html) capability to create ip routes (used for the network partitions). After discussing with our SRE's they proposed a good way to overcome this. On running chaos experiments, which are network related, we will patch our target cluster to add this capability. This means we don't need to add such functionality in camunda cloud and the related zeebe operate/controller. Big thanks to [Immi](https://github.com/hisImminence) and [David](https://github.com/Faffnir) for providing this fix.
+[In the second last chaos day](/2021-02-23-automate-deployments-dist/index.md) I created an automated chaos experiment, which verifies that the deployments are distributed after a network partition. Later it turned out that this doesn't work for camunda cloud, only for our helm setup. [The issue](https://github.com/zeebe-io/zeebe-cluster-testbench/issues/237) was that on our camunda cloud zeebe clusters we had no [NET_ADMIN](https://man7.org/linux/man-pages/man7/capabilities.7.html) capability to create ip routes (used for the network partitions). After discussing with our SRE's they proposed a good way to overcome this. On running chaos experiments, which are network related, we will patch our target cluster to add this capability. This means we don't need to add such functionality in camunda cloud and the related zeebe operate/controller. Big thanks to [Immi](https://github.com/hisImminence) and [David](https://github.com/Faffnir) for providing this fix.
 
 
 **TL;DR;**
@@ -212,5 +215,3 @@ function connect() {
  fi
 }
 ```
-
-{% if page.author %}<sup>*Written by: {{page.author}}*</sup>{% endif %}
