@@ -1,9 +1,13 @@
 ---
-
+layout: posts
 title:  "BPMN meets Chaos Engineering"
 date:   2021-04-03
-categories: chaos_experiment bpmn
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories:
+  - chaos_experiment
+  - bpmn
+tags:
+  - tools
+authors: zell
 ---
 
 # BPMN meets Chaos Engineering
