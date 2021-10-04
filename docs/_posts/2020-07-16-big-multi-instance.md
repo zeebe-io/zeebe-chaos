@@ -1,4 +1,5 @@
 ---
+layout: posts
 title:  "Big Multi Instance"
 date:   2020-07-16
 categories: chaos_experiment bpmn

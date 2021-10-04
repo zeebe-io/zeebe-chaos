@@ -1,4 +1,5 @@
 ---
+layout: posts
 title:  "Gateway Network Partition"
 date:   2020-06-25
 categories: chaos_experiment gateway

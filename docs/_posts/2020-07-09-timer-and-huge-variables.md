@@ -1,4 +1,5 @@
 ---
+layout: posts
 title:  "Experiment with Timers and Huge Variables"
 date:   2020-07-09
 categories: chaos_experiment bpmn
