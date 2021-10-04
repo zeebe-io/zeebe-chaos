@@ -1,9 +1,14 @@
 ---
-
+layout: posts
 title:  "Full Disk Recovery"
 date:   2021-06-08
-categories: chaos_experiment broker disk
-author: Christopher Zell ([@zelldon](https://github.com/zelldon))
+categories:
+  - chaos_experiment 
+  - broker
+  - disk
+tags:
+  - availability 
+authors: zell
 ---
 
 # Chaos Day Summary
@@ -138,11 +143,11 @@ In this section we will describe how we experienced the chaos experiment and wha
 #### First Try
 We run the disconnect script and were able to observe that the exporting stopped. 
 
-![elastic-disconnect]({{ site.baseurl }}/assets/2021-06-08/elastic-disconnect.png)
+![elastic-disconnect](elastic-disconnect.png)
 
 As expected we were no longer able to compact, which cause an increasing of log segments.
 
-![increase-segments]({{ site.baseurl }}/assets/2021-06-08/increase-segments.png)
+![increase-segments](increase-segments.png)
 
 We realized that our current disk size might be too big (it would take a while until we fill it), so we decided to setup a new benchmark with smaller size and different watermarks.
 
@@ -163,43 +168,43 @@ pvcStorageClassName: ssd
 
 We thought that we might have different performance, because of such a smaller disk size, but this was not the case. We were able to reach the same level, might be worth to think about reducing the disk sizes more in our benchmarks.
 
-![base]({{ site.baseurl }}/assets/2021-06-08/next-try-base.png)
+![base](next-try-base.png)
 
 #### Second Try
 
-![base1]({{ site.baseurl }}/assets/2021-06-08/next-try-base1.png)
+![base1](next-try-base1.png)
 
 ##### Disconnecting
 
 After running our disconnect script we can immediately see that the exporting is stopping.
 
-![drop-base]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-base.png)
+![drop-base](next-try-drop-base.png)
 
 Interesting is the elastic section where we see one of our new panels in actions which shows the failure rate. There are two dots, which show the 100% failure rate.
 
-![drop-elastic]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-elastic-section.png)
+![drop-elastic](next-try-drop-elastic-section.png)
 
 After reaching our disk watermark we can see that the processing stops, and we no longer accept commands.
 
-![drop-base-2]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-base-2.png)
+![drop-base-2](next-try-drop-base-2.png)
 
 The cluster turns to unhealthy, which is expected.
 
 Interesting is that we have no metrics at all on the gateway side after reaching the watermark.
 
-![drop-gw]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-gw.png)
+![drop-gw](next-try-drop-gw.png)
 
 We were able to verify that snapshots are still taken, but no compaction.
 
-![drop-snapshot]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-snapshot.png)
+![drop-snapshot](next-try-drop-snapshot.png)
 
 No segments are deleted during this time.
 
-![drop-segments]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-segments.png)
+![drop-segments](next-try-drop-segments.png)
 
 If we take a look at the processing section we can see that the exporters lag way behind, which of course makes sense.
 
-![drop-processing]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-processing.png)
+![drop-processing](next-try-drop-processing.png)
 
 ##### Connecting
 
@@ -207,23 +212,23 @@ Luckily we were able to reuse on of our already written reconnect scripts for th
 
 After removing the ip route (connecting the Brokers with ELS again) we can see that it immediately starts to export again.
 
-![connect-base]({{ site.baseurl }}/assets/2021-06-08/next-try-connect-base.png)
+![connect-base](next-try-connect-base.png)
 
 When we went under the disk watermarks the processing started again and we accepted new commands.
 
 ### Result
 
-![connect-base2]({{ site.baseurl }}/assets/2021-06-08/next-try-connect-base2.png)
+![connect-base2](next-try-connect-base2.png)
 
 **The experiment was successful, our system was able to recover after an elastic network outage and handled it properly.** :white_check_mark: :muscle:
 
 We noted several issues with the Dashboard, during the chaos experiment observation. For example the Brokers, which went OOD, never went back to the `Healthy` state again.
 
-![connect-healthy]({{ site.baseurl }}/assets/2021-06-08/next-try-connect-healthy.png)
+![connect-healthy](next-try-connect-healthy.png)
 
 Furthermore, the not exported panel seems to be broken, depending on the selected time frame.
 
-![connect-not-exported]({{ site.baseurl }}/assets/2021-06-08/next-try-connect-not-exported.png)
+![connect-not-exported](next-try-connect-not-exported.png)
 
 There have been also other issues with the panels and sections which we should take a look at. I have listed them below.
 
@@ -235,7 +240,7 @@ We observed several issues with the grafana dashboard which I wrote down here. I
 
 If we take a look at the screenshot where we reach our disk watermarks, and the processing stops, the backpressure metrics are not correctly updated. We would expect that the backpressure shows 100%, since all requests are rejected.
 
-![drop-base-2]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-base-2.png)
+![drop-base-2](next-try-drop-base-2.png)
 
 After the cluster actually becomes healthy again (it accepts new commands) it is not shown as healthy in the panels. The metrics seems not to be updated.
 
@@ -245,7 +250,7 @@ Another possible improvement would be to make it more visible that the exporting
 
 Depending on the time frame the panel `Number of records not exported`, seems to show quite high values.
 
-![connect-not-exported]({{ site.baseurl }}/assets/2021-06-08/next-try-connect-not-exported.png)
+![connect-not-exported](next-try-connect-not-exported.png)
 
 If we take a look at other metrics, this doesn't make any sense. If we had such a backlog we wouldn't expect to compact to one segment for example. Furthemore the tables on the right side show numbers which are quite close to each other.
 
@@ -253,7 +258,7 @@ If we take a look at other metrics, this doesn't make any sense. If we had such 
 
 We probably can improve the failure panel, such that it shows a graph, and the limit is not set to 130%.
 
-![drop-elastic]({{ site.baseurl }}/assets/2021-06-08/next-try-drop-elastic-section.png)
+![drop-elastic](next-try-drop-elastic-section.png)
 
 #### GRPC Metric Section
 
