@@ -73,8 +73,8 @@ leader transition metric in that version to compare against.
 
 | **Version** | **1.1**  |  **1.2**  |
 |---|---|---|
-| Recovery  | ![base-recovery](base-recovery.png) | ![12-recovery](12-recovery.png) | 
-| General  | ![base-recovery-general](base-recovery-general.png)  | ![12-recovery-general](12-recovery-general.png)  | 
+| Recovery  | [![base-recovery](base-recovery.png)](base-recovery.png) | [![12-recovery](12-recovery.png)](12-recovery.png) | 
+| General  | [![base-recovery-general](base-recovery-general.png)](base-recovery-general.png)  | [![12-recovery-general](12-recovery-general.png)](12-recovery-general.png)  | 
 
 *Sorry for the small pictures*
 
@@ -99,8 +99,8 @@ better than 1.1.
 
 | **Version** | **1.1**  |  **1.2**  |
 |---|---|---|
-| Recovery  | ![base-general-state-and-throughput-recover-time.png](base-general-state-and-throughput-recover-time.png) | ![12-general-state-and-throughput-recover-time.png](12-general-state-and-throughput-recovery-time.png) | 
-| General  | ![base-general-state-and-throughput-recover-general.png](base-general-state-and-throughput-recover-general.png)  | ![12-general-state-and-throughput-recover-general.png](12-general-state-and-throughput-recovery-general.png)  |
+| Recovery  | [![base-general-state-and-throughput-recover-time.png](base-general-state-and-throughput-recover-time.png)](base-general-state-and-throughput-recover-time.png) | [![12-general-state-and-throughput-recover-time.png](12-general-state-and-throughput-recovery-time.png)](12-general-state-and-throughput-recovery-time.png) | 
+| General  | [![base-general-state-and-throughput-recover-general.png](base-general-state-and-throughput-recover-general.png)](base-general-state-and-throughput-recover-general.png)  | [![12-general-state-and-throughput-recover-general.png](12-general-state-and-throughput-recovery-general.png)](12-general-state-and-throughput-recovery-general.png)  |
 
 After running the experiment again, this time with load, we can see that the version 1.1 took almost
 2 minutes! The newest Zeebe version (1.2), with building state on followers, took ~80 milliseconds!
