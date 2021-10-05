@@ -20,6 +20,8 @@ Today I wanted to add another chaos experiment, to increase our automated chaos 
 
 I was able to create the chaos toolkit experiment. It shows us that we are able to restore our state after fail over, which means we can trigger timer start events to create process instances even if they have been deployed before fail-over. Plus we are able to complete these instances.
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 For testing, I have run our normal setup of three nodes, three partitions and replication factor three in our zeebe gke cluster.

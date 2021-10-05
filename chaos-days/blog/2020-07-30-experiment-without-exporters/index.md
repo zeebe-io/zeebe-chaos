@@ -12,6 +12,8 @@ authors: zell
 
  * Run a chaos experiment without exporters
 
+<!--truncate-->
+
 ## Chaos Experiment
 
  We wanted to run a chaos experiment, which covers [#20](https://github.com/zeebe-io/zeebe-chaos/issues/20).

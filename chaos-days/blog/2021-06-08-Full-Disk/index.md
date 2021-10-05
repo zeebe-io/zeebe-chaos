@@ -17,6 +17,8 @@ On this chaos day we wanted to experiment with OOD recovery and ELS connection i
 
 **TL;DR** The experiment was successful :muscle: and we found several things in the dashboard which we can improve :)
 
+<!--truncate-->
+
 ## Chaos Experiment 
 
 With this experiment we want to verify that Zeebe can recover after OOD, which was caused by not exporting to ELS. For that we want to disconnect Zeebe and ELS first and see how it behaves. Afterwards we connect the services again and expect a recovery of the system.

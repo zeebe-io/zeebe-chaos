@@ -14,6 +14,8 @@ Today I wanted to add new chaostoolkit experiment, which we can automate.
 We already have experiments like restarting followers and leaders for a partition, but in the past what also caused issues was multiple restarts/leader changes
 in a short period of time. This is the reason why I created [#39](https://github.com/zeebe-io/zeebe-chaos/issues/39). 
 
+<!--truncate-->
+
 ## Chaos Experiment: Multiple Leader Elections
 
 In order to reduce the blast radius I setup an new Zeebe cluster with one partition (clusterplan: production-s). This makes it possible that we exactly restart the leader for that one partition.

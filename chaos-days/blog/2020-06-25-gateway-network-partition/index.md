@@ -14,6 +14,8 @@ authors: zell
  * Still our automated chaos experiments are not running. I need some time for that, but I had no time for that today.
  * Run a chaos experiment together with @pihme, where we do a network partition with the gateway.
 
+<!--truncate-->
+
 ## Chaos experiment:
 
 Actually we already have an network partition experiment with the standalone Gateway, where we completely isolate the gateway and take a look whether it comes back after the network partition. Today we wanted to explore how it behaves when only one node and the gateway has a network partition, so Broker 0 and Gateway can't talk to each other.

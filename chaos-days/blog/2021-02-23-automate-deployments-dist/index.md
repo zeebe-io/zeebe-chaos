@@ -20,6 +20,8 @@ This time I wanted to automate a chaos experiment via the [ChaosToolkit](https:/
 
 I was able to automate the deployment distribution chaos experiment successfully and deployed it on testbench for a `Production - M` cluster plan.
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 For testing, I have run our normal setup of three nodes, three partitions and replication factor three.

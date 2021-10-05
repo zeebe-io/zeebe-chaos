@@ -21,6 +21,8 @@ Last week [@Deepthi](https://github.com/deepthidevaki) mentioned to me that we c
 
 **TL;DR;** The experiment failed; With adding 100ms network delay to the Leader we broke the complete processing throughput. :boom:
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 We want to experiment with network latency and what kind of effect has a slow network on the cluster. 

@@ -20,6 +20,8 @@ This time [Deepthi](https://github.com/deepthidevaki) was joining me on my regul
 
 We were able to enhance the deployment distribution experiment and run it in the camunda cloud via testbench. We have enabled the experiment for Production M and L cluster plans. We had to adjust the rights for the testbench service account to make this work.
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 We already had a [prepared chaos experiment](https://github.com/zeebe-io/zeebe-chaos/blob/master/chaos-experiments/helm/deployment-distribution/experiment.json), but we needed to enhance that. Deepthi was so kind to create [PR](https://github.com/zeebe-io/zeebe-chaos/pull/50) for that.

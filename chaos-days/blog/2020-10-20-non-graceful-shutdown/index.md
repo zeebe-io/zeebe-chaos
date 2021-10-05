@@ -15,6 +15,8 @@ Today I had not much time for the chaos day, because of writing Gameday Summary,
 But I wanted to merge the PR from Peter and test how our brokers behave if they are not gracefully shutdown. 
 I did that on Wednesday (21-10-2020).
 
+<!--truncate-->
+
 ## PR Merge
 
 I tried again the new chaos experiment with a Production M cluster, before merging. It worked quite smooth.

@@ -25,6 +25,8 @@ clients should not have a negative effect on a running cluster.
 **TLDR** Older clients (0.26) have no negative impact on a running cluster (1.2), and clients after 
 1.x are still working with the latest version. 
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 We will run a simple setup with, three nodes and three partitions (replication factor 3). The 

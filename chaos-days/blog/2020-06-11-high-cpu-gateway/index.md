@@ -15,6 +15,8 @@ authors: zell
  * Wrote an chaostoolkit experiment based on the last manual Chaos experiment
  * Run a chaos experiment with @Deepthi, where we put high CPU load on the standalone gateway https://github.com/zeebe-io/zeebe-chaos/issues/28
 
+<!--truncate-->
+
 ## Chaos experiment:
 
 We did today an chaos experiment where we used our standard setup with a baseline load of 100 workflow instance and 6 workers, which can activate 120 jobs max.

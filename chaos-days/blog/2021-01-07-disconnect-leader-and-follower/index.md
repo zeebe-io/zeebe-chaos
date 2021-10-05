@@ -21,6 +21,8 @@ This gives us now more possibilities, since we can extract values much better ou
 
 **TL;DR** The experiment was successful :+1:
 
+<!--truncate-->
+
 ## Preparation
 
 Before we start with the experiment I wanted to extract the right node id's for the follower's and leader from the `zbctl status` output via `jq`. If we have that we can use this for other use cases.

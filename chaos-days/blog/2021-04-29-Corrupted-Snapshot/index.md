@@ -25,6 +25,8 @@ The behavior change caused to fail our automated chaos experiments, since we cor
 
 In this chaos day we wanted to investigate whether we can improve the experiment and bring it back. For reference, I also opened a issue to discuss the current corruption detection approach [zeebe#6907](https://github.com/camunda-cloud/zeebe/issues/6907)
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 This time we look at an already existing experiment. I will run our normal setup and execute the experiment (each step) manually and observe what happens.

@@ -13,6 +13,8 @@ authors: zell
  * Run a benchmark with low load
  * Investigate last benchmark failures
 
+<!--truncate-->
+
 ## Chaos Experiment
 
  We currently seem to have issues with RocksDB, which sometimes generates a lot of SST files during the Broker lifetime. This causes to fail the snapshot replication at some point.

@@ -17,6 +17,8 @@ authors: zell
 
 **TL;DR;** Zeebe is able to handle time shifts back and forth, without observable issues. Operate seems to dislike it.
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 As part of the experiment we had to define what we expect, if we change the time. In order to keep it simple we decided to experiment with one-hour move forward and backwards. We wanted to run the experiment first against our normal benchmark cluster and afterwards against a Production - S Cluster on INT. Furthermore, we decided to test the time shift only on leaders, for now.

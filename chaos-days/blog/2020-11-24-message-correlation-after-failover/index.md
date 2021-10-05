@@ -16,6 +16,8 @@ authors: zell
 Today I wanted to finally implement an experiment which I postponed for long time, see [#24](https://github.com/zeebe-io/zeebe-chaos/issues/24).
 The problem was that previous we were not able to determine on which partition the message was published, so we were not able to assert that it was published on the correct partition. With this [#4794](https://github.com/zeebe-io/zeebe/issues/4794) it is now possible, which was btw an community contribution. :tada:
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 We want to publish a message to a specific partition. After publishing the message we want to restart the corresponding leader of that partition, deploy and create a workflow instance to which the message should correlate to. 

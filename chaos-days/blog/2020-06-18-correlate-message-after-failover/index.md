@@ -14,6 +14,7 @@ authors: zell
 * Checked what the current issue is with the automated chaos experiments. It seems it is a infra problem. You can check the discussion in #infra. It might be affected due to [Infra-1292](https://jira.camunda.com/browse/INFRA-1292)
 * Run a chaos experiment, where we correlate a message after fail over.
 
+<!--truncate-->
 
 ## Chaos Experiment
 

@@ -21,6 +21,8 @@ On the last Chaos Day, we experimented with disconnecting a Leader and *one* fol
  * In the first chaos experiment: I had a cluster of 5 nodes and split that into two groups, the processing continued as expected, since we had still quorum. :muscle:
  * In the second chaos experiment: I split the cluster again into two groups, but this time we added one follower of the bigger group to the smaller group after snapshot was taken and compaction was done. The smaller group needed to keep up with the newer state, before new processing can be started again, but everything worked fine.
 
+<!--truncate-->
+
 ## First Chaos Experiment
 
 Say we have cluster of 5 nodes, one partition with replication factor 3 and we split the cluster in two parts (2 nodes and 3 nodes).

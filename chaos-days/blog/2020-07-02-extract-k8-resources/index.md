@@ -22,6 +22,8 @@ kubectl get pvc,configmap,service,deployment,statefulset,cronjob,storageclasses 
 We now need to find a way to successfully deploy it in our cluster - it haven't been successful yet. We thought about using kustomize to adjust some values they use.
 Much easier would be to just deploy the operator they use in our gke cloud and use the CRD to deploy the cluster plans. I think we need to investigate a bit more here what is the best approach. In the end I would like to run our chaos experiments against clusters which correspond to the real deployed ones.
 
+<!--truncate-->
+
 ## Participants
 
  * @pihme

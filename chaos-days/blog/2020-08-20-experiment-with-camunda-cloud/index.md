@@ -15,6 +15,8 @@ It allows us to test and experiment with Zeebe clusters which have the same conf
 
 As part of the chaos day I run the same benchmark we normally run in our gke with our configuration against the Camunda Cloud Zeebe clusters.
 
+<!--truncate-->
+
 ## Configurations of Zeebe Clusters
 
 In the following table I want to highlight the different configurations of the different Zeebe Clusters (cluster types).

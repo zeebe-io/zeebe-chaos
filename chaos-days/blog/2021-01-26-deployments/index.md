@@ -18,6 +18,8 @@ On this chaos day we wanted to experiment a bit with deployment's and there dist
 
 We run a chaos experiment with deploying multiple workflows and disconnecting two leaders. We verified whether deployments are distributed later. The chaos experiment was successful and showed a bit how fault tolerant deployment distribution is. :muscle:
 
+<!--truncate-->
+
 ## Deployments
 
 In order to continue here we need to explain how the workflow deployment and distribution actually works, if you know it then you can skip this section :wink:.

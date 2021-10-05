@@ -14,6 +14,8 @@ authors: zell
  * Closed some issues in the backlog
  * Run a chaos experiment with bigger multi instance to reach `maxMessageSize`
 
+<!--truncate-->
+
 ## Chaos Experiment
 
  We wanted to run a chaos experiment, which covers [#33](https://github.com/zeebe-io/zeebe-chaos/issues/33).

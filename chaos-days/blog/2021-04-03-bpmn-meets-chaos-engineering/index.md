@@ -24,6 +24,8 @@ In order to understand this blogpost make sure that you have a little understand
  * [BPMN 2.0](https://www.omg.org/spec/BPMN/2.0/About-BPMN/)
  * [Principles of Chaos](https://principlesofchaos.org/)
 
+<!--truncate-->
+
 ## Previous Chaos Automation 
 
 In the previous Chaos Day summaries I described that we use [ChaosToolkit](https://chaostoolkit.org/) to run our chaos experiments. The chaos experiments have as prerequisite that an Zeebe cluster is already running, on which they should be executed. ChaosToolkit needs/uses a specific DSL to describe and execute Chaos Experiments. An example experiment looks like the following:

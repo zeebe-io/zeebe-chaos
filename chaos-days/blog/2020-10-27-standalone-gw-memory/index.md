@@ -15,6 +15,7 @@ In the last weeks I check multiple benchmarks and clusters in incidents. Often I
 or that there is a memory leak. I wanted to experiment regarding this memory consumptions. Since we saw in investigating https://github.com/zeebe-io/zeebe/issues/5641 a high memory spike
 when the gateway was not able to talk to other nodes I suspected that here might be some bugs hiding
 
+<!--truncate-->
 
 ## Chaos experiment
 

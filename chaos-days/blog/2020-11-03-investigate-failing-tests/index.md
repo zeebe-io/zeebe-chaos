@@ -18,6 +18,8 @@ see the related issue [#5688](https://github.com/zeebe-io/zeebe/issues/5688).
 
 We found three new bugs regarding the reprocessing detection and deployment distribution, but still were not able to reproduce the real issue.
 
+<!--truncate-->
+
 ## Investigation
 
 I started already yesterday with the investigation and found out that two brokers (`Broker-0` and `Broker-2`) are failing to restart on partition three, but `Broker-0` is able to start the processing on partition three. See this [comment](https://github.com/zeebe-io/zeebe/issues/5688#issuecomment-720401612) for more information. Note that partition three is receiving deployment from partition one via deployment distribution.

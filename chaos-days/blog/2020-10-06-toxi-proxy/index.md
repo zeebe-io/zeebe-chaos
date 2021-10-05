@@ -16,6 +16,8 @@ First chaos day since my parental leave :tada:.
 
 Today I wanted to play a bit with [ToxiProxy](https://github.com/Shopify/toxiproxy). Toxiproxy is a framework for simulating network conditions and ideal to do some chaos on the network.
 
+<!--truncate-->
+
 ## Run ToxiProxy
 
 Download from the [release page](https://github.com/Shopify/toxiproxy/releases) the latest version (server and cli).

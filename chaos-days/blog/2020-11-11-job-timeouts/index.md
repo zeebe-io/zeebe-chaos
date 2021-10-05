@@ -16,6 +16,8 @@ In the last game day (on friday 06.11.2020) I wanted to test whether we can brea
 
 I wanted to verify the same with job time out's.
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 I setup an Production S cluster in camunda cloud. Deployed an normal starter, which starts 20 workflow instances per second. I used similar code to activate jobs with a decreasing timeout, such that they all timeout at the same time. The target time was 3 PM. I started the test ~11 am.

@@ -15,6 +15,8 @@ authors: zell
  * Run Chaos experiment with a lot of timers
  * Run Chaos experiment with huge variables
 
+<!--truncate-->
+
 ## Chaos Experiment
 
 ### A Lot of Timers 

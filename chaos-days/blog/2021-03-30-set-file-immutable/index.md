@@ -24,6 +24,8 @@ Unfortunately it turned out that immutable files will not cause issues on alread
 
 In the next chaos days I will search for a way to cause write errors proactively, so we can verify that our system can handle such issues.
 
+<!--truncate-->
+
 ### Immutable File
 
 In order to [mark a file as immutable](https://delightlylinux.wordpress.com/2012/12/11/file-immutable-attribute/) we can use the command `chattr +i`. For that we need a specific capability called `LINUX_IMMUTABLE`. Since we were at this time not able to create new clusters I tested it with the helm charts, where it is anyway easier to give us these capabilities.

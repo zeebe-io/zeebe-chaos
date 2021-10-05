@@ -16,6 +16,8 @@ authors: zell
  * Introduced Peter to our Chaos Repository, discussed a bit about the hypothesis backlog, reopened the Chaos Trello board where we will organize ourselves
  * Run a chaos experiment, where we put high CPU load on the Leader [#6](https://github.com/zeebe-io/zeebe-chaos/issues/6)
 
+<!--truncate-->
+
 ## Chaos experiment:
 
  * We wanted to decrease the blast radius with only one partition, but we found an bug where this seemed not to be possible [#4664](https://github.com/zeebe-io/zeebe/issues/4664)
