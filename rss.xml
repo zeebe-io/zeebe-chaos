@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Thu, 23 Sep 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 05 Oct 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Recovery (Fail Over) time]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time</link>
+            <guid>Recovery (Fail Over) time</guid>
+            <pubDate>Tue, 05 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[In the last quarter we worked on a new "feature" which is called "building state on followers". In short,]]></description>
+        </item>
         <item>
             <title><![CDATA[Old-Clients]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2021/09/23/Old-Clients</link>
