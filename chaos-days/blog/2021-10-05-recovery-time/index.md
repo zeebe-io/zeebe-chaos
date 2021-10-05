@@ -153,3 +153,14 @@ With version 1.2 we just reached ~30, which means it reduced by factor 3.
 
 I think we need to verify whether this is really the case.
 
+**Update:**
+
+I run again a benchmark for both versions, with one worker and one starter. It showed no significant 
+difference on throughput.
+
+| **Version** | **1.1**  |  **1.2**  |
+|---|---|---|
+| Performance  | [![perf-11](perf-11.png)](perf-11.png) | [![perf-12](perf-12.png)](perf-12.png) |
+
+My current assumption is that it was related to the previous build up state and switching between 
+different worker configurations etc. Let us see whether we can observe this again.
