@@ -24,8 +24,10 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/zeebe-io/zeebe-chaos',
-          routeBasePath: '/'
+            'https://github.com/zeebe-io/zeebe-chaos/blob/master/chaos-days/',
+          routeBasePath: '/',
+          blogSidebarTitle: 'All posts',
+          blogSidebarCount: 'ALL',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
