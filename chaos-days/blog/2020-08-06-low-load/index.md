@@ -2,7 +2,10 @@
 layout: posts
 title:  "Experiment with Low Load"
 date:   2020-08-06
-categories: chaos_experiment load broker
+categories: 
+  - chaos_experiment 
+  - load broker
+authors: zell
 ---
 
 # Chaos Day Summary

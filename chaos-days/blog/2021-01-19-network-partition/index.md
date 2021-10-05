@@ -6,6 +6,8 @@ categories:
   - chaos_experiment
   - broker 
   - network
+tags:
+- availability
 authors: zell
 ---
 

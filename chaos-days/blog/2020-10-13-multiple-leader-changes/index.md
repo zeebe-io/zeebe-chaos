@@ -2,7 +2,10 @@
 layout: posts
 title:  "Multiple Leader Changes"
 date:   2020-10-13
-categories: chaos_experiment broker
+categories: 
+  - chaos_experiment 
+  - broker
+authors: zell
 ---
 
 # Chaos Day Summary

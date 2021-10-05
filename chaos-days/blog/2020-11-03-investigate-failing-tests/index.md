@@ -2,7 +2,11 @@
 layout: posts
 title:  "Investigate failing Chaos Tests"
 date:   2020-11-03
-categories: investigation
+categories: 
+  - investigation
+tags:
+  - tests
+authors: zell
 ---
 
 # Chaos Day Summary

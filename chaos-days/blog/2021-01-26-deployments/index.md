@@ -5,7 +5,10 @@ date:   2021-01-26
 categories: 
   - chaos_experiment 
   - broker 
-  - network
+  - network 
+tags:
+  - availability
+  - data
 authors: zell
 ---
 

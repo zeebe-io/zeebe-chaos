@@ -7,6 +7,8 @@ categories:
   - broker
   - network 
   - deployment
+tags:
+  - tests
 authors: zell
 ---
 

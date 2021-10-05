@@ -2,7 +2,9 @@
 layout: posts
 title:  "Extract K8 resources from namespace"
 date:   2020-07-02
-categories: kubernetes
+categories: 
+  - kubernetes
+authors: zell
 ---
 
 # Chaos Day Summary:

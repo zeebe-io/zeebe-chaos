@@ -2,7 +2,10 @@
 layout: posts
 title:  "Experiment with Camunda Cloud"
 date:   2020-08-20
-categories: chaos_experiment cloud
+categories: 
+  - chaos_experiment
+  - cloud
+authors: zell
 ---
 
 # Chaos Day Summary

@@ -6,6 +6,8 @@ categories:
   - chaos_experiment 
   - broker 
   - bpmn
+tags:
+- availability
 authors: zell
 ---
 

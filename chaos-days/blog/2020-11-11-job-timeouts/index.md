@@ -2,7 +2,12 @@
 layout: posts
 title:  "Many Job Timeouts"
 date:   2020-11-11
-categories: chaos_experiment broker
+categories: 
+  - chaos_experiment
+  - broker 
+tags:
+  - availability
+authors: zell
 ---
 
 # Chaos Day Summary

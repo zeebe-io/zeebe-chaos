@@ -2,7 +2,10 @@
 layout: posts
 title:  "First Chaos Day!"
 date:   2020-06-04
-categories: chaos_experiment broker
+categories: 
+  - chaos_experiment
+  - broker
+authors: zell
 ---
 
 # Chaos Day Summary

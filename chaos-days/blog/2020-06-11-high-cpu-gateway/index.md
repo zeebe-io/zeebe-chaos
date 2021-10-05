@@ -2,7 +2,10 @@
 layout: posts
 title:  "High CPU load on Standalone Gateway"
 date:   2020-06-11
-categories: chaos_experiment gateway
+categories: 
+  - chaos_experiment 
+  - gateway
+authors: zell
 ---
 
 # Chaos Day Summary
