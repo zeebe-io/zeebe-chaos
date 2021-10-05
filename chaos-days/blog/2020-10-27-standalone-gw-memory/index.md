@@ -1,3 +1,14 @@
+---
+layout: posts
+title:  "Gateway memory consumption"
+date:   2020-10-20
+categories:
+  - chaos_experiment
+  - gateway
+  - resources
+authors: zell
+---
+  
 # Chaos Day Summary
 
 In the last weeks I check multiple benchmarks and clusters in incidents. Often I had the feeling that the memory consumption from the gateway is not ideal
