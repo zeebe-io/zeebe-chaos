@@ -12,7 +12,7 @@ authors: zell
 
 # Chaos Day Summary
 
-*TLDR* 
+**TL;DR;** 
 
 <!--truncate-->
 
