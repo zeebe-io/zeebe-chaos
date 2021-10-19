@@ -164,3 +164,7 @@ difference on throughput.
 
 My current assumption is that it was related to the previous build up state and switching between 
 different worker configurations etc. Let us see whether we can observe this again.
+
+**Update 2:**
+
+The second benchmark failed several days again, without any intervention. I investigated that issue further and it seem to be related to frequent install requests, which are sent by the leader. See for more information the related issue https://github.com/camunda-cloud/zeebe/issues/7955
