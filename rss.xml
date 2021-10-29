@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Tue, 05 Oct 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 29 Oct 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Throughput on big state]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/10/29/Throughput-on-big-state</link>
+            <guid>Throughput on big state</guid>
+            <pubDate>Fri, 29 Oct 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[In this chaos day we wanted to prove the hypothesis that the throughput should not significantly change even if we have bigger state, see zeebe-chaos#64]]></description>
+        </item>
         <item>
             <title><![CDATA[Recovery (Fail Over) time]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time</link>
