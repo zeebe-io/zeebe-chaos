@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 title="$@"
-cleanTitle=${title/ /-}
+cleanTitle=$(echo $title | sed -e 's/ /-/g')
 currentDate=$(date +%Y-%m-%d)
 
 blogname="$currentDate-$cleanTitle"
