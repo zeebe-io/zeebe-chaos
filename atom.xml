@@ -2,11 +2,22 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://zeebe-io.github.io/zeebe-chaos/</id>
     <title>Zeebe Chaos Blog</title>
-    <updated>2021-10-29T00:00:00.000Z</updated>
+    <updated>2021-11-11T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/"/>
     <subtitle>Zeebe Chaos Blog</subtitle>
     <icon>https://zeebe-io.github.io/zeebe-chaos/img/zeebe-logo.png</icon>
+    <entry>
+        <title type="html"><![CDATA[Not produce duplicate Keys]]></title>
+        <id>Not produce duplicate Keys</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/11/11/Not-produce-duplicate-Keys"/>
+        <updated>2021-11-11T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Due to some incidents and critical bugs we observed in the last weeks, I wanted to spent some time to understand the issues better and experiment how we could detect them. One of the issue we have observed was that keys were generated more than once, so they were no longer unique (#8129). I will describe this property in the next section more in depth.]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Throughput on big state]]></title>
         <id>Throughput on big state</id>

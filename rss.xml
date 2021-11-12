@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Fri, 29 Oct 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 11 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Not produce duplicate Keys]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/11/11/Not-produce-duplicate-Keys</link>
+            <guid>Not produce duplicate Keys</guid>
+            <pubDate>Thu, 11 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[Due to some incidents and critical bugs we observed in the last weeks, I wanted to spent some time to understand the issues better and experiment how we could detect them. One of the issue we have observed was that keys were generated more than once, so they were no longer unique (#8129). I will describe this property in the next section more in depth.]]></description>
+        </item>
         <item>
             <title><![CDATA[Throughput on big state]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2021/10/29/Throughput-on-big-state</link>
