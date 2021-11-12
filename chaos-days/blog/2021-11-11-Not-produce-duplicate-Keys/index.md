@@ -6,7 +6,7 @@ categories:
   - chaos_experiment 
   - bpmn
 tags:
-  - availability
+  - data
 authors: zell
 ---
 
