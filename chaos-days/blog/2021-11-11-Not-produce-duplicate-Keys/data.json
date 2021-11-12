@@ -1,0 +1,2688 @@
+{
+  "records": [
+    {
+      "index": 1,
+      "term": 1
+    },
+    {
+      "index": 2,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "processesMetadata": [],
+            "resources": [
+              {
+                "resourceName": "simpleProcess.bpmn",
+                "resource": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGJwbW46ZGVmaW5pdGlvbnMgeG1sbnM6YnBtbj0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvQlBNTi8yMDEwMDUyNC9NT0RFTCIgeG1sbnM6YnBtbmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9CUE1OLzIwMTAwNTI0L0RJIiB4bWxuczpkYz0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvREQvMjAxMDA1MjQvREMiIHhtbG5zOmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9ERC8yMDEwMDUyNC9ESSIgaWQ9IkRlZmluaXRpb25zXzAzeGZkcWkiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL2JwbW4uaW8vc2NoZW1hL2JwbW4iIGV4cG9ydGVyPSJaZWViZSBNb2RlbGVyIiBleHBvcnRlclZlcnNpb249IjAuNy4wIj4KICA8YnBtbjpwcm9jZXNzIGlkPSJzaW1wbGVQcm9jZXNzIiBpc0V4ZWN1dGFibGU9InRydWUiPgogICAgPGJwbW46c3RhcnRFdmVudCBpZD0iU3RhcnRFdmVudF8xIj4KICAgICAgPGJwbW46b3V0Z29pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46b3V0Z29pbmc+CiAgICA8L2JwbW46c3RhcnRFdmVudD4KICAgIDxicG1uOmVuZEV2ZW50IGlkPSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgPGJwbW46aW5jb21pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46aW5jb21pbmc+CiAgICA8L2JwbW46ZW5kRXZlbnQ+CiAgICA8YnBtbjpzZXF1ZW5jZUZsb3cgaWQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIiBzb3VyY2VSZWY9IlN0YXJ0RXZlbnRfMSIgdGFyZ2V0UmVmPSJFbmRFdmVudF8waXIxeXY2IiAvPgogIDwvYnBtbjpwcm9jZXNzPgogIDxicG1uZGk6QlBNTkRpYWdyYW0gaWQ9IkJQTU5EaWFncmFtXzEiPgogICAgPGJwbW5kaTpCUE1OUGxhbmUgaWQ9IkJQTU5QbGFuZV8xIiBicG1uRWxlbWVudD0ic2ltcGxlUHJvY2VzcyI+CiAgICAgIDxicG1uZGk6QlBNTlNoYXBlIGlkPSJfQlBNTlNoYXBlX1N0YXJ0RXZlbnRfMiIgYnBtbkVsZW1lbnQ9IlN0YXJ0RXZlbnRfMSI+CiAgICAgICAgPGRjOkJvdW5kcyB4PSIxNzkiIHk9Ijc5IiB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIC8+CiAgICAgIDwvYnBtbmRpOkJQTU5TaGFwZT4KICAgICAgPGJwbW5kaTpCUE1OU2hhcGUgaWQ9IkVuZEV2ZW50XzBpcjF5djZfZGkiIGJwbW5FbGVtZW50PSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgICA8ZGM6Qm91bmRzIHg9IjI3MiIgeT0iNzkiIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgLz4KICAgICAgPC9icG1uZGk6QlBNTlNoYXBlPgogICAgICA8YnBtbmRpOkJQTU5FZGdlIGlkPSJTZXF1ZW5jZUZsb3dfMG44cGVtaV9kaSIgYnBtbkVsZW1lbnQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIj4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjE1IiB5PSI5NyIgLz4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjcyIiB5PSI5NyIgLz4KICAgICAgPC9icG1uZGk6QlBNTkVkZ2U+CiAgICA8L2JwbW5kaTpCUE1OUGxhbmU+CiAgPC9icG1uZGk6QlBNTkRpYWdyYW0+CjwvYnBtbjpkZWZpbml0aW9ucz4K"
+              }
+            ]
+          },
+          "timestamp": 1636627734750,
+          "position": 1,
+          "valueType": "DEPLOYMENT",
+          "intent": "CREATE",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "resourceName": "simpleProcess.bpmn",
+            "checksum": "TPaeWwd3OKj0We2ELsvjqQ==",
+            "resource": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGJwbW46ZGVmaW5pdGlvbnMgeG1sbnM6YnBtbj0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvQlBNTi8yMDEwMDUyNC9NT0RFTCIgeG1sbnM6YnBtbmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9CUE1OLzIwMTAwNTI0L0RJIiB4bWxuczpkYz0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvREQvMjAxMDA1MjQvREMiIHhtbG5zOmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9ERC8yMDEwMDUyNC9ESSIgaWQ9IkRlZmluaXRpb25zXzAzeGZkcWkiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL2JwbW4uaW8vc2NoZW1hL2JwbW4iIGV4cG9ydGVyPSJaZWViZSBNb2RlbGVyIiBleHBvcnRlclZlcnNpb249IjAuNy4wIj4KICA8YnBtbjpwcm9jZXNzIGlkPSJzaW1wbGVQcm9jZXNzIiBpc0V4ZWN1dGFibGU9InRydWUiPgogICAgPGJwbW46c3RhcnRFdmVudCBpZD0iU3RhcnRFdmVudF8xIj4KICAgICAgPGJwbW46b3V0Z29pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46b3V0Z29pbmc+CiAgICA8L2JwbW46c3RhcnRFdmVudD4KICAgIDxicG1uOmVuZEV2ZW50IGlkPSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgPGJwbW46aW5jb21pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46aW5jb21pbmc+CiAgICA8L2JwbW46ZW5kRXZlbnQ+CiAgICA8YnBtbjpzZXF1ZW5jZUZsb3cgaWQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIiBzb3VyY2VSZWY9IlN0YXJ0RXZlbnRfMSIgdGFyZ2V0UmVmPSJFbmRFdmVudF8waXIxeXY2IiAvPgogIDwvYnBtbjpwcm9jZXNzPgogIDxicG1uZGk6QlBNTkRpYWdyYW0gaWQ9IkJQTU5EaWFncmFtXzEiPgogICAgPGJwbW5kaTpCUE1OUGxhbmUgaWQ9IkJQTU5QbGFuZV8xIiBicG1uRWxlbWVudD0ic2ltcGxlUHJvY2VzcyI+CiAgICAgIDxicG1uZGk6QlBNTlNoYXBlIGlkPSJfQlBNTlNoYXBlX1N0YXJ0RXZlbnRfMiIgYnBtbkVsZW1lbnQ9IlN0YXJ0RXZlbnRfMSI+CiAgICAgICAgPGRjOkJvdW5kcyB4PSIxNzkiIHk9Ijc5IiB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIC8+CiAgICAgIDwvYnBtbmRpOkJQTU5TaGFwZT4KICAgICAgPGJwbW5kaTpCUE1OU2hhcGUgaWQ9IkVuZEV2ZW50XzBpcjF5djZfZGkiIGJwbW5FbGVtZW50PSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgICA8ZGM6Qm91bmRzIHg9IjI3MiIgeT0iNzkiIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgLz4KICAgICAgPC9icG1uZGk6QlBNTlNoYXBlPgogICAgICA8YnBtbmRpOkJQTU5FZGdlIGlkPSJTZXF1ZW5jZUZsb3dfMG44cGVtaV9kaSIgYnBtbkVsZW1lbnQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIj4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjE1IiB5PSI5NyIgLz4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjcyIiB5PSI5NyIgLz4KICAgICAgPC9icG1uZGk6QlBNTkVkZ2U+CiAgICA8L2JwbW5kaTpCUE1OUGxhbmU+CiAgPC9icG1uZGk6QlBNTkRpYWdyYW0+CjwvYnBtbjpkZWZpbml0aW9ucz4K"
+          },
+          "timestamp": 1636627734773,
+          "position": 2,
+          "valueType": "PROCESS",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 1,
+          "key": 2251799813685249
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "processesMetadata": [
+              {
+                "version": 1,
+                "processDefinitionKey": 2251799813685249,
+                "bpmnProcessId": "simpleProcess",
+                "resourceName": "simpleProcess.bpmn",
+                "checksum": "TPaeWwd3OKj0We2ELsvjqQ=="
+              }
+            ],
+            "resources": [
+              {
+                "resourceName": "simpleProcess.bpmn",
+                "resource": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGJwbW46ZGVmaW5pdGlvbnMgeG1sbnM6YnBtbj0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvQlBNTi8yMDEwMDUyNC9NT0RFTCIgeG1sbnM6YnBtbmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9CUE1OLzIwMTAwNTI0L0RJIiB4bWxuczpkYz0iaHR0cDovL3d3dy5vbWcub3JnL3NwZWMvREQvMjAxMDA1MjQvREMiIHhtbG5zOmRpPSJodHRwOi8vd3d3Lm9tZy5vcmcvc3BlYy9ERC8yMDEwMDUyNC9ESSIgaWQ9IkRlZmluaXRpb25zXzAzeGZkcWkiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL2JwbW4uaW8vc2NoZW1hL2JwbW4iIGV4cG9ydGVyPSJaZWViZSBNb2RlbGVyIiBleHBvcnRlclZlcnNpb249IjAuNy4wIj4KICA8YnBtbjpwcm9jZXNzIGlkPSJzaW1wbGVQcm9jZXNzIiBpc0V4ZWN1dGFibGU9InRydWUiPgogICAgPGJwbW46c3RhcnRFdmVudCBpZD0iU3RhcnRFdmVudF8xIj4KICAgICAgPGJwbW46b3V0Z29pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46b3V0Z29pbmc+CiAgICA8L2JwbW46c3RhcnRFdmVudD4KICAgIDxicG1uOmVuZEV2ZW50IGlkPSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgPGJwbW46aW5jb21pbmc+U2VxdWVuY2VGbG93XzBuOHBlbWk8L2JwbW46aW5jb21pbmc+CiAgICA8L2JwbW46ZW5kRXZlbnQ+CiAgICA8YnBtbjpzZXF1ZW5jZUZsb3cgaWQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIiBzb3VyY2VSZWY9IlN0YXJ0RXZlbnRfMSIgdGFyZ2V0UmVmPSJFbmRFdmVudF8waXIxeXY2IiAvPgogIDwvYnBtbjpwcm9jZXNzPgogIDxicG1uZGk6QlBNTkRpYWdyYW0gaWQ9IkJQTU5EaWFncmFtXzEiPgogICAgPGJwbW5kaTpCUE1OUGxhbmUgaWQ9IkJQTU5QbGFuZV8xIiBicG1uRWxlbWVudD0ic2ltcGxlUHJvY2VzcyI+CiAgICAgIDxicG1uZGk6QlBNTlNoYXBlIGlkPSJfQlBNTlNoYXBlX1N0YXJ0RXZlbnRfMiIgYnBtbkVsZW1lbnQ9IlN0YXJ0RXZlbnRfMSI+CiAgICAgICAgPGRjOkJvdW5kcyB4PSIxNzkiIHk9Ijc5IiB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIC8+CiAgICAgIDwvYnBtbmRpOkJQTU5TaGFwZT4KICAgICAgPGJwbW5kaTpCUE1OU2hhcGUgaWQ9IkVuZEV2ZW50XzBpcjF5djZfZGkiIGJwbW5FbGVtZW50PSJFbmRFdmVudF8waXIxeXY2Ij4KICAgICAgICA8ZGM6Qm91bmRzIHg9IjI3MiIgeT0iNzkiIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgLz4KICAgICAgPC9icG1uZGk6QlBNTlNoYXBlPgogICAgICA8YnBtbmRpOkJQTU5FZGdlIGlkPSJTZXF1ZW5jZUZsb3dfMG44cGVtaV9kaSIgYnBtbkVsZW1lbnQ9IlNlcXVlbmNlRmxvd18wbjhwZW1pIj4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjE1IiB5PSI5NyIgLz4KICAgICAgICA8ZGk6d2F5cG9pbnQgeD0iMjcyIiB5PSI5NyIgLz4KICAgICAgPC9icG1uZGk6QlBNTkVkZ2U+CiAgICA8L2JwbW5kaTpCUE1OUGxhbmU+CiAgPC9icG1uZGk6QlBNTkRpYWdyYW0+CjwvYnBtbjpkZWZpbml0aW9ucz4K"
+              }
+            ]
+          },
+          "timestamp": 1636627734773,
+          "position": 3,
+          "valueType": "DEPLOYMENT",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 1,
+          "key": 2251799813685250
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "processesMetadata": [],
+            "resources": []
+          },
+          "timestamp": 1636627734773,
+          "position": 4,
+          "valueType": "DEPLOYMENT",
+          "intent": "FULLY_DISTRIBUTED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 1,
+          "key": 2251799813685250
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": -1,
+            "processDefinitionKey": 0,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": -1,
+            "variables": {}
+          },
+          "timestamp": 1636627763504,
+          "position": 5,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATE_WITH_AWAITING_RESULT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763513,
+          "position": 6,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 5,
+          "key": 2251799813685251
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "variables": {}
+          },
+          "timestamp": 1636627763513,
+          "position": 7,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 5,
+          "key": 2251799813685252
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763522,
+          "position": 8,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 6,
+          "key": 2251799813685251
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763522,
+          "position": 9,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 6,
+          "key": 2251799813685251
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763522,
+          "position": 10,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 6,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763540,
+          "position": 11,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 10,
+          "key": 2251799813685253
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763540,
+          "position": 12,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 10,
+          "key": 2251799813685253
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763540,
+          "position": 13,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 10,
+          "key": 2251799813685253
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763555,
+          "position": 14,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 13,
+          "key": 2251799813685253
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627763555,
+          "position": 15,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 13,
+          "key": 2251799813685253
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "SequenceFlow_0n8pemi",
+            "bpmnElementType": "SEQUENCE_FLOW"
+          },
+          "timestamp": 1636627763555,
+          "position": 16,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "SEQUENCE_FLOW_TAKEN",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 13,
+          "key": 2251799813685254
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627763555,
+          "position": 17,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 13,
+          "key": 2251799813685255
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627763570,
+          "position": 18,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 17,
+          "key": 2251799813685255
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627763570,
+          "position": 19,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 17,
+          "key": 2251799813685255
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627763570,
+          "position": 20,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 17,
+          "key": 2251799813685255
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685251,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627763570,
+          "position": 21,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 17,
+          "key": 2251799813685255
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763570,
+          "position": 22,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 17,
+          "key": 2251799813685251
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763582,
+          "position": 23,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 22,
+          "key": 2251799813685251
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685251,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627763582,
+          "position": 24,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 22,
+          "key": 2251799813685251
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": -1,
+            "processDefinitionKey": 0,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": -1,
+            "variables": {}
+          },
+          "timestamp": 1636627776418,
+          "position": 25,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATE_WITH_AWAITING_RESULT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776427,
+          "position": 26,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 25,
+          "key": 2251799813685256
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "variables": {}
+          },
+          "timestamp": 1636627776427,
+          "position": 27,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 25,
+          "key": 2251799813685257
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776435,
+          "position": 28,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 26,
+          "key": 2251799813685256
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776435,
+          "position": 29,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 26,
+          "key": 2251799813685256
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776435,
+          "position": 30,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 26,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776443,
+          "position": 31,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 30,
+          "key": 2251799813685258
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776443,
+          "position": 32,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 30,
+          "key": 2251799813685258
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776443,
+          "position": 33,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 30,
+          "key": 2251799813685258
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776453,
+          "position": 34,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 33,
+          "key": 2251799813685258
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627776453,
+          "position": 35,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 33,
+          "key": 2251799813685258
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "SequenceFlow_0n8pemi",
+            "bpmnElementType": "SEQUENCE_FLOW"
+          },
+          "timestamp": 1636627776453,
+          "position": 36,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "SEQUENCE_FLOW_TAKEN",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 33,
+          "key": 2251799813685259
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627776453,
+          "position": 37,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 33,
+          "key": 2251799813685260
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627776466,
+          "position": 38,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 37,
+          "key": 2251799813685260
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627776466,
+          "position": 39,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 37,
+          "key": 2251799813685260
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627776466,
+          "position": 40,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 37,
+          "key": 2251799813685260
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685256,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627776466,
+          "position": 41,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 37,
+          "key": 2251799813685260
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776466,
+          "position": 42,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 37,
+          "key": 2251799813685256
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "term": 1,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776477,
+          "position": 43,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 42,
+          "key": 2251799813685256
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685256,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627776477,
+          "position": 44,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 42,
+          "key": 2251799813685256
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "term": 2
+    },
+    {
+      "index": 19,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": -1,
+            "processDefinitionKey": 0,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": -1,
+            "variables": {}
+          },
+          "timestamp": 1636627887287,
+          "position": 45,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATE_WITH_AWAITING_RESULT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887305,
+          "position": 46,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 45,
+          "key": 2251799813685257
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "variables": {}
+          },
+          "timestamp": 1636627887305,
+          "position": 47,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 45,
+          "key": 2251799813685258
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887345,
+          "position": 48,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 46,
+          "key": 2251799813685257
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887345,
+          "position": 49,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 46,
+          "key": 2251799813685257
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887345,
+          "position": 50,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 46,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887367,
+          "position": 51,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 50,
+          "key": 2251799813685259
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887367,
+          "position": 52,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 50,
+          "key": 2251799813685259
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887367,
+          "position": 53,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 50,
+          "key": 2251799813685259
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887378,
+          "position": 54,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 53,
+          "key": 2251799813685259
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636627887378,
+          "position": 55,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 53,
+          "key": 2251799813685259
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "SequenceFlow_0n8pemi",
+            "bpmnElementType": "SEQUENCE_FLOW"
+          },
+          "timestamp": 1636627887378,
+          "position": 56,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "SEQUENCE_FLOW_TAKEN",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 53,
+          "key": 2251799813685260
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627887378,
+          "position": 57,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 53,
+          "key": 2251799813685261
+        }
+      ]
+    },
+    {
+      "index": 24,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627887391,
+          "position": 58,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 57,
+          "key": 2251799813685261
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627887391,
+          "position": 59,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 57,
+          "key": 2251799813685261
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627887391,
+          "position": 60,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 57,
+          "key": 2251799813685261
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685257,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636627887391,
+          "position": 61,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 57,
+          "key": 2251799813685261
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887391,
+          "position": 62,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 57,
+          "key": 2251799813685257
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887407,
+          "position": 63,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 62,
+          "key": 2251799813685257
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685257,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636627887407,
+          "position": 64,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 62,
+          "key": 2251799813685257
+        }
+      ]
+    },
+    {
+      "index": 26,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": -1,
+            "processDefinitionKey": 0,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": -1,
+            "variables": {}
+          },
+          "timestamp": 1636628691641,
+          "position": 65,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATE_WITH_AWAITING_RESULT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691650,
+          "position": 66,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 65,
+          "key": 2251799813685262
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "variables": {}
+          },
+          "timestamp": 1636628691650,
+          "position": 67,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 65,
+          "key": 2251799813685263
+        }
+      ]
+    },
+    {
+      "index": 28,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691659,
+          "position": 68,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 66,
+          "key": 2251799813685262
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691659,
+          "position": 69,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 66,
+          "key": 2251799813685262
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691659,
+          "position": 70,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 66,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691668,
+          "position": 71,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 70,
+          "key": 2251799813685264
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691668,
+          "position": 72,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 70,
+          "key": 2251799813685264
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691668,
+          "position": 73,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 70,
+          "key": 2251799813685264
+        }
+      ]
+    },
+    {
+      "index": 30,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691680,
+          "position": 74,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 73,
+          "key": 2251799813685264
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628691680,
+          "position": 75,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 73,
+          "key": 2251799813685264
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "SequenceFlow_0n8pemi",
+            "bpmnElementType": "SEQUENCE_FLOW"
+          },
+          "timestamp": 1636628691680,
+          "position": 76,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "SEQUENCE_FLOW_TAKEN",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 73,
+          "key": 2251799813685265
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628691680,
+          "position": 77,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 73,
+          "key": 2251799813685266
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628691690,
+          "position": 78,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 77,
+          "key": 2251799813685266
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628691690,
+          "position": 79,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 77,
+          "key": 2251799813685266
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628691690,
+          "position": 80,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 77,
+          "key": 2251799813685266
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685262,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628691690,
+          "position": 81,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 77,
+          "key": 2251799813685266
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691690,
+          "position": 82,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 77,
+          "key": 2251799813685262
+        }
+      ]
+    },
+    {
+      "index": 32,
+      "term": 2,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691701,
+          "position": 83,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 82,
+          "key": 2251799813685262
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685262,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628691701,
+          "position": 84,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 82,
+          "key": 2251799813685262
+        }
+      ]
+    },
+    {
+      "index": 33,
+      "term": 3
+    },
+    {
+      "index": 34,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": -1,
+            "processDefinitionKey": 0,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": -1,
+            "variables": {}
+          },
+          "timestamp": 1636628821506,
+          "position": 85,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATE_WITH_AWAITING_RESULT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": -1,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 35,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821526,
+          "position": 86,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 85,
+          "key": 2251799813685263
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "variables": {}
+          },
+          "timestamp": 1636628821526,
+          "position": 87,
+          "valueType": "PROCESS_INSTANCE_CREATION",
+          "intent": "CREATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 85,
+          "key": 2251799813685264
+        }
+      ]
+    },
+    {
+      "index": 36,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821587,
+          "position": 88,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 86,
+          "key": 2251799813685263
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821587,
+          "position": 89,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 86,
+          "key": 2251799813685263
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821587,
+          "position": 90,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 86,
+          "key": -1
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821604,
+          "position": 91,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 90,
+          "key": 2251799813685265
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821604,
+          "position": 92,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 90,
+          "key": 2251799813685265
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821604,
+          "position": 93,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 90,
+          "key": 2251799813685265
+        }
+      ]
+    },
+    {
+      "index": 38,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821615,
+          "position": 94,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 93,
+          "key": 2251799813685265
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "StartEvent_1",
+            "bpmnElementType": "START_EVENT"
+          },
+          "timestamp": 1636628821615,
+          "position": 95,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 93,
+          "key": 2251799813685265
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "SequenceFlow_0n8pemi",
+            "bpmnElementType": "SEQUENCE_FLOW"
+          },
+          "timestamp": 1636628821615,
+          "position": 96,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "SEQUENCE_FLOW_TAKEN",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 93,
+          "key": 2251799813685266
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628821615,
+          "position": 97,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ACTIVATE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 93,
+          "key": 2251799813685267
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628821631,
+          "position": 98,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 97,
+          "key": 2251799813685267
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628821631,
+          "position": 99,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_ACTIVATED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 97,
+          "key": 2251799813685267
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628821631,
+          "position": 100,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 97,
+          "key": 2251799813685267
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": 2251799813685263,
+            "parentProcessInstanceKey": -1,
+            "elementId": "EndEvent_0ir1yv6",
+            "bpmnElementType": "END_EVENT"
+          },
+          "timestamp": 1636628821631,
+          "position": 101,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 97,
+          "key": 2251799813685267
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821631,
+          "position": 102,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "COMPLETE_ELEMENT",
+          "recordType": "COMMAND",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 97,
+          "key": 2251799813685263
+        }
+      ]
+    },
+    {
+      "index": 40,
+      "term": 3,
+      "entries": [
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821644,
+          "position": 103,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETING",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 102,
+          "key": 2251799813685263
+        },
+        {
+          "partitionId": 1,
+          "value": {
+            "version": 1,
+            "processDefinitionKey": 2251799813685249,
+            "bpmnProcessId": "simpleProcess",
+            "processInstanceKey": 2251799813685263,
+            "parentElementInstanceKey": -1,
+            "flowScopeKey": -1,
+            "parentProcessInstanceKey": -1,
+            "elementId": "simpleProcess",
+            "bpmnElementType": "PROCESS"
+          },
+          "timestamp": 1636628821644,
+          "position": 104,
+          "valueType": "PROCESS_INSTANCE",
+          "intent": "ELEMENT_COMPLETED",
+          "recordType": "EVENT",
+          "rejectionType": "NULL_VAL",
+          "rejectionReason": "",
+          "brokerVersion": "1.2.0",
+          "sourceRecordPosition": 102,
+          "key": 2251799813685263
+        }
+      ]
+    }
+  ]
+}
