@@ -12,17 +12,17 @@ authors: zell
 
 # Chaos Day Summary
 
-In this chaos day we wanted to experiment with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to [#7955](https://github.com/camunda-cloud/zeebe/issues/7955) and [8244](https://github.com/camunda-cloud/zeebe/issues/8244).
+In this chaos day we experimented with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to [#7955](https://github.com/camunda-cloud/zeebe/issues/7955) and [#8244](https://github.com/camunda-cloud/zeebe/issues/8244).
 
-We wanted to prove that even if we have more workers deployed that the throughput of the process instance execution should not have an negative impact.
+We wanted to prove, that even if we have more workers deployed the throughput of the process instance execution should not have an negative impact.
 
-**TL;DR;** We were not able to prove our hypothesis. Scaling of workers can have a negative impact on performance.
+**TL;DR;** We were not able to prove our hypothesis. Scaling of workers can have a negative impact on performance. Check out the [third chaos experiment](#third-chaos-experiment).
 
 <!--truncate-->
 
 ## First Chaos Experiment
 
-We run the first experiment with one partition, three brokers, one standalone gateway and one starter which creates 100 PI/s. In the experiment we deployed in different benchmarks 4, 8 and 16 workers.
+We run the first experiment with one partition, three brokers, one standalone gateway and one starter which creates 100 PI/s. In this experiment we deployed different zeebe [benchmarks](https://github.com/camunda-cloud/zeebe/tree/develop/benchmarks) with 4, 8 and 16 workers.
 
 ### Expected
 
@@ -43,7 +43,7 @@ The workers should be able to complete all created instances and if the workers 
 
 ##### Result 
 
-What we can see is that if we increase the worker number it will decrease the throughput, this could be explained with: we sent more activation requests / commands which need to be handled by the Brokers.
+What we can see is that if we increase the worker number it will decrease the throughput, this might be explained with the case that we sent more activation requests / commands which need to be handled by the Brokers. We can see that the back pressure is higher with 16 workers.
 
 ## Second Chaos Experiment
 
@@ -51,7 +51,7 @@ We will repeat first experiment with some changes, to the partition count. We wi
 
 ### Expected
 
-The workers should be able to complete all created instances and if the workers are scaled the throughput should remain.
+The workers should be able to complete all created instances and if the workers are scaled the throughput should remain or be better.
 
 ### Actual
 
@@ -62,6 +62,7 @@ The workers should be able to complete all created instances and if the workers 
 #### 8 Worker
 
 ![worker-8-p3-general.png](worker-8-p3-general.png)
+
 #### 16 Worker
 
 ![worker-16-p3-general.png](worker-16-p3-general.png)
@@ -94,13 +95,13 @@ The workers should be able to complete most of the instances, we would expect th
 
 ##### Result 
 
-Between eight and four worker we see the expected difference that more worker increases the throughput and we are able to complete more instances in a second. The result of 16 workers is completely unexpected, we observed that after short time frame the completion throughput completely drops, and only process instances are created. 
+Between eight and four workers we see the expected difference, that more workers increases the throughput and we are able to complete more instances in a second. The result of 16 workers is completely unexpected. We observed that after short time frame the completion throughput completely droped, and only process instances are created. 
 
 We were able to reproduce this behavior, which shows the weakness again.
 
 ![worker-16-p3-general-reproduce.png](worker-16-p3-300-general-reproduce.png)
 
-We were not able to prove our hypothesis, that scaling workers has no negative impact on performance.
+We were not able to prove our hypothesis, that scaling of workers has no negative impact on performance.
 
 ## Further Analysis
 
