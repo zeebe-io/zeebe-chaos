@@ -5,8 +5,9 @@ date:   2021-11-24
 categories: 
   - chaos_experiment 
   - bpmn
+  - performance
 tags:
-  - availability
+  - performance
 authors: zell
 ---
 
@@ -105,4 +106,4 @@ We were not able to prove our hypothesis, that scaling of workers has no negativ
 
 ## Further Analysis
 
-We will create a separate bug issue to document our findings and reference it here.
+We created a bug issue to analyze and fix this weakness [#8267](https://github.com/camunda-cloud/zeebe/issues/8267).
