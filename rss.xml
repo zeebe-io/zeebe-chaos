@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Thu, 11 Nov 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 24 Nov 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Worker count should not impact performance]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance</link>
+            <guid>Worker count should not impact performance</guid>
+            <pubDate>Wed, 24 Nov 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[In this chaos day we experimented with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to #7955 and #8244.]]></description>
+        </item>
         <item>
             <title><![CDATA[Not produce duplicate Keys]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2021/11/11/Not-produce-duplicate-Keys</link>

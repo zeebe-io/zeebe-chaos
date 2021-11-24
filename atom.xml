@@ -2,11 +2,22 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://zeebe-io.github.io/zeebe-chaos/</id>
     <title>Zeebe Chaos Blog</title>
-    <updated>2021-11-11T00:00:00.000Z</updated>
+    <updated>2021-11-24T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/"/>
     <subtitle>Zeebe Chaos Blog</subtitle>
     <icon>https://zeebe-io.github.io/zeebe-chaos/img/zeebe-logo.png</icon>
+    <entry>
+        <title type="html"><![CDATA[Worker count should not impact performance]]></title>
+        <id>Worker count should not impact performance</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance"/>
+        <updated>2021-11-24T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[In this chaos day we experimented with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to #7955 and #8244.]]></summary>
+        <author>
+            <name>Christopher Zell</name>
+            <uri>https://github.com/zelldon</uri>
+        </author>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Not produce duplicate Keys]]></title>
         <id>Not produce duplicate Keys</id>
