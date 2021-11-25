@@ -14,6 +14,10 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
   organizationName: 'zeebe-io', // Usually your GitHub org/user name.
   projectName: 'zeebe-chaos', // Usually your repo name.
 
+  plugins: [
+    'plugin-image-zoom'
+  ],
+
   presets: [
     [
       '@docusaurus/preset-classic',
@@ -91,5 +95,6 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      zoomSelector: '.markdown img',
     }),
 });
