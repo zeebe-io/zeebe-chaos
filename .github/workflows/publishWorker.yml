@@ -17,16 +17,16 @@ jobs:
             with:
               java-version: '11'
               distribution: 'adopt'
-          - name: Set release version
-            working-directory: chaos-workers/chaos-worker/
-            run: mvn versions:set "-DnewVersion=$version" -DgenerateBackupPoms=false
-          - name: Commit version 
-            run: |
-              git config user.name github-actions
-              git config user.email github-actions@github.com
-              git add .
-              git commit -m "Set release version to ${{ github.event.release.name }}"
-              git push
+          #- name: Set release version
+           # working-directory: chaos-workers/chaos-worker/
+            #run: mvn versions:set "-DnewVersion=${{ github.event.release.name }}" -DgenerateBackupPoms=false
+          #- name: Commit version 
+            #run: |
+              #git config user.name github-actions
+              #git config user.email github-actions@github.com
+              #git add .
+              #git commit -m "Set release version to ${{ github.event.release.name }}"
+              #git push
           - name: Package with Maven
             run: mvn -B package -DskipTests -f chaos-workers/chaos-worker/pom.xml             
           - name: Build docker image   
