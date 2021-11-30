@@ -30,7 +30,7 @@ private const val EXPERIMENT_FILE_NAME = "experiment.json"
 
 private val LOG = org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.ChaosWorker")
 
-private fun createClient(): ZeebeClient {
+private fun createTestbenchClient(): ZeebeClient {
     val audience = OAuthCredentialsProviderBuilder()
         .audience(System.getenv(ENV_TESTBENCH_ADDRESS).removeSuffix(":443"))
         .authorizationServerUrl(System.getenv(ENV_TESTBENCH_AUTHORIZATION_SERVER_URL))
@@ -49,10 +49,10 @@ fun main() {
     initializeAwaitility()
     // given
     updateRepo() // get latest zeebe-chaos repo changes
-    val zeebeClient = createClient()
+    val testbenchClient = createTestbenchClient()
 
-    LOG.info("Connected to ${zeebeClient.configuration.gatewayAddress}")
-    val topology = zeebeClient.newTopologyRequest().send().join()
+    LOG.info("Connected to ${testbenchClient.configuration.gatewayAddress}")
+    val topology = testbenchClient.newTopologyRequest().send().join()
     LOG.info("Topology: $topology")
 
     // register workers
@@ -67,17 +67,17 @@ fun main() {
         .filterNot { it.equals(DeployMultipleVersionsHandler.JOB_TYPE) }
         .forEach { script ->
             LOG.info("Start worker with type `$script`")
-            zeebeClient.newWorker().jobType(script).handler(::handler).open()
+            testbenchClient.newWorker().jobType(script).handler(::handler).open()
         }
 
-    zeebeClient.newWorker().jobType(AwaitMessageCorrelationHandler.JOB_TYPE)
+    testbenchClient.newWorker().jobType(AwaitMessageCorrelationHandler.JOB_TYPE)
         .handler(AwaitMessageCorrelationHandler()).open()
-    zeebeClient.newWorker().jobType(AwaitProcessWithResultHandler.JOB_TYPE)
+    testbenchClient.newWorker().jobType(AwaitProcessWithResultHandler.JOB_TYPE)
         .handler(AwaitProcessWithResultHandler()).open()
-    zeebeClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
+    testbenchClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
         .handler(DeployMultipleVersionsHandler()).open()
 
-    zeebeClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
+    testbenchClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
 
     // keep workers running
     val latch = CountDownLatch(1)
