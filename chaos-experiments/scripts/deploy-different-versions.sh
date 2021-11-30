@@ -15,14 +15,13 @@ bpmnPath="$scriptPath/../bpmn/"
 function deployModel() {
   kubectl cp "$bpmnPath" "$pod:/tmp/" -n "$namespace"
 
-  for i in {1..5}
+  for _ in {1..5}
   do
     # the models differ in one line, the share the same name and process id
     # if we deploy them after another it will create two different deployment versions
     # the deploy command only compares the last applied deployment - so we can do that in a loop to cause
     # multiple deployments
-    kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel.bpmn --insecure
-    if [ $? -eq 0 ]
+    if kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel.bpmn --insecure
     then
       kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel_v2.bpmn --insecure
     else
