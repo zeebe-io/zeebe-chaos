@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-worker
+  labels:
+    app: chaos-worker
+spec:
+  selector:
+    matchLabels:
+      app: chaos-worker
+  replicas: 1
+  strategy:
+    # Recreate first kills the existing pod, detaches it from the pvc
+    # before creating the new pod
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: chaos-worker
+    spec:
+      containers:
+        - name: chaos-worker
+          image: gcr.io/zeebe-io/zeebe-cluster-testbench-chaos:1.x-dev
+          imagePullPolicy: Always
+          env:
+            - name: TESTBENCH_AUTHORIZATION_SERVER_URL
+              value: "https://login.cloud.ultrawombat.com/oauth/token"
+            - name: TESTBENCH_CLIENT_ID
+              value: "eMh_XGlt.jJ8de6QrO~cdU5IcuG-2DGN"
+            - name: TESTBENCH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: testbench-secrets
+                  key: clientSecret
+            - name: TESTBENCH_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: testbench-secrets
+                  key: contactPoint
+            - name: CHAOS_LOG_HOME
+              value: "/home/chaos/data"
+          resources:
+            limits:
+              cpu: 4
+              memory: 1Gi
+            requests:
+              cpu: 2
+              memory: 500Mi
+          volumeMounts:
+            - name: data
+              mountPath: /home/chaos/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: chaos-data-claim
