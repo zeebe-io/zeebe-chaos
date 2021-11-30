@@ -5,7 +5,6 @@ source utils.sh
 
 partition=1
 namespace=$(getNamespace)
-elasticName="elasticsearch-master"
 
 broker0=$(getBroker 0)
 broker2=$(getBroker 2)

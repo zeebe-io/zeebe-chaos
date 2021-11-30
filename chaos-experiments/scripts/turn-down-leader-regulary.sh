@@ -12,7 +12,7 @@ namespace=${1:-$currentNamespace}
 export CHAOS_SETUP=helm
 export NAMESPACE="$namespace"
 
-while [ true ]
+while true 
 do
   index=$(getIndexOfPodForPartitionInState "$partition" "$state")
 

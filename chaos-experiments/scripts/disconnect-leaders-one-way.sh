@@ -14,7 +14,6 @@ gateway=$(getGateway)
 # determine leader for partition one
 index=$(getIndexOfPodForPartitionInState "$partition" "LEADER")
 leader=$(getBroker "$index")
-leaderIp=$(kubectl get pod "$leader" -n "$namespace" --template="{{.status.podIP}}")
 
 # determine leader for partition three
 index=$(getIndexOfPodForPartitionInState "4" "LEADER")

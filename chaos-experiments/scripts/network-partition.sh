@@ -10,7 +10,6 @@ namespace=$(getNamespace)
 gateway=$(getGateway)
 
 broker0=$(getBroker "0")
-broker0Ip=$(kubectl get pod "$broker0" -n "$namespace" --template="{{.status.podIP}}")
 broker1=$(getBroker "1")
 broker1Ip=$(kubectl get pod "$broker1" -n "$namespace" --template="{{.status.podIP}}")
 broker2=$(getBroker "2")
@@ -81,7 +80,7 @@ do
 
   sleep 145
 
-  coin=$(($RANDOM%2))
+  coin=$((RANDOM%2))
 
   if [ $coin -eq 1 ]
   then
@@ -92,8 +91,8 @@ do
   previousCoin=$coin
   echo "set prev coin: $previousCoin"
 
-  coin=$(($RANDOM%2))
-  if [ coin -eq 1 ]
+  coin=$((RANDOM%2))
+  if [ $coin -eq 1 ]
   then
     retryUntilSuccess connect "$broker0" "$broker1Ip"
     sleep 45
