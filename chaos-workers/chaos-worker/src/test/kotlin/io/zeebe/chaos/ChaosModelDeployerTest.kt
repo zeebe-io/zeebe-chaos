@@ -3,6 +3,7 @@ package io.zeebe.chaos
 import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.protocol.record.Record
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
 import org.camunda.community.eze.EmbeddedZeebeEngine
 import org.camunda.community.eze.RecordStreamSource
 import org.camunda.community.eze.ZeebeEngine
@@ -28,6 +29,11 @@ class ChaosModelDeployerTest {
         chaosModelDeployer.deployChaosModels()
 
         // then
+        await.alias("Should deploy three models")
+            .until {
+                recordStream.processRecords().count() == 3
+            }
+
         val chaosModelNames = chaosModelDeployer.getChaosModelNames()
         val processList = recordStream.processRecords().toList()
         assertThat(processList.size).isEqualTo(chaosModelNames.size)
