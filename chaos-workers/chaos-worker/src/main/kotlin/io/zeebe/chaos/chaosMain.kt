@@ -24,7 +24,7 @@ private const val ENV_TESTBENCH_CLIENT_ID = "TESTBENCH_CLIENT_ID"
 private const val ENV_TESTBENCH_CLIENT_SECRET = "TESTBENCH_CLIENT_SECRET"
 private const val ENV_TESTBENCH_AUTHORIZATION_SERVER_URL = "TESTBENCH_AUTHORIZATION_SERVER_URL"
 
-private const val ROOT_PATH = "zeebe-chaos/chaos-experiments"
+private const val ROOT_PATH = "../../chaos-experiments"
 private const val SHELL_EXTENSION = "sh"
 private const val EXPERIMENT_FILE_NAME = "experiment.json"
 
@@ -54,6 +54,8 @@ fun main() {
     LOG.info("Connected to ${testbenchClient.configuration.gatewayAddress}")
     val topology = testbenchClient.newTopologyRequest().send().join()
     LOG.info("Topology: $topology")
+
+    ChaosModelDeployer(client = testbenchClient).deployChaosModels()
 
     // register workers
     val scriptPath = File("$ROOT_PATH/scripts/")
