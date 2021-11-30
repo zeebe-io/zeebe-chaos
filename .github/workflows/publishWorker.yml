@@ -36,6 +36,6 @@ jobs:
                 IMAGE_TAG: ${{ env.VERSION }}
             run: |                
                 echo '${{ secrets.DOCKER_GCR }}' | docker login -u _json_key --password-stdin https://gcr.io
-                docker build . -t "$REGISTRY/$REPOSITORY:latest" -t "$REGISTRY/$REPOSITORY:$IMAGE_TAG" --build-arg TOKEN="${{ secrets.SA_TOKEN }}"
+                docker build . -t "$REGISTRY/$REPOSITORY:latest" -t "$REGISTRY/$REPOSITORY:$IMAGE_TAG" --build-arg TOKEN="${{ secrets.SA_SECRET }}"
                 docker push "$REGISTRY/$REPOSITORY:latest" 
                 docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
