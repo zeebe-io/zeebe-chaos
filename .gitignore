@@ -3,3 +3,16 @@
 
 chaostoolkit.log
 journal.json
+
+
+target/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+config.properties
+/secrets.yaml
+/secrets-dev.yaml
+**/.checkstyle
+**/.factorypath
