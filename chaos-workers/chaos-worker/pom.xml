@@ -45,7 +45,7 @@
     <plugin.version.sortpom-maven-plugin>3.0.0</plugin.version.sortpom-maven-plugin>
     <version.log4j2-cachefile>2.14.1</version.log4j2-cachefile>
     <version.assertj>3.20.2</version.assertj>
-    <version.awaitility>4.1.0</version.awaitility>
+    <version.awaitility>4.1.1</version.awaitility>
     <version.commons-text>1.9</version.commons-text>
     <version.jackson>2.12.4</version.jackson>
     <version.java>11</version.java>
