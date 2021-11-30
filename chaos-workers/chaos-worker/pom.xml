@@ -51,7 +51,7 @@
     <version.java>11</version.java>
     <version.junit>5.8.2</version.junit>
     <version.log4j>2.14.1</version.log4j>
-    <version.mockito>3.11.2</version.mockito>
+    <version.mockito>4.1.0</version.mockito>
     <version.resteasy>4.7.1.Final</version.resteasy>
     <version.slf4j>1.7.32</version.slf4j>
     <version.vavr>0.10.4</version.vavr>
