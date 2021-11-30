@@ -19,4 +19,6 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build with Maven
-      run: mvn -B verify
+      run: |
+       cd chaos-workers/chaos-worker/
+       mvn -B verify
