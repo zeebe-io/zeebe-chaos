@@ -18,7 +18,8 @@ jobs:
     steps:
           - run: |
               echo "Name: ${{ env.VERSION }}"
-              echo "${{ secrets.DOCKER_GCR }}" | docker login -u _json_key --password-stdin https://gcr.io
+              echo "${{ secrets.DOCKER_GCR }}" > keyfile.json
+              docker login -u _json_key --password-stdin https://gcr.io < keyfile.json
           - uses: actions/checkout@v2
           - name: Set up JDK 11
             uses: actions/setup-java@v2.4.0
