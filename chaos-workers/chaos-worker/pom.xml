@@ -187,6 +187,7 @@
       <groupId>org.camunda.community</groupId>
       <artifactId>eze-junit-extension</artifactId>
       <version>0.6.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
