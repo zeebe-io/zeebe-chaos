@@ -11,8 +11,8 @@ class ChaosModelDeployer(val client: ZeebeClient) {
 
     fun deployChaosModels() {
         for (modelName in MODEL_NAMES) {
-            val modelFile = this::class.java.getResource("$modelName.bpmn")?.file
-            modelFile.let {
+            val modelFile = this::class.java.getResource("/$modelName.bpmn")?.file
+            modelFile?.let {
                 val bpmnModelInstance = Bpmn.readModelFromFile(File(it))
                 client.deployModel(bpmnModelInstance, modelName)
             }
