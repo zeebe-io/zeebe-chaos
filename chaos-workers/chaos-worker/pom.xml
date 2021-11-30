@@ -5,18 +5,51 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.zeebe</groupId>
-    <artifactId>zeebe-cluster-testbench</artifactId>
+    <groupId>org.camunda</groupId>
+    <artifactId>camunda-release-parent</artifactId>
+    <version>3.8.1</version>
     <!-- do not remove empty tag - http://jira.codehaus.org/browse/MNG-4687 -->
-    <version>3.0.0-SNAPSHOT</version>
-    <relativePath>../../../pom.xml</relativePath>
+    <relativePath></relativePath>
   </parent>
 
-  <artifactId>zeebe-cluster-testbench-chaos-worker</artifactId>
+  <groupId>io.zeebe</groupId>
+  <artifactId>zeebe-chaos-worker</artifactId>
   <packaging>jar</packaging>
-  <name>Zeebe Cluster Testbench - Chaos Worker</name>
+  <name>Zeebe Chaos Worker</name>
+  <version>0.1.0-SNAPSHOT</version>
 
   <properties>
+    <nexus.release.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io/
+  </nexus.release.repository>
+    <nexus.snapshot.repository>
+      https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/
+    </nexus.snapshot.repository>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <plugin.version.build-helper>3.2.0</plugin.version.build-helper>
+    <plugin.version.checkstyle>3.1.2</plugin.version.checkstyle>
+    <plugin.version.dependency>3.2.0</plugin.version.dependency>
+    <plugin.version.flakytestextractor>2.0.3</plugin.version.flakytestextractor>
+    <plugin.version.fmt>2.11</plugin.version.fmt>
+    <plugin.version.jacoco>0.8.7</plugin.version.jacoco>
+    <plugin.version.javadoc>3.3.0</plugin.version.javadoc>
+    <plugin.version.pitest>1.3.7</plugin.version.pitest>
+    <plugin.version.pitest-junit5>0.14</plugin.version.pitest-junit5>
+    <plugin.version.surefire>3.0.0-M5</plugin.version.surefire>
+    <plugin.version.shade>3.2.4</plugin.version.shade>
+    <version.log4j2-cachefile>2.14.1</version.log4j2-cachefile>
+    <version.assertj>3.20.2</version.assertj>
+    <version.awaitility>4.1.0</version.awaitility>
+    <version.commons-text>1.9</version.commons-text>
+    <version.jackson>2.12.4</version.jackson>
+    <version.java>11</version.java>
+    <version.junit>5.7.2</version.junit>
+    <version.log4j>2.14.1</version.log4j>
+    <version.mockito>3.11.2</version.mockito>
+    <version.resteasy>4.7.1.Final</version.resteasy>
+    <version.slf4j>1.7.32</version.slf4j>
+    <version.vavr>0.10.4</version.vavr>
+    <version.zeebeWorkerJavaTestutils>1.1.1</version.zeebeWorkerJavaTestutils>
+    <zeebe.version>1.1.1</zeebe.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <kotlin.code.style>official</kotlin.code.style>
     <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
@@ -25,6 +58,136 @@
     <version.awatility>4.1.0</version.awatility>
     <plugin.version..maven.exec>3.0.0</plugin.version..maven.exec>
   </properties>
+
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-cloud-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-internal-cloud-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-internal-cloud-client</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+      </dependency>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-testdriver-sequential</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-cluster-testbench-testdriver-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.camunda</groupId>
+        <artifactId>zeebe-client-java</artifactId>
+        <version>${zeebe.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${version.assertj}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${version.log4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${version.log4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${version.log4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${version.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${version.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${version.jackson}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-client</artifactId>
+        <version>${version.resteasy}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jackson2-provider</artifactId>
+        <version>${version.resteasy}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.vavr</groupId>
+        <artifactId>vavr</artifactId>
+        <version>${version.vavr}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${version.commons-text}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${version.junit}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${version.junit}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>${version.mockito}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${version.awaitility}</version>
+      </dependency>
+      <dependency>
+        <artifactId>zeebe-worker-java-testutils</artifactId>
+        <groupId>io.zeebe</groupId>
+        <version>${version.zeebeWorkerJavaTestutils}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -63,7 +226,97 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Google code format plugin -->
+        <plugin>
+          <groupId>com.coveo</groupId>
+          <artifactId>fmt-maven-plugin</artifactId>
+          <version>${plugin.version.fmt}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>format</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
+
+      <plugin>
+        <groupId>com.coveo</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+      </plugin>
+      <!-- CHECKSTYLE -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${plugin.version.checkstyle}</version>
+        <configuration>
+          <configLocation>check/.checkstyle.xml</configLocation>
+          <encoding>UTF-8</encoding>
+          <failOnViolation>true</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectories>
+            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+          </sourceDirectories>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>io.camunda</groupId>
+            <artifactId>zeebe-build-tools</artifactId>
+            <version>${zeebe.version}</version>
+          </dependency>
+        </dependencies>
+        <!-- dependency on build tool to reference the checkstyle cfg -->
+        <executions>
+          <execution>
+            <id>validate-java</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${plugin.version.dependency}</version>
+      </plugin>
+
+      <!-- Surefire plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${plugin.version.surefire}</version>
+      </plugin>
+      <!-- JaCoCo Plugin -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${plugin.version.jacoco}</version>
+        <executions>
+          <execution>
+            <id>coverage-initialize</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>coverage-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+          </execution>
+          <!-- Threshold -->
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
