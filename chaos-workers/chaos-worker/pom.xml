@@ -71,10 +71,8 @@
     <dependencies>
       <dependency>
         <groupId>io.camunda</groupId>
-        <artifactId>zeebe-bom</artifactId>
+        <artifactId>zeebe-client-java</artifactId>
         <version>${zeebe.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -189,7 +187,6 @@
       <groupId>org.camunda.community</groupId>
       <artifactId>eze-junit-extension</artifactId>
       <version>0.6.0</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
