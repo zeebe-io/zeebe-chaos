@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -13,21 +11,17 @@
 
   <groupId>io.zeebe</groupId>
   <artifactId>zeebe-chaos-worker</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Zeebe Chaos Worker</name>
-  <version>0.1.0-SNAPSHOT</version>
 
   <properties>
-    <nexus.release.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io/
-  </nexus.release.repository>
-    <nexus.snapshot.repository>
-      https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/
-    </nexus.snapshot.repository>
+    <nexus.release.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io/</nexus.release.repository>
+    <nexus.snapshot.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/</nexus.snapshot.repository>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <plugin.version.build-helper>3.2.0</plugin.version.build-helper>
     <plugin.version.checkstyle>3.1.2</plugin.version.checkstyle>
     <plugin.version.dependency>3.2.0</plugin.version.dependency>
-    <plugin.version.flakytestextractor>2.0.3</plugin.version.flakytestextractor>
     <plugin.version.fmt>2.11</plugin.version.fmt>
     <plugin.version.jacoco>0.8.7</plugin.version.jacoco>
     <plugin.version.javadoc>3.3.0</plugin.version.javadoc>
@@ -57,7 +51,6 @@
     <version.awatility>4.1.0</version.awatility>
     <plugin.version..maven.exec>3.0.0</plugin.version..maven.exec>
   </properties>
-
 
   <dependencyManagement>
     <dependencies>
@@ -181,8 +174,8 @@
         <version>${version.awaitility}</version>
       </dependency>
       <dependency>
-        <artifactId>zeebe-worker-java-testutils</artifactId>
         <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-worker-java-testutils</artifactId>
         <version>${version.zeebeWorkerJavaTestutils}</version>
       </dependency>
     </dependencies>
@@ -200,7 +193,6 @@
       <artifactId>kotlin-stdlib-jdk8</artifactId>
       <version>${version.kotlin}</version>
     </dependency>
-
 
     <dependency>
       <groupId>org.awaitility</groupId>
@@ -288,6 +280,23 @@
         <version>${plugin.version.dependency}</version>
       </plugin>
 
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sortpom</id>
+            <goals>
+              <goal>sort</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <createBackupFile>false</createBackupFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Surefire plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -363,14 +372,14 @@
         <executions>
           <execution>
             <id>make-assembly</id>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <transformers>
                 <!-- We need this to overcome https://issues.apache.org/jira/browse/LOG4J2-673 -->
-                <transformer implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer" />
+                <transformer implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer"></transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>io.zeebe.chaos.ChaosMainKt</mainClass>
                 </transformer>
