@@ -15,9 +15,22 @@
   <packaging>jar</packaging>
   <name>Zeebe Chaos Worker</name>
 
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>https://github.com/zeebe-io/zeebe-chaos</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com/zeebe-io/zeebe-chaos.git</connection>
+    <developerConnection>scm:git:git@github.com/zeebe-io/zeebe-chaos.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/zeebe-io/zeebe-chaos</url>
+  </scm>
+
   <properties>
-    <nexus.release.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io/</nexus.release.repository>
-    <nexus.snapshot.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/</nexus.snapshot.repository>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <plugin.version.build-helper>3.2.0</plugin.version.build-helper>
     <plugin.version.checkstyle>3.1.2</plugin.version.checkstyle>
@@ -29,6 +42,7 @@
     <plugin.version.pitest-junit5>0.14</plugin.version.pitest-junit5>
     <plugin.version.surefire>3.0.0-M5</plugin.version.surefire>
     <plugin.version.shade>3.2.4</plugin.version.shade>
+    <plugin.version.sortpom-maven-plugin>3.0.0</plugin.version.sortpom-maven-plugin>
     <version.log4j2-cachefile>2.14.1</version.log4j2-cachefile>
     <version.assertj>3.20.2</version.assertj>
     <version.awaitility>4.1.0</version.awaitility>
@@ -54,37 +68,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-cloud-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-internal-cloud-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-internal-cloud-client</artifactId>
-        <version>${project.version}</version>
-        <type>test-jar</type>
-      </dependency>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-testdriver-sequential</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.zeebe</groupId>
-        <artifactId>zeebe-cluster-testbench-testdriver-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
       <dependency>
         <groupId>io.camunda</groupId>
         <artifactId>zeebe-client-java</artifactId>
@@ -283,6 +266,7 @@
       <plugin>
         <groupId>com.github.ekryd.sortpom</groupId>
         <artifactId>sortpom-maven-plugin</artifactId>
+        <version>${plugin.version.sortpom-maven-plugin}</version>
         <executions>
           <execution>
             <id>sortpom</id>
