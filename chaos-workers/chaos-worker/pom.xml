@@ -56,27 +56,25 @@
     <version.slf4j>1.7.32</version.slf4j>
     <version.vavr>0.10.4</version.vavr>
     <version.zeebeWorkerJavaTestutils>1.1.1</version.zeebeWorkerJavaTestutils>
-    <zeebe.version>1.1.1</zeebe.version>
+    <zeebe.version>1.2.4</zeebe.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <kotlin.code.style>official</kotlin.code.style>
     <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
 
-    <version.kotlin>1.4.10</version.kotlin>
+    <version.kotlin>1.6.0</version.kotlin>
     <version.awatility>4.1.0</version.awatility>
     <plugin.version..maven.exec>3.0.0</plugin.version..maven.exec>
   </properties>
 
   <dependencyManagement>
+
     <dependencies>
       <dependency>
         <groupId>io.camunda</groupId>
-        <artifactId>zeebe-client-java</artifactId>
+        <artifactId>zeebe-bom</artifactId>
         <version>${zeebe.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.assertj</groupId>
-        <artifactId>assertj-core</artifactId>
-        <version>${version.assertj}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -179,11 +177,6 @@
 
     <dependency>
       <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <version>${version.awaitility}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
       <artifactId>awaitility-kotlin</artifactId>
       <version>${version.awaitility}</version>
     </dependency>
@@ -193,9 +186,10 @@
       <artifactId>zeebe-client-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.camunda</groupId>
-      <artifactId>zeebe-util</artifactId>
-      <version>${zeebe.version}</version>
+      <groupId>org.camunda.community</groupId>
+      <artifactId>eze-junit-extension</artifactId>
+      <version>0.6.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -219,7 +213,6 @@
     </pluginManagement>
 
     <plugins>
-
       <plugin>
         <groupId>com.coveo</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
