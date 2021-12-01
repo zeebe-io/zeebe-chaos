@@ -48,7 +48,6 @@ private fun createTestbenchClient(): ZeebeClient {
 fun main() {
     initializeAwaitility()
     // given
-    updateRepo() // get latest zeebe-chaos repo changes
     val testbenchClient = createTestbenchClient()
 
     LOG.info("Connected to ${testbenchClient.configuration.gatewayAddress}")
@@ -58,19 +57,7 @@ fun main() {
     ChaosModelDeployer(client = testbenchClient).deployChaosModels()
 
     // register workers
-    val scriptPath = File("$ROOT_PATH/scripts/")
-    LOG.info("Fetch script from folder ${scriptPath.absolutePath}")
-
-    scriptPath.listFiles { file -> file.extension == SHELL_EXTENSION }!!
-        .map { it.name }
-        .filterNot { it.contains("utils") }
-        .filterNot { it.equals(AwaitMessageCorrelationHandler.JOB_TYPE) }
-        .filterNot { it.equals(AwaitProcessWithResultHandler.JOB_TYPE) }
-        .filterNot { it.equals(DeployMultipleVersionsHandler.JOB_TYPE) }
-        .forEach { script ->
-            LOG.info("Start worker with type `$script`")
-            testbenchClient.newWorker().jobType(script).handler(::handler).open()
-        }
+    ChaosScriptWorkerRegistry(testbenchClient).registerChaosScriptWorkers()
 
     testbenchClient.newWorker().jobType(AwaitMessageCorrelationHandler.JOB_TYPE)
         .handler(AwaitMessageCorrelationHandler()).open()
@@ -119,7 +106,7 @@ fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
     client.newCompleteCommand(activatedjob.key).variables("{\"experiments\": $experiments}").send()
 }
 
-fun handler(client: JobClient, activatedjob: ActivatedJob) {
+fun chaosScriptHandler(client: JobClient, activatedjob: ActivatedJob) {
     val clusterId = activatedjob.variablesAsMap["clusterId"]!! as String
     setMDCForJob(activatedjob)
 
@@ -192,13 +179,6 @@ private fun createCommandList(
         }
     }
     return commandList
-}
-
-/**
- * Get latest state of the zeebe-chaos repository, so we can run the latest experiments.
- */
-fun updateRepo() {
-    runCommands(File(ROOT_PATH), "git", "pull", "origin", "master")
 }
 
 /**
