@@ -28,7 +28,7 @@ class DeployMultipleVersionsHandlerTest {
                 .serviceTask("actionTask")
                     { task -> task.zeebeJobType(DeployMultipleVersionsHandler.JOB_TYPE) }
                 .endEvent()
-                .done()]
+                .done()
         client.deployModel(bpmnModelInstance, "action")
 
         val deployMultipleVersionsHandler =
