@@ -64,7 +64,7 @@ fun main() {
     testbenchClient.newWorker().jobType(AwaitProcessWithResultHandler.JOB_TYPE)
         .handler(AwaitProcessWithResultHandler()).open()
     testbenchClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
-        .handler(DeployMultipleVersionsHandler()).open()
+        .handler(DeployMultipleVersionsHandler(::createClientForClusterUnderTest)).open()
 
     testbenchClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
 
@@ -219,7 +219,7 @@ fun runCommands(workingDir: File?, vararg commands: String): Int {
 internal fun ZeebeClient.deployModel(model: BpmnModelInstance, name: String): Boolean {
     return succeeds({
         this.newDeployCommand().addProcessModel(model, name).send().join()
-    }, { exc -> LOG.warn("Deployment of $name failed with exception: ${exc.message}") })
+    }, { exc -> LOG.warn("Deployment of $name failed with exception: ${exc.message}", exc) })
 }
 
 internal fun createClientForClusterUnderTest(job: ActivatedJob): ZeebeClient {
