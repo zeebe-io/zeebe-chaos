@@ -55,7 +55,7 @@
     <version.resteasy>4.7.1.Final</version.resteasy>
     <version.slf4j>1.7.32</version.slf4j>
     <version.vavr>0.10.4</version.vavr>
-    <version.zeebeWorkerJavaTestutils>1.1.1</version.zeebeWorkerJavaTestutils>
+    <version.zeebeWorkerJavaTestutils>1.2.4</version.zeebeWorkerJavaTestutils>
     <zeebe.version>1.2.4</zeebe.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <kotlin.code.style>official</kotlin.code.style>
