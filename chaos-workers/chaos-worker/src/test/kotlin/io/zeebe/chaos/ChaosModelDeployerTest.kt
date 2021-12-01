@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 @EmbeddedZeebeEngine
 class ChaosModelDeployerTest {
 
-    private lateinit var zeebe: ZeebeEngine
     private lateinit var client: ZeebeClient
     private lateinit var recordStream: RecordStreamSource
 

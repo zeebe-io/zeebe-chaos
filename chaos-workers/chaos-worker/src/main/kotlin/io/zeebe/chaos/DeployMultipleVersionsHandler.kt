@@ -4,26 +4,29 @@ import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.client.api.response.ActivatedJob
 import io.camunda.zeebe.client.api.response.DeploymentEvent
 import io.camunda.zeebe.client.api.worker.JobClient
-import io.camunda.zeebe.client.api.worker.JobHandler
 import io.camunda.zeebe.model.bpmn.Bpmn
 import org.awaitility.kotlin.await
 
-class DeployMultipleVersionsHandler : JobHandler {
-
-    private val PROCESS_ID = "multiVersion"
-    private val RESOURCE_NAME = PROCESS_ID +".bpmn"
-    private val LOG =
-        org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.DeployMultipleVersionsHandler")
+class DeployMultipleVersionsHandler(private val chaosClientFactory : ChaosClusterClientFactory, private val registerJob : RegisterJob ) : ChaosJobHandler {
 
     companion object {
+        internal const val PROCESS_ID = "multiVersion"
+        private const val RESOURCE_NAME = "$PROCESS_ID.bpmn"
+        private val LOG =
+            org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.DeployMultipleVersionsHandler")
+
         const val JOB_TYPE = "deploy-different-versions.sh"
     }
 
+    override fun getJobType(): String {
+        return JOB_TYPE
+    }
+
     override fun handle(testbench: JobClient, job: ActivatedJob) {
-        setMDCForJob(job)
+        registerJob(job)
         LOG.info("Handle job $JOB_TYPE")
 
-        createClientForClusterUnderTest(job).use { clusterUnderTest ->
+        chaosClientFactory(job).use { clusterUnderTest ->
             LOG.info("Connected to ${clusterUnderTest.configuration.gatewayAddress}, start deploying multiple versions...")
 
             val lastVersion = (1..10)
@@ -53,7 +56,7 @@ class DeployMultipleVersionsHandler : JobHandler {
                     .addProcessModel(
                             Bpmn.createExecutableProcess(PROCESS_ID)
                                     .name("Multi version process")
-                                    .startEvent("start-" + index)
+                                    .startEvent("start-$index")
                                     .endEvent()
                                     .done(),
                             RESOURCE_NAME)
