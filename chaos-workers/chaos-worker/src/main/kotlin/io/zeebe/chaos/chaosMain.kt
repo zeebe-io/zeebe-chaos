@@ -64,7 +64,7 @@ fun main() {
     testbenchClient.newWorker().jobType(AwaitProcessWithResultHandler.JOB_TYPE)
         .handler(AwaitProcessWithResultHandler()).open()
     testbenchClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
-        .handler(DeployMultipleVersionsHandler(::createClientForClusterUnderTest)).open()
+        .handler(DeployMultipleVersionsHandler(::createClientForClusterUnderTest, ::setMDCForJob)).open()
 
     testbenchClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
 

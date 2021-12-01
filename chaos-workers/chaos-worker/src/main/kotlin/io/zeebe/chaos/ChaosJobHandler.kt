@@ -19,3 +19,8 @@ interface ChaosJobHandler : JobHandler {
  * @return the client to access the cluster where the chaos experiment should run against
  */
 typealias ChaosClusterClientFactory = (job: ActivatedJob) -> ZeebeClient
+
+/**
+ * Typealias/function to register an job, which the JobHandler currently handles.
+ */
+typealias RegisterJob = (job: ActivatedJob) -> Unit

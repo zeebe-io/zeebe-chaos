@@ -3,16 +3,19 @@ package io.zeebe.chaos
 import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.client.api.response.ActivatedJob
 import io.camunda.zeebe.model.bpmn.Bpmn
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.camunda.community.eze.EmbeddedZeebeEngine
 import org.camunda.community.eze.RecordStreamSource
 import org.camunda.community.eze.ZeebeEngine
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.streams.toList
 
 @EmbeddedZeebeEngine
 class DeployMultipleVersionsHandlerTest {
 
+    private lateinit var engine: ZeebeEngine
     private lateinit var client: ZeebeClient
     private lateinit var recordStream: RecordStreamSource
 
@@ -25,11 +28,11 @@ class DeployMultipleVersionsHandlerTest {
                 .serviceTask("actionTask")
                     { task -> task.zeebeJobType(DeployMultipleVersionsHandler.JOB_TYPE) }
                 .endEvent()
-                .done()
+                .done()]
         client.deployModel(bpmnModelInstance, "action")
 
         val deployMultipleVersionsHandler =
-            DeployMultipleVersionsHandler { _ -> client }
+            DeployMultipleVersionsHandler({ _ -> engine.createClient()}, { })
 
         client
             .newWorker()
@@ -52,8 +55,20 @@ class DeployMultipleVersionsHandlerTest {
         // then
         await.alias("should deploy multiple versions").until {
             recordStream.processRecords()
-                .filter { record -> record.value.bpmnProcessId.equals("action") }
+                .filter { record -> !record.value.bpmnProcessId.equals("action") }
                 .count() >= 10
         }
+
+        val processList = recordStream.processRecords()
+            .filter { record -> !record.value.bpmnProcessId.equals("action") }
+            .map { record -> record.value }
+            .toList()
+
+        assertThat(processList.stream().map { record -> record.bpmnProcessId }.distinct())
+            .singleElement()
+            .isEqualTo(DeployMultipleVersionsHandler.PROCESS_ID)
+
+        assertThat(processList.stream().map { record -> record.version })
+            .last().isEqualTo(10);
     }
 }

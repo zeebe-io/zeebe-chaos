@@ -4,15 +4,14 @@ import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.client.api.response.ActivatedJob
 import io.camunda.zeebe.client.api.response.DeploymentEvent
 import io.camunda.zeebe.client.api.worker.JobClient
-import io.camunda.zeebe.client.api.worker.JobHandler
 import io.camunda.zeebe.model.bpmn.Bpmn
 import org.awaitility.kotlin.await
 
-class DeployMultipleVersionsHandler(private val chaosClientFactory : ChaosClusterClientFactory) : ChaosJobHandler {
+class DeployMultipleVersionsHandler(private val chaosClientFactory : ChaosClusterClientFactory, private val registerJob : RegisterJob ) : ChaosJobHandler {
 
     companion object {
-        private const val PROCESS_ID = "multiVersion"
-        private const val RESOURCE_NAME = PROCESS_ID +".bpmn"
+        internal const val PROCESS_ID = "multiVersion"
+        private const val RESOURCE_NAME = "$PROCESS_ID.bpmn"
         private val LOG =
             org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.DeployMultipleVersionsHandler")
 
@@ -24,7 +23,7 @@ class DeployMultipleVersionsHandler(private val chaosClientFactory : ChaosCluste
     }
 
     override fun handle(testbench: JobClient, job: ActivatedJob) {
-        setMDCForJob(job)
+        registerJob(job)
         LOG.info("Handle job $JOB_TYPE")
 
         chaosClientFactory(job).use { clusterUnderTest ->
@@ -57,7 +56,7 @@ class DeployMultipleVersionsHandler(private val chaosClientFactory : ChaosCluste
                     .addProcessModel(
                             Bpmn.createExecutableProcess(PROCESS_ID)
                                     .name("Multi version process")
-                                    .startEvent("start-" + index)
+                                    .startEvent("start-$index")
                                     .endEvent()
                                     .done(),
                             RESOURCE_NAME)
