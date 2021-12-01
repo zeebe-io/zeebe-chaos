@@ -14,10 +14,7 @@ import org.junit.jupiter.api.Test
 class ChaosModelDeployerTest {
 
     private lateinit var zeebe: ZeebeEngine
-    private lateinit var client: ZeebeClient
-    private lateinit var clock: ZeebeEngineClock
     private lateinit var recordStream: RecordStreamSource
-
 
     @Test
     fun `should deploy models`() {
