@@ -97,7 +97,8 @@ fun chaosScriptHandler(client: JobClient, activatedjob: ActivatedJob) {
 
     val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
     val command = provider["path"]!!.toString()
-    val scriptPath = File("$ROOT_PATH/scripts/")
+
+    val scriptPath = File(FileResolver().resolveScriptsDir()!!)
 
     val commandList = createCommandList(scriptPath, command, provider)
     LOG.info("Commands to run: $commandList")
