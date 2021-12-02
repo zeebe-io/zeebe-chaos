@@ -11,7 +11,7 @@ ENV PATH "${CHAOS_HOME}:${PATH}"
 
 # install dependencies
 RUN ${CHAOS_HOME}/installDependencies.sh
-RUN git clone https://github.com/zeebe-io/zeebe-chaos.git
+# RUN git clone https://github.com/zeebe-io/zeebe-chaos.git
 
 # current user is root so we need to copy it to root
 # probably we want to create a different user

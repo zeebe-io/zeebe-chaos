@@ -1,5 +1,6 @@
 package io.zeebe.chaos
 
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import java.io.File
 import java.io.InputStream
 
@@ -8,8 +9,8 @@ import java.io.InputStream
  */
 class FileResolver {
     companion object {
-        private const val CHAOS_DIR = "/chaos-experiments"
-        private const val SCRIPTS_DIR = "/scripts"
+        const val CHAOS_DIR = "/chaos-experiments"
+        const val SCRIPTS_DIR = "/scripts"
     }
 
     fun resolveWorkerDeploymentDir(): File {

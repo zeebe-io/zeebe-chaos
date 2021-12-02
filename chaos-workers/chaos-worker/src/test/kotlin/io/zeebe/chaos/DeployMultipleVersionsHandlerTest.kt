@@ -1,7 +1,6 @@
 package io.zeebe.chaos
 
 import io.camunda.zeebe.client.ZeebeClient
-import io.camunda.zeebe.client.api.response.ActivatedJob
 import io.camunda.zeebe.model.bpmn.Bpmn
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -10,7 +9,6 @@ import org.camunda.community.eze.RecordStreamSource
 import org.camunda.community.eze.ZeebeEngine
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.streams.toList
 
 @EmbeddedZeebeEngine
 class DeployMultipleVersionsHandlerTest {
