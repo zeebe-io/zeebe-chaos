@@ -66,7 +66,8 @@ fun main() {
     testbenchClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
         .handler(DeployMultipleVersionsHandler(::createClientForClusterUnderTest, ::setMDCForJob)).open()
 
-    testbenchClient.newWorker().jobType("readExperiments").handler(::readExperiments).open()
+    val readChaosExperimentsHandler = ReadChaosExperimentsHandler(::setMDCForJob)
+    testbenchClient.newWorker().jobType(readChaosExperimentsHandler.getJobType()).handler(readChaosExperimentsHandler).open()
 
     // keep workers running
     val latch = CountDownLatch(1)
@@ -86,24 +87,6 @@ private fun initializeAwaitility() {
     // set a default timeout for all awaitility calls
     Awaitility.setDefaultTimeout(Duration.ofHours(1))
     Awaitility.setDefaultPollInterval(FibonacciPollInterval.fibonacci(TimeUnit.SECONDS))
-}
-
-fun readExperiments(client: JobClient, activatedjob: ActivatedJob) {
-    setMDCForJob(activatedjob)
-    val clusterPlan = activatedjob
-        .variablesAsMap["clusterPlan"]!!
-        .toString()
-        .toLowerCase() // we expected lower case names
-        .replace("\\s".toRegex(), "") // without spaces, like production-m
-
-    LOG.info("Read experiments for cluster plan: $clusterPlan")
-
-    val clusterPlanDir = File("$ROOT_PATH/camunda-cloud/$clusterPlan")
-    val experiments = clusterPlanDir.listFiles()!!.map {
-        Files.readString(File(it, EXPERIMENT_FILE_NAME).toPath())
-    }
-
-    client.newCompleteCommand(activatedjob.key).variables("{\"experiments\": $experiments}").send()
 }
 
 fun chaosScriptHandler(client: JobClient, activatedjob: ActivatedJob) {
@@ -154,7 +137,6 @@ internal fun consumeOutputStream(job : ActivatedJob, inputStream: InputStream) {
         }
     }
 }
-
 
 private fun createCommandList(
     scriptPath: File,
