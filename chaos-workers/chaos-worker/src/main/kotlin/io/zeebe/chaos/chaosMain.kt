@@ -175,7 +175,7 @@ private fun createCommandList(
 internal fun prepareForChaosExperiments(namespace: String) {
     LOG.info("Prepare chaos experiments.")
 
-    val workerPath = WorkerDeploymentFileResolverFileResolver().resolveWorkerDeploymentDir()
+    val workerPath = FileResolver().resolveWorkerDeploymentDir()
     runCommands(workerPath, "kubectl", "--namespace=$namespace", "apply", "--filename=worker.yaml")
 }
 

@@ -11,6 +11,7 @@ class ReadChaosExperimentsHandler(private val registerJob : RegisterJob) : Chaos
         private val LOG =
             org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.ReadChaosExperimentsHandler")
         private const val EXPERIMENT_FILE_NAME = "experiment.json"
+        private val fileResolver = FileResolver()
 
         const val JOB_TYPE = "readExperiments"
     }
@@ -34,7 +35,7 @@ class ReadChaosExperimentsHandler(private val registerJob : RegisterJob) : Chaos
             .replace("\\s".toRegex(), "") // without spaces, like production-m
 
         LOG.info("Read experiments for cluster plan: $clusterPlan")
-        val clusterPlanExperimentsPath = (this::class.java::getResource)("/chaos-experiments/$clusterPlan")?.path
+        val clusterPlanExperimentsPath = fileResolver.resolveClusterPlanDir(clusterPlan)
         if (clusterPlanExperimentsPath == null) {
             val errorMessage =
                 "Expected to read chaos experiments for cluster plan '$clusterPlan', but experiments were not found."
