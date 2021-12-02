@@ -13,7 +13,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets.UTF_8
-import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -166,7 +165,6 @@ private fun createCommandList(
 /**
  * Prepares for running chaos experiments:
  *
- * * Switch the namespace to the target namespace (kubens "$NAMESPACE")
  * * deploy workers for chaos experiments
  *
  * Workers are needed in some of our chaos experiments.
@@ -174,12 +172,10 @@ private fun createCommandList(
  * the logs of the workers AND they are deleted if we delete the namespace anyway.
  * kubectl apply -f worker.yaml &>> "$logFile"
  */
-fun prepareForChaosExperiments(namespace: String) {
+internal fun prepareForChaosExperiments(namespace: String) {
     LOG.info("Prepare chaos experiments.")
 
-    // we should not use kubens when we want to scale our workers, it will change the shared context
-    // runCommands(null, "kubens", namespace)
-    val workerPath = File("$ROOT_PATH/camunda-cloud")
+    val workerPath = WorkerDeploymentFileResolverFileResolver().resolveWorkerDeploymentDir()
     runCommands(workerPath, "kubectl", "--namespace=$namespace", "apply", "--filename=worker.yaml")
 }
 
