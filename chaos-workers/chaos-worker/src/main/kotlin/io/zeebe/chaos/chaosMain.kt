@@ -23,10 +23,6 @@ private const val ENV_TESTBENCH_CLIENT_ID = "TESTBENCH_CLIENT_ID"
 private const val ENV_TESTBENCH_CLIENT_SECRET = "TESTBENCH_CLIENT_SECRET"
 private const val ENV_TESTBENCH_AUTHORIZATION_SERVER_URL = "TESTBENCH_AUTHORIZATION_SERVER_URL"
 
-private const val ROOT_PATH = "zeebe-chaos/chaos-experiments"
-private const val SHELL_EXTENSION = "sh"
-private const val EXPERIMENT_FILE_NAME = "experiment.json"
-
 private val LOG = org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.ChaosWorker")
 
 private fun createTestbenchClient(): ZeebeClient {
@@ -97,7 +93,8 @@ fun chaosScriptHandler(client: JobClient, activatedjob: ActivatedJob) {
 
     val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
     val command = provider["path"]!!.toString()
-    val scriptPath = File("$ROOT_PATH/scripts/")
+
+    val scriptPath = File(FileResolver().resolveScriptsDir()!!)
 
     val commandList = createCommandList(scriptPath, command, provider)
     LOG.info("Commands to run: $commandList")
