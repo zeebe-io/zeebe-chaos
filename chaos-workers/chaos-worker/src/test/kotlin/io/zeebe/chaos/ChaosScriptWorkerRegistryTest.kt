@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.camunda.community.eze.EmbeddedZeebeEngine
 import org.camunda.community.eze.RecordStreamSource
-import org.camunda.community.eze.ZeebeEngine
 import org.junit.jupiter.api.Test
 
 @EmbeddedZeebeEngine
@@ -19,7 +18,7 @@ class ChaosScriptWorkerRegistryTest {
         // given
 
         // when
-        val workerRegistry = ChaosScriptWorkerRegistry(client)
+        val workerRegistry = ChaosScriptWorkerRegistry(client, FileResolver())
 
         // then
         assertThat(workerRegistry.getScriptNames()).isNotNull.isNotEmpty
@@ -28,8 +27,8 @@ class ChaosScriptWorkerRegistryTest {
     @Test
     fun `should register workers`() {
         // given
-        val workerRegistry = ChaosScriptWorkerRegistry(client)
-        val scriptNames = workerRegistry.getScriptNames()!!
+        val workerRegistry = ChaosScriptWorkerRegistry(client, FileResolver())
+        val scriptNames = workerRegistry.getScriptNames()
 
         // when
         workerRegistry.registerChaosScriptWorkers()

@@ -54,15 +54,13 @@ class FileResolverTest {
         val scriptsDir = fileResolver.resolveScriptsDir()
 
         // then
-        assertThat(scriptsDir).isNotNull.isNotBlank
-        val scriptsDirFile = File(scriptsDir!!)
-        assertThat(scriptsDirFile).exists()
-        assertThat(scriptsDirFile).isDirectory
-        assertThat(scriptsDirFile.listFiles()).isNotEmpty
+        assertThat(scriptsDir).exists()
+        assertThat(scriptsDir).isDirectory
+        assertThat(scriptsDir.listFiles()).isNotEmpty
     }
 
     @Test
-    fun `should not resolve cluster plan dir if not existing`() {
+    fun `should return file for cluster plan dir if not existing`() {
         // given
         val fileResolver = FileResolver()
 
@@ -70,7 +68,8 @@ class FileResolverTest {
         val nonExistingClusterplan = fileResolver.resolveClusterPlanDir("yolo")
 
         // then
-        assertThat(nonExistingClusterplan).isNull()
+        assertThat(nonExistingClusterplan).isNotNull()
+        assertThat(nonExistingClusterplan).doesNotExist()
     }
 
     @Test
@@ -82,9 +81,7 @@ class FileResolverTest {
         val clusterplan = fileResolver.resolveClusterPlanDir("production-m")
 
         // then
-        assertThat(clusterplan).isNotNull.isNotBlank
-        val clusterPlanDir = File(clusterplan!!)
-        assertThat(clusterPlanDir).exists().isDirectory
-        assertThat(clusterPlanDir.listFiles()).isNotEmpty
+        assertThat(clusterplan).exists().isDirectory
+        assertThat(clusterplan.listFiles()).isNotEmpty
     }
 }

@@ -7,18 +7,20 @@ import java.io.InputStream
 /**
  * Helper class to resolve all necessary files and directories in the chaos worker application.
  */
-class FileResolver {
+class FileResolver(val rootPath : String = DEFAULT_ROOT_PATH) {
+
     companion object {
-        const val CHAOS_DIR = "/chaos-experiments"
-        const val SCRIPTS_DIR = "/scripts"
+        /**
+         * Default root path, relative to the project.
+         */
+        private const val DEFAULT_ROOT_PATH = "../../chaos-experiments/"
     }
 
+    private val chaosDir = "$rootPath/camunda-cloud/"
+    private val scriptsDir = "$rootPath/scripts"
+
     fun resolveWorkerDeploymentDir(): File {
-        // In order to resolve it correctly we use the direct path to the file, and return the parent.
-        // This makes sure that the file really exist and can be resolved and doesn't conflict with
-        // the tests, where we have in the test-resources and equal named directory.
-        val workerPath =
-            File(this::class.java.getResource("$CHAOS_DIR/worker.yaml")!!.path)
+        val workerPath = File("$chaosDir/worker.yaml")
         return workerPath.parentFile
     }
 
@@ -26,11 +28,11 @@ class FileResolver {
         return this::class.java.getResourceAsStream("/$modelName.bpmn")
     }
 
-    fun resolveClusterPlanDir(clusterPlan : String): String? {
-        return (this::class.java::getResource)("$CHAOS_DIR/$clusterPlan")?.path
+    fun resolveClusterPlanDir(clusterPlan : String): File {
+        return File("$chaosDir/$clusterPlan")
     }
 
-    fun resolveScriptsDir(): String? {
-        return (this::class.java::getResource)(SCRIPTS_DIR)?.path
+    fun resolveScriptsDir(): File {
+        return File(scriptsDir)
     }
 }

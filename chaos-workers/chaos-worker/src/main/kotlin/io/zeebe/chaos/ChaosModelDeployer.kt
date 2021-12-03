@@ -4,10 +4,9 @@ import io.camunda.zeebe.client.ZeebeClient
 import io.camunda.zeebe.model.bpmn.Bpmn
 import java.io.File
 
-class ChaosModelDeployer(val client: ZeebeClient) {
+class ChaosModelDeployer(private val client: ZeebeClient, private val fileResolver: FileResolver) {
     companion object {
         private val MODEL_NAMES = listOf("actionRunner", "chaosExperiment", "chaosToolkit")
-        private val fileResolver = FileResolver()
     }
 
     fun deployChaosModels() {
