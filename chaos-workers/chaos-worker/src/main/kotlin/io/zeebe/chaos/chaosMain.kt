@@ -97,8 +97,8 @@ private fun createFileResolver() : FileResolver? {
 
     // sanity check; paths can be resolved
     val resolveScriptsDir = fileResolver.resolveScriptsDir()
-    if (resolveScriptsDir == null) {
-        LOG.error("Can't resolve the scripts dir with root path ${fileResolver.rootPath}.")
+    if (!resolveScriptsDir.exists()) {
+        LOG.error("Can't resolve the scripts dir $resolveScriptsDir with root path ${fileResolver.rootPath}.")
         return null
     }
     return fileResolver
