@@ -3,6 +3,7 @@ FROM openjdk:11-jre as pre
 ARG TOKEN
 ENV ZEEBE_VERSION=1.0.0-alpha4 \
     CHAOS_HOME=/home/chaos \
+    CHAOS_ROOT_PATH=/home/chaos/chaos-experiments \
     CONTEXT=gke_camunda-cloud-240911_europe-west1-d_ultrachaos
 
 WORKDIR ${CHAOS_HOME}
@@ -18,6 +19,9 @@ RUN mkdir -p .kube
 COPY kubeconfig /root/.kube/config
 RUN kubectl config set-credentials ${CONTEXT}-zeebe-chaos-token-user --token ${TOKEN}
 RUN kubectl config set-context ${CONTEXT} --user ${CONTEXT}-zeebe-chaos-token-user
+
+# COPY CHAOS RESOURCES
+COPY ./chaos-experiments/. ./chaos-experiments
 
 FROM pre as runner
 
