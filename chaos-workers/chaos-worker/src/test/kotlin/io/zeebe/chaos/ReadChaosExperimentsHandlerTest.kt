@@ -13,6 +13,7 @@ import org.camunda.community.eze.RecordStream.withIntent
 import org.camunda.community.eze.RecordStreamSource
 import org.camunda.community.eze.ZeebeEngine
 import org.junit.After
+import org.junit.Ignore
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -36,7 +37,7 @@ class ReadChaosExperimentsHandlerTest {
         client.deployModel(bpmnModelInstance, "readExperiments")
 
         val readChaosExperimentsHandler =
-            ReadChaosExperimentsHandler{ }
+            ReadChaosExperimentsHandler({ }, FileResolver())
 
         worker = client
             .newWorker()
@@ -98,40 +99,7 @@ class ReadChaosExperimentsHandlerTest {
             .withErrorType(ErrorType.JOB_NO_RETRIES).first()
 
         assertThat(incident.value.errorMessage)
-            .isEqualTo("Expected to read chaos experiments for cluster plan 'none', but experiments were not found.")
-    }
-
-    @Test
-    fun `should complete job when no experiments exist with existing clusterplan`() {
-        // given
-        // when
-        val instance = client.newCreateInstanceCommand()
-            .bpmnProcessId("readExperiments")
-            .latestVersion()
-            .variables(mapOf("clusterPlan" to "empty"))
-            .send()
-            .join()
-
-        // then
-        await.alias("should complete job").until {
-            recordStream.jobRecords()
-                .withProcessInstanceKey(instance.processInstanceKey)
-                .withIntent(JobIntent.COMPLETED)
-                .any()
-        }
-
-        val completedJob = recordStream.jobRecords()
-            .withProcessInstanceKey(instance.processInstanceKey)
-            .withIntent(JobIntent.COMPLETED)
-            .first()
-
-        val variables = completedJob.value.variables
-
-        assertThat(variables).isNotNull
-        assertThat(variables["experiments"]).isNotNull
-
-        val experiments = variables["experiments"] as List<LinkedHashMap<String, Object>>
-        assertThat(experiments).isEmpty()
+            .isEqualTo("Expected to read chaos experiments under '../../chaos-experiments/camunda-cloud/none', but directory doesn't exist.")
     }
 
     @Test

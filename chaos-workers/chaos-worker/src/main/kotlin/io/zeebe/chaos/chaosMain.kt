@@ -25,6 +25,14 @@ private const val ENV_TESTBENCH_AUTHORIZATION_SERVER_URL = "TESTBENCH_AUTHORIZAT
 
 private val LOG = org.slf4j.LoggerFactory.getLogger("io.zeebe.chaos.ChaosWorker")
 
+/**
+ * The env variable which can contain a custom root path for the chaos experiment resources,
+ * like scripts, experiment files etc.
+ */
+private const val ENV_CHAOS_ROOT_PATH = "CHAOS_ROOT_PATH"
+
+private lateinit var fileResolver : FileResolver
+
 private fun createTestbenchClient(): ZeebeClient {
     val audience = OAuthCredentialsProviderBuilder()
         .audience(System.getenv(ENV_TESTBENCH_ADDRESS).removeSuffix(":443"))
@@ -41,18 +49,19 @@ private fun createTestbenchClient(): ZeebeClient {
 }
 
 fun main() {
+    // init
     initializeAwaitility()
-    // given
-    val testbenchClient = createTestbenchClient()
+    fileResolver = createFileResolver() ?: return
 
+    val testbenchClient = createTestbenchClient()
     LOG.info("Connected to ${testbenchClient.configuration.gatewayAddress}")
     val topology = testbenchClient.newTopologyRequest().send().join()
     LOG.info("Topology: $topology")
 
-    ChaosModelDeployer(client = testbenchClient).deployChaosModels()
+    ChaosModelDeployer(client = testbenchClient, fileResolver).deployChaosModels()
 
     // register workers
-    ChaosScriptWorkerRegistry(testbenchClient).registerChaosScriptWorkers()
+    ChaosScriptWorkerRegistry(testbenchClient, fileResolver).registerChaosScriptWorkers()
 
     testbenchClient.newWorker().jobType(AwaitMessageCorrelationHandler.JOB_TYPE)
         .handler(AwaitMessageCorrelationHandler()).open()
@@ -61,7 +70,7 @@ fun main() {
     testbenchClient.newWorker().jobType(DeployMultipleVersionsHandler.JOB_TYPE)
         .handler(DeployMultipleVersionsHandler(::createClientForClusterUnderTest, ::setMDCForJob)).open()
 
-    val readChaosExperimentsHandler = ReadChaosExperimentsHandler(::setMDCForJob)
+    val readChaosExperimentsHandler = ReadChaosExperimentsHandler(::setMDCForJob, fileResolver)
     testbenchClient.newWorker().jobType(readChaosExperimentsHandler.getJobType()).handler(readChaosExperimentsHandler).open()
 
     // keep workers running
@@ -76,6 +85,23 @@ fun main() {
             })
 
     latch.await()
+}
+
+private fun createFileResolver() : FileResolver? {
+    var fileResolver = FileResolver()
+    val envVar = System.getenv("CHAOS_ROOT_PATH")
+    if (envVar != null) {
+        fileResolver = FileResolver(envVar)
+    }
+    LOG.info("Use ${fileResolver.rootPath} as ROOT_PATH to find chaos experiment resources.")
+
+    // sanity check; paths can be resolved
+    val resolveScriptsDir = fileResolver.resolveScriptsDir()
+    if (!resolveScriptsDir.exists()) {
+        LOG.error("Can't resolve the scripts dir $resolveScriptsDir with root path ${fileResolver.rootPath}.")
+        return null
+    }
+    return fileResolver
 }
 
 private fun initializeAwaitility() {
@@ -94,7 +120,7 @@ fun chaosScriptHandler(client: JobClient, activatedjob: ActivatedJob) {
     val provider = activatedjob.variablesAsMap["provider"]!! as Map<String, Any>
     val command = provider["path"]!!.toString()
 
-    val scriptPath = File(FileResolver().resolveScriptsDir()!!)
+    val scriptPath = fileResolver.resolveScriptsDir()
 
     val commandList = createCommandList(scriptPath, command, provider)
     LOG.info("Commands to run: $commandList")
@@ -172,7 +198,7 @@ private fun createCommandList(
 internal fun prepareForChaosExperiments(namespace: String) {
     LOG.info("Prepare chaos experiments.")
 
-    val workerPath = FileResolver().resolveWorkerDeploymentDir()
+    val workerPath = fileResolver.resolveWorkerDeploymentDir()
     runCommands(workerPath, "kubectl", "--namespace=$namespace", "apply", "--filename=worker.yaml")
 }
 

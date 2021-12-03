@@ -19,7 +19,7 @@ class ChaosModelDeployerTest {
     @Test
     fun `should deploy models`() {
         // given
-        val chaosModelDeployer = ChaosModelDeployer(client)
+        val chaosModelDeployer = ChaosModelDeployer(client, FileResolver())
 
         // when
         chaosModelDeployer.deployChaosModels()
