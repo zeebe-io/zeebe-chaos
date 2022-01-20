@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Wed, 24 Nov 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 19 Jan 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Handling of Big Variables]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2022/01/19/big-variables</link>
+            <guid>Handling of Big Variables</guid>
+            <pubDate>Wed, 19 Jan 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[New Year;New Chaos]]></description>
+        </item>
         <item>
             <title><![CDATA[Worker count should not impact performance]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance</link>
