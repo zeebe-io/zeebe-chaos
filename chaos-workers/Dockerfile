@@ -1,7 +1,7 @@
 FROM openjdk:11-jre as pre
 
 ARG TOKEN
-ENV ZEEBE_VERSION=1.0.0-alpha4 \
+ENV ZEEBE_VERSION=1.2.4 \
     CHAOS_HOME=/home/chaos \
     CHAOS_ROOT_PATH=/home/chaos/chaos-experiments \
     CONTEXT=gke_camunda-cloud-240911_europe-west1-d_ultrachaos
