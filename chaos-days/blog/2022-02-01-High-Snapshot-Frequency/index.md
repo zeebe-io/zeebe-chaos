@@ -12,10 +12,10 @@ authors: zell
 
 # Chaos Day Summary
 
-Today we want to experiment with the snapshot interval and verify that a high snapshot frequency it will not impact our availability ([#21](https://github.com/zeebe-io/zeebe-chaos/issues/21)).
+Today we wanted to experiment with the snapshot interval and verify that a high snapshot frequency will not impact our availability ([#21](https://github.com/zeebe-io/zeebe-chaos/issues/21)).
 
 
-**TL;DR;** 
+**TL;DR;** The chaos experiment succeeded :muscle: We were able to prove our hypothesis.
 
 <!--truncate-->
 
@@ -67,7 +67,7 @@ Further investigation needs to be done as part of [#8565](https://github.com/cam
 
 #### Smaller intervals
 
-The smallest interval which Zeebe supports is `1m == 1 minute`. If we configured for example `1s`
+The smallest interval which Zeebe supports is `1m == 1 minute`. If we configure for example `1s`
 
 ```
 env:
@@ -84,7 +84,7 @@ java.lang.IllegalArgumentException: Snapshot period PT1S needs to be larger then
 
 #### Bigger intervals
 
-In order to verify how Zeebe reacts on bigger snapshot interval we set the interval to 30 minutes.
+In order to verify how Zeebe reacts on a bigger snapshot interval we have set the interval to 30 minutes.
 
 ```
 env:
@@ -92,31 +92,31 @@ env:
     - name: ZEEBE_BROKER_DATA_SNAPSHOTPERIOD
     value: "30m"
 ```
-In general, it looked also ok. What we can see is that one node was restarted in between and took a while to come back. 
+In general, it looked good. What we can see is that one node was restarted in between and took a while to come back. 
 
 ![](big-general.png)
 
 
 This is expected due to the high snapshot interval, but interesting to observe. The leader had no snapshot yet produced, which means it had to replicate all events to the restarted follower. Only if the follower catches up on all partitions its bootstrap process is complete, and it can mark itself as ready. As we see it can take a while if there is no snapshot available, since new records are incoming all the time. 
 
-After for partition two a snapshot was taken and the leader sent this snapshot the follower were able to become ready.
+After the leader of partition two took a snapshot and the leader sent this snapshot to the follower, the follower were able to become ready.
 
-Even with big snapshot interval we can see that as soon a new snapshot is taken it is sent to the followers, which is suboptimal.
+Even with a big snapshot interval we can see that as soon as a new snapshot is taken it is sent to the followers, which is suboptimal.
 
 ![](big-install-freq.png)
 
-An important thing to keep in mind when playing around with snapshots is the logstream/journal size. The journal is only compacted after taking a snapshot, if we take snapshot less frequent this means we clean up less frequent. The log can grow much bigger on big snapshot intervals.
+An important thing to keep in mind when playing around with snapshots is the logstream/journal size. The journal is only compacted after taking a snapshot, if we take snapshot less frequent this means we clean up less frequent. The log can grow much bigger with big snapshot intervals.
 
 ![](big-interval-log.png)
 
 
 ### Result
 
-The chaos experiment succeeded :tada: We verified that smaller snapshot interval has no negative impact on the cluster availability, at least for small amount of partitions. 
+The chaos experiment succeeded :tada: We verified that a smaller snapshot interval has no negative impact on the cluster availability, at least for a small amount of partitions. 
 
 ## Found Bugs
 
- * [#8565](https://github.com/camunda-cloud/zeebe/issues/8565)
+ * Existing issue regarding the install requests [#8565](https://github.com/camunda-cloud/zeebe/issues/8565)
 
 
 
