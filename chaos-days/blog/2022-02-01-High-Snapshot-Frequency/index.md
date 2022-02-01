@@ -47,7 +47,23 @@ env:
     value: "1m"
 ```
 
-We can see not much difference throughput wise between both clusters. The cluster with the small snapshot interval shows no negative effects. What we can see is that the install request rate increased. It seems to be currently have no affect, but it is likely that if more partitions are added it might become an issue. Further investigation needs to be done as part of [#8565](https://github.com/camunda-cloud/zeebe/issues/8565).
+Throughput wise we can see a small difference, but this might be more related that on the base benchmark one node is leader for all partitions.
+
+
+| Base | Chaos |
+|------|-------|
+| ![](chaos-base-general.png) | ![](chaos-general.png) |
+
+
+In general the cluster with the small snapshot interval shows no negative effect. What we can see is that the install request rate increased. It seems to be currently have no affect, but it is likely that if more partitions are added it might become an issue.
+
+
+| Base | Chaos |
+|------|-------|
+| ![](chaos-base-install-freq.png) | ![](chaos-install-freq.png) |
+
+Further investigation needs to be done as part of [#8565](https://github.com/camunda-cloud/zeebe/issues/8565).
+
 
 #### Smaller intervals
 
@@ -66,8 +82,37 @@ We see the following exception in the log and the broker fails to start.
 java.lang.IllegalArgumentException: Snapshot period PT1S needs to be larger then or equals to one minute.
 ```
 
-
 #### Bigger intervals
+
+In order to verify how Zeebe reacts on bigger snapshot interval we set the interval to 30 minutes.
+
+```
+env:
+  ...
+    - name: ZEEBE_BROKER_DATA_SNAPSHOTPERIOD
+    value: "30m"
+```
+In general, it looked also ok. What we can see is that one node was restarted in between and took a while to come back. 
+
+![](big-general.png)
+
+
+This is expected due to the high snapshot interval, but interesting to observe. The leader had no snapshot yet produced, which means it had to replicate all events to the restarted follower. Only if the follower catches up on all partitions its bootstrap process is complete, and it can mark itself as ready. As we see it can take a while if there is no snapshot available, since new records are incoming all the time. 
+
+After for partition two a snapshot was taken and the leader sent this snapshot the follower were able to become ready.
+
+Even with big snapshot interval we can see that as soon a new snapshot is taken it is sent to the followers, which is suboptimal.
+
+![](big-install-freq.png)
+
+An important thing to keep in mind when playing around with snapshots is the logstream/journal size. The journal is only compacted after taking a snapshot, if we take snapshot less frequent this means we clean up less frequent. The log can grow much bigger on big snapshot intervals.
+
+![](big-interval-log.png)
+
+
+### Result
+
+The chaos experiment succeeded :tada: We verified that smaller snapshot interval has no negative impact on the cluster availability, at least for small amount of partitions. 
 
 ## Found Bugs
 
