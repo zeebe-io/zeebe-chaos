@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Wed, 19 Jan 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 01 Feb 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[High Snapshot Frequency]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2022/02/01/High-Snapshot-Frequency</link>
+            <guid>High Snapshot Frequency</guid>
+            <pubDate>Tue, 01 Feb 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[Today we wanted to experiment with the snapshot interval and verify that a high snapshot frequency will not impact our availability (#21).]]></description>
+        </item>
         <item>
             <title><![CDATA[Handling of Big Variables]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2022/01/19/big-variables</link>
