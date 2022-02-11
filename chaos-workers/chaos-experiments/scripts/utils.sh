@@ -38,7 +38,7 @@ function runOnAllBrokers()
 {
   namespace=$(getNamespace)
 
-  pods=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[*].metadata.name}")
+  pods=$(kubectl get pod -n "$namespace" $(getBrokerLabels) -o jsonpath="{.items[*].metadata.name}")
 
   set +e
   for pod in $pods
@@ -53,7 +53,7 @@ function getBroker()
   index=${1:-0}
 
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[$index].metadata.name}")
+  pod=$(kubectl get pod -n "$namespace" $(getBrokerLabels) -o jsonpath="{.items[$index].metadata.name}")
 
   echo "$pod"
 }
@@ -61,7 +61,7 @@ function getBroker()
 function getGateway()
 {
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" "$(getGatewayLabels)" -o jsonpath="{.items[0].metadata.name}")
+  pod=$(kubectl get pod -n "$namespace" $(getGatewayLabels) -o jsonpath="{.items[0].metadata.name}")
 
   echo "$pod"
 }
