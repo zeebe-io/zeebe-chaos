@@ -14,11 +14,22 @@ function getNamespace()
  echo "$namespace"
 }
 
-function getLabel() {
+function getBrokerLabels() {
   if [ "${CHAOS_SETUP}" == "cloud" ]; then
-    echo "app.kubernetes.io/app=zeebe"
-  else
-    echo "app.kubernetes.io/component=broker"
+    # For backwards compatability the brokers kept the gateway labels, for a statefulset the labels are not modifiable
+    echo "-l app.kubernetes.io/app=zeebe -l app.kubernetes.io/component=gateway"
+  else # helm
+    echo "-l app.kubernetes.io/component=zeebe-broker"
+  fi
+}
+
+function getGatewayLabels() {
+  if [ "${CHAOS_SETUP}" == "cloud" ]; then
+    # For backwards compatability the brokers kept the gateway labels, for a statefulset the labels are not modifiable
+    # To still be able to distinguish the standalone gateway with the broker, the gateway got a new label.
+    echo "-l app.kubernetes.io/app=zeebe -l app.kubernetes.io/component=standalone-gateway"
+  else # helm
+    echo "-l app.kubernetes.io/component=zeebe-gateway"
   fi
 }
 
@@ -26,7 +37,7 @@ function runOnAllBrokers()
 {
   namespace=$(getNamespace)
 
-  pods=$(kubectl get pod -n "$namespace" -l  "$(getLabel)" -o jsonpath="{.items[*].metadata.name}")
+  pods=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[*].metadata.name}")
 
   set +e
   for pod in $pods
@@ -41,7 +52,7 @@ function getBroker()
   index=${1:-0}
 
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" -l "$(getLabel)" -o jsonpath="{.items[$index].metadata.name}")
+  pod=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[$index].metadata.name}")
 
   echo "$pod"
 }
@@ -49,7 +60,7 @@ function getBroker()
 function getGateway()
 {
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" -l app.kubernetes.io/component=gateway -o jsonpath="{.items[0].metadata.name}")
+  pod=$(kubectl get pod -n "$namespace" "$(getGatewayLabels)" -o jsonpath="{.items[0].metadata.name}")
 
   echo "$pod"
 }
