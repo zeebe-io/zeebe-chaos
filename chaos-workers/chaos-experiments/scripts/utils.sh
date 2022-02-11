@@ -18,22 +18,20 @@ function getBrokerLabels() {
   if [ "${CHAOS_SETUP}" == "cloud" ]; then
     # For backwards compatability the brokers kept the gateway labels, for a statefulset the labels are not modifiable
     # To still be able to distinguish the standalone gateway with the broker, the gateway got a new label.
-    labels="app.kubernetes.io/app=zeebe app.kubernetes.io/component=gateway"
+    echo "-l app.kubernetes.io/app=zeebe -l app.kubernetes.io/component=gateway"
   else # helm
-    labels="app.kubernetes.io/component=zeebe-broker"
+    echo "-l app.kubernetes.io/component=zeebe-broker"
   fi
-  echo "$labels"
 }
 
 function getGatewayLabels() {
   if [ "${CHAOS_SETUP}" == "cloud" ]; then
     # For backwards compatability the brokers kept the gateway labels, for a statefulset the labels are not modifiable
     # To still be able to distinguish the standalone gateway with the broker, the gateway got a new label.
-    labels="app.kubernetes.io/app=zeebe app.kubernetes.io/component=standalone-gateway"
+    echo "-l app.kubernetes.io/app=zeebe -l app.kubernetes.io/component=standalone-gateway"
   else # helm
-    labels="app.kubernetes.io/component=zeebe-gateway"
+    echo "-l app.kubernetes.io/component=zeebe-gateway"
   fi
-  echo "$labels"
 }
 
 function runOnAllBrokers()
