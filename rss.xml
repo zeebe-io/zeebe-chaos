@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Tue, 01 Feb 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 15 Feb 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Standalone Gateway in CCSaaS]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS</link>
+            <guid>Standalone Gateway in CCSaaS</guid>
+            <pubDate>Tue, 15 Feb 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[We recently introduced the Zeebe Standalone Gateway in CCSaaS. Today I wanted to do a first simple]]></description>
+        </item>
         <item>
             <title><![CDATA[High Snapshot Frequency]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2022/02/01/High-Snapshot-Frequency</link>
