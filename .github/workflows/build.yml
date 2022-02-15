@@ -17,7 +17,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd chaos-days
-          npm ci
+          npm i
       - name: Build
         run: |
           cd chaos-days
