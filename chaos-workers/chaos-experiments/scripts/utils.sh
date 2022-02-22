@@ -61,7 +61,7 @@ function getBroker()
 function getGateway()
 {
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" $(getGatewayLabels) -o jsonpath="{.items[0].metadata.name}")
+  pod=$(kubectl get pod -n "$namespace" --field-selector status.phase=Running $(getGatewayLabels) -o jsonpath="{.items[0].metadata.name}")
 
   echo "$pod"
 }
