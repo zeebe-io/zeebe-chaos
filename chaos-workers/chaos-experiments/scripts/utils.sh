@@ -38,7 +38,9 @@ function runOnAllBrokers()
 {
   namespace=$(getNamespace)
 
-  pods=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[*].metadata.name}")
+  # disable word splitting check, word splitting is necessary for broker labels
+  # shellcheck disable=SC2046
+  pods=$(kubectl get pod -n "$namespace" $(getBrokerLabels) -o jsonpath="{.items[*].metadata.name}")
 
   set +e
   for pod in $pods
@@ -53,7 +55,9 @@ function getBroker()
   index=${1:-0}
 
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" "$(getBrokerLabels)" -o jsonpath="{.items[$index].metadata.name}")
+  # disable word splitting check, word splitting is necessary for broker labels
+  # shellcheck disable=SC2046
+  pod=$(kubectl get pod -n "$namespace" $(getBrokerLabels) -o jsonpath="{.items[$index].metadata.name}")
 
   echo "$pod"
 }
@@ -61,7 +65,9 @@ function getBroker()
 function getGateway()
 {
   namespace=$(getNamespace)
-  pod=$(kubectl get pod -n "$namespace" --field-selector status.phase=Running "$(getGatewayLabels)" -o jsonpath="{.items[0].metadata.name}")
+  # disable word splitting check, word splitting is necessary for gateway labels
+  # shellcheck disable=SC2046
+  pod=$(kubectl get pod -n "$namespace" --field-selector status.phase=Running $(getGatewayLabels) -o jsonpath="{.items[0].metadata.name}")
 
   echo "$pod"
 }
