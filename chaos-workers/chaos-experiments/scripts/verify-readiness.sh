@@ -20,5 +20,5 @@ else
   # Wait until all gateway pods are running. We cannot use `--for=condition=Ready` pod for gateway because
   # this check also includes the evicted pods as long as they are not deleted. Evicted pods are not immediately
   # deleted by kuberenetes. The following check passes only if all pods are running, and excludes evicted pods.
-  kubectl wait --for=condition=Available deployment $namespace-zeebe-gateway --timeout=120s -n "$namespace"
+  kubectl wait --for=condition=Available deployment "$namespace-zeebe-gateway" --timeout=120s -n "$namespace"
 fi
