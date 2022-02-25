@@ -1,15 +1,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: zeebe-chaos-rolebinding
+  name: ccsm-helm-rolebinding
   labels:
     app.kubernetes.io/component: remote
-    app.kubernetes.io/name: zeebe-chaos
+    app.kubernetes.io/name: ccsm-helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: zeebe-chaos-role
+  name: ccsm-helm-role
 subjects:
 - kind: ServiceAccount
-  name: zeebe-chaos-sa
-  namespace: zeebe-chaos
+  name: ccsm-helm-sa
+  namespace: ccsm-helm
