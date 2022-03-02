@@ -56,7 +56,7 @@
     <version.log4j>2.17.2</version.log4j>
     <version.slf4j>1.7.36</version.slf4j>
     <version.kotlin>1.6.10</version.kotlin>
-    <zeebe.version>1.3.4</zeebe.version>
+    <zeebe.version>1.3.5</zeebe.version>
   </properties>
 
   <dependencyManagement>
