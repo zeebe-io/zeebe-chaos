@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/zeebe-io/zeebe-chaos/chaos-workers/go-chaos-worker/cmd"
+)
 
 func main() {
-	fmt.Println("hello world")
+	cmd.Execute()
 }
