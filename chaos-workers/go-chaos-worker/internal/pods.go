@@ -40,6 +40,7 @@ func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
 func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	listOptions := metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
+		FieldSelector: "status.phase=Running",
 	}
 
 	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
