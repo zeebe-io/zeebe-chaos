@@ -76,10 +76,10 @@ func GatewayPortForward(port int) (func(), error) {
 	// Wait for an error or the tunnel to be ready
 	select {
 	case err = <-errChan:
-		fmt.Printf("Error starting port forwarding tunnel: %s", err)
+		fmt.Printf("\nError starting port forwarding tunnel: %s", err)
 		return nil, err
 	case <-portForwarder.Ready:
-		fmt.Printf("Successfully created port forwarding tunnel")
+		fmt.Println("Successfully created port forwarding tunnel")
 		return func() {
 			portForwarder.Close()
 		}, nil

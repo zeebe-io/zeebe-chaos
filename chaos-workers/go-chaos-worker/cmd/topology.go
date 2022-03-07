@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/chaos-workers/go-chaos-worker/internal"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func init() {
@@ -33,6 +34,14 @@ var topologyCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Response topology, %s", response.String())
+
+		m := protojson.MarshalOptions{EmitUnpopulated: true, Indent: "  "}
+		valueJSON, err := m.Marshal(response)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Printf("\nResponse topology, %s", string(valueJSON))
+		fmt.Println()
 	},
 }
