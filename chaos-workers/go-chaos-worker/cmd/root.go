@@ -10,8 +10,8 @@ import (
 var rootCmd = &cobra.Command{
   Use:   "zbchaos",
   Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
-  Long: `A chaos experimenting toolkit for Zeebe. 
-		 Ideally to inject some chaos into your brokers and gateways.`,
+  Long: `A chaos experimenting toolkit for Zeebe.
+    Perfect to inject some chaos into your brokers and gateways.`,
   Run: func(cmd *cobra.Command, args []string) {
     // Do Stuff Here
 	  fmt.Println("Zeebe Chaos")
