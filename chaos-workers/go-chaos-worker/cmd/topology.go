@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/chaos-workers/go-chaos-worker/internal"
-	"google.golang.org/grpc"
 )
 
 func init() {
@@ -26,12 +24,7 @@ var topologyCmd = &cobra.Command{
 		}
 		defer closeFn()
 
-		endpoint := fmt.Sprintf("localhost:%d", port)
-		client, err := zbc.NewClient(&zbc.ClientConfig{
-			GatewayAddress:         endpoint,
-			DialOpts:               []grpc.DialOption{},
-			UsePlaintextConnection: true,
-		})
+		client, err := internal.CreateZeebeClient(port)
 		if err != nil {
 			panic(err.Error())
 		}
