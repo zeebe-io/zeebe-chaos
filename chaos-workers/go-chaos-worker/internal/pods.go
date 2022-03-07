@@ -17,6 +17,10 @@ func (c K8Client) GetBrokerPodNames() ([]string, error) {
 		return nil, err
 	}
 
+	return c.extractPodNames(list)
+}
+
+func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
 	pods := list.Items
 	names := make([]string, len(pods))
 
@@ -27,10 +31,15 @@ func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	return names, nil
 }
 
-func (c K8Client) GetGatewayPods() (*v1.PodList, error) {
+func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	listOptions := metav1.ListOptions{
 		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
 	}
 
-	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.extractPodNames(list)
 }
