@@ -94,7 +94,7 @@ var topologyCmd = &cobra.Command{
 			}
 
 			response, err := client.NewTopologyCommand().Send(context.TODO())
-			if (err != nil) {
+			if err != nil {
 				panic(err)
 			}
 			fmt.Printf("Response topology, %s", response.String())
