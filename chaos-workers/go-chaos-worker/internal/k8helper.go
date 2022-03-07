@@ -15,7 +15,7 @@ import (
 
 type K8Client struct {
 	ClientConfig clientcmd.ClientConfig
-	Clientset kubernetes.Interface
+	Clientset    kubernetes.Interface
 }
 
 // Returns the current namespace, defined in the kubeconfig
