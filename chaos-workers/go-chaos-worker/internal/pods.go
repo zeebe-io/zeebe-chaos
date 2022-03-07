@@ -53,15 +53,14 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 // GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
-func GatewayPortForward(port int) (func(), error) {
-	client := CreateK8Client()
-	names, err := client.GetGatewayPodNames()
+func (c K8Client) GatewayPortForward(port int) (func(), error) {
+	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		return nil, err
 	}
 
-	portForwardCreateURL := createPortForwardUrl(client, names)
-	portForwarder, err := createPortForwarder(port, client, portForwardCreateURL)
+	portForwardCreateURL := c.createPortForwardUrl(names)
+	portForwarder, err := c.createPortForwarder(port, portForwardCreateURL)
 	if err != nil {
 		return nil, err
 	}
@@ -87,9 +86,9 @@ func GatewayPortForward(port int) (func(), error) {
 }
 
 // Create the k8 port forwarder, with the given port and k8 client
-func createPortForwarder(port int, client K8Client, portForwardCreateURL *url.URL) (*portforward.PortForwarder, error) {
+func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (*portforward.PortForwarder, error) {
 	// Construct the spdy client required by the client-go portforward library
-	config, err := client.ClientConfig.ClientConfig()
+	config, err := c.ClientConfig.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -114,11 +113,11 @@ func createPortForwarder(port int, client K8Client, portForwardCreateURL *url.UR
 }
 
 // createPortForwardUrl constructs the Url to which is used to create the port forwarding
-func createPortForwardUrl(client K8Client, names []string) *url.URL {
-	restClient := client.Clientset.CoreV1().RESTClient()
+func (c K8Client) createPortForwardUrl(names []string) *url.URL {
+	restClient := c.Clientset.CoreV1().RESTClient()
 	portForwardCreateURL := restClient.Post().
 		Resource("pods").
-		Namespace(client.GetCurrentNamespace()).
+		Namespace(c.GetCurrentNamespace()).
 		Name(names[0]).
 		SubResource("portforward").
 		URL()

@@ -19,7 +19,8 @@ var topologyCmd = &cobra.Command{
 	Long:  `Shows the current Zeebe topology, in the current kubernetes namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		port := 26500
-		closeFn, err := internal.GatewayPortForward(port)
+		k8Client := internal.CreateK8Client()
+		closeFn, err := k8Client.GatewayPortForward(port)
 		if err != nil {
 			panic(err.Error())
 		}
