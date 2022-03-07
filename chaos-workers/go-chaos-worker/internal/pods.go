@@ -9,13 +9,14 @@ import (
 
 func (c K8Client) GetZeebePods() {
 	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-broker,app.kubernetes.io/component=zeebe-gateway",
+		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
 	}
 
-	pods, err := c.Clientset.CoreV1().Pods("").List(context.TODO(), listOptions)
+	namespace, _, _ := c.ClientConfig.Namespace()
+	pods, err := c.Clientset.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("There are %d zeebe pods in the cluster\n", len(pods.Items))
+	fmt.Printf("There are %d zeebe broker pods in the cluster\n", len(pods.Items))
 }

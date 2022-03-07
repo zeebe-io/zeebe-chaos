@@ -2,6 +2,7 @@ package internal
 
 import (
 	"flag"
+	"fmt"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
@@ -13,11 +14,12 @@ import (
 )
 
 type K8Client struct {
+	ClientConfig clientcmd.ClientConfig
 	Clientset kubernetes.Interface
 }
 
 func CreateK8Client() K8Client {
-	// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
+	//// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -27,16 +29,27 @@ func CreateK8Client() K8Client {
 	flag.Parse()
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	//config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	//if err != nil {
+	//	panic(err.Error())
+	//}
+
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: *kubeconfig},
+		&clientcmd.ConfigOverrides{})
+
+	k8ClientConfig, err := clientConfig.ClientConfig()
 	if err != nil {
 		panic(err.Error())
 	}
 
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(k8ClientConfig)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	return K8Client{Clientset: clientset}
+	namespace, _, _ := clientConfig.Namespace()
+	fmt.Printf("Connecting to %s\n", namespace)
+	return K8Client{Clientset: clientset, ClientConfig: clientConfig}
 }
