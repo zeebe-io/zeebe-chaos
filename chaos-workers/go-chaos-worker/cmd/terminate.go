@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/chaos-workers/go-chaos-worker/internal"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -48,51 +48,13 @@ var terminateCmd = &cobra.Command{
 		if err != nil {
 			panic(err.Error())
 		}
-
-		topologyResponse, err := zbClient.NewTopologyCommand().Send(context.TODO())
-		if err != nil {
-			panic(err)
-		}
-
-		partitionsCount := topologyResponse.PartitionsCount
-		if partitionsCount < int32(partitionId) {
-			errorMsg := fmt.Sprintf("Expected that given partition id (%d) is smaller then the partitions count %d, but was greater.", partitionId, partitionsCount)
-			panic(errors.New(errorMsg))
-		}
-
-		roleValue, exist := pb.Partition_PartitionBrokerRole_value[role]
-		if !exist {
-			errorMsg := fmt.Sprintf("Expected a partition role, which is part of [LEADER, FOLLOWER], but got %s.", role)
-			panic(errors.New(errorMsg))
-
-		}
-
-		nodeId := int32(-1)
-		for _, broker := range topologyResponse.Brokers {
-			for _, partition := range broker.Partitions {
-				if partition.PartitionId == int32(partitionId) &&
-					partition.Role == pb.Partition_PartitionBrokerRole(roleValue) {
-					nodeId = broker.NodeId
-					break
-				}
-			}
-		}
-
-		if nodeId == int32(-1) {
-			errorMsg := fmt.Sprintf("Expected to find broker with given partition id (%d) and role %s, but found nothing.", partitionId, role)
-			panic(errors.New(errorMsg))
-		}
-
-		brokerPodNames, err := k8Client.GetBrokerPodNames()
+		defer zbClient.Close()
+		broker, err := getBrokerToTerminate(k8Client, zbClient)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		broker := brokerPodNames[nodeId]
-
-		gracePeriodSec := int64(0)
-		options := metav1.DeleteOptions{GracePeriodSeconds: &gracePeriodSec}
-		err = k8Client.Clientset.CoreV1().Pods(k8Client.GetCurrentNamespace()).Delete(context.TODO(), broker, options)
+		err = k8Client.TerminatePod(broker)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -100,4 +62,60 @@ var terminateCmd = &cobra.Command{
 		fmt.Printf("\nDeleted %s", broker)
 		fmt.Println()
 	},
+}
+
+func getBrokerToTerminate(k8Client internal.K8Client, zbClient zbc.Client) (string, error) {
+	topologyResponse, err := zbClient.NewTopologyCommand().Send(context.TODO())
+	if err != nil {
+		return "", err
+	}
+
+	assertPartitionsCount(topologyResponse)
+
+	roleValue, exist := pb.Partition_PartitionBrokerRole_value[role]
+	assertRoleExists(exist)
+
+	nodeId := extractNodeId(topologyResponse, roleValue)
+
+	brokerPodNames, err := k8Client.GetBrokerPodNames()
+	if err != nil {
+		return "", err
+	}
+
+	broker := brokerPodNames[nodeId]
+	return broker, nil
+}
+
+func assertRoleExists(exist bool) {
+	if !exist {
+		errorMsg := fmt.Sprintf("Expected a partition role, which is part of [LEADER, FOLLOWER], but got %s.", role)
+		panic(errors.New(errorMsg))
+	}
+}
+
+func assertPartitionsCount(topologyResponse *pb.TopologyResponse) {
+	partitionsCount := topologyResponse.PartitionsCount
+	if partitionsCount < int32(partitionId) {
+		errorMsg := fmt.Sprintf("Expected that given partition id (%d) is smaller then the partitions count %d, but was greater.", partitionId, partitionsCount)
+		panic(errors.New(errorMsg))
+	}
+}
+
+func extractNodeId(topologyResponse *pb.TopologyResponse, roleValue int32) int32 {
+	nodeId := int32(-1)
+	for _, broker := range topologyResponse.Brokers {
+		for _, partition := range broker.Partitions {
+			if partition.PartitionId == int32(partitionId) &&
+				partition.Role == pb.Partition_PartitionBrokerRole(roleValue) {
+				nodeId = broker.NodeId
+				break
+			}
+		}
+	}
+
+	if nodeId == int32(-1) {
+		errorMsg := fmt.Sprintf("Expected to find broker with given partition id (%d) and role %s, but found nothing.", partitionId, role)
+		panic(errors.New(errorMsg))
+	}
+	return nodeId
 }

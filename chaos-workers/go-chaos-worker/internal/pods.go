@@ -51,6 +51,12 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	return c.extractPodNames(list)
 }
 
+func (c K8Client) TerminatePod(podName string) error {
+	gracePeriodSec := int64(0)
+	options := metav1.DeleteOptions{GracePeriodSeconds: &gracePeriodSec}
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
+}
+
 // GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
