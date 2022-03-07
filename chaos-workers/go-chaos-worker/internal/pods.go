@@ -12,8 +12,7 @@ func (c K8Client) GetZeebePods() {
 		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
 	}
 
-	namespace, _, _ := c.ClientConfig.Namespace()
-	pods, err := c.Clientset.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
+	pods, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 
 	if err != nil {
 		panic(err.Error())

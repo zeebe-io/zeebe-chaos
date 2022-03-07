@@ -18,6 +18,13 @@ type K8Client struct {
 	Clientset kubernetes.Interface
 }
 
+// Returns the current namespace, defined in the kubeconfig
+func (c *K8Client) GetCurrentNamespace() string {
+	namespace, _, _ := c.ClientConfig.Namespace()
+	return namespace
+}
+
+// Creates a kubernetes client, based on the local kubeconfig
 func CreateK8Client() K8Client {
 	//// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
 	var kubeconfig *string
