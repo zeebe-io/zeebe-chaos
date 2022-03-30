@@ -44,7 +44,7 @@
     <plugin.version.pitest>1.3.7</plugin.version.pitest>
     <plugin.version.pitest-junit5>0.14</plugin.version.pitest-junit5>
     <plugin.version.surefire>3.0.0-M5</plugin.version.surefire>
-    <plugin.version.shade>3.2.4</plugin.version.shade>
+    <plugin.version.shade>3.3.0</plugin.version.shade>
     <plugin.version.sortpom-maven-plugin>3.0.1</plugin.version.sortpom-maven-plugin>
     <plugin.version..maven.exec>3.0.0</plugin.version..maven.exec>
 
