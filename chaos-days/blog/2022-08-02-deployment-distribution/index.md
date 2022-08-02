@@ -27,10 +27,21 @@ In this chaos day I want to bring the automation of this chaos experiment back t
 
 ## Chaos Experiment
 
+To recap, when a deployment is created by a client it is sent to the partition one leader. The partition one is in charge of distributing the deployment to the other partitions. That means it will send the deployment to the other partition leaders, this is retried as long no ACK was received from the corresponding partition leader.
+
+![deploymentDistribution](deploymentDistribution.png)
+
+We already have covered that in more details in another chaos day you can read [here](../2021-01-26-deployments/index.md).
 
 ### Expected
 
-In short, we will disconnect certain leaders and deploy multiple process versions, after connecting the leaders again we expect that the deployments are distributed, and we can create instances of the last version on all partitions. For more details about the original experiment you can read [Deployment Distribution](../2021-01-26-deployments/index.md). We will run the existing experiment against the latest minor version, to verify whether the experiment still works. When we enable the experiment again for automation it will be executed against SNAPSHOT automatically.
+![](deploymentDistributionExperiment.png)
+
+As you can see in the image we will create an asymmetric network partition and disconnect the partition one leader from the partition three. That means the sending to partition three will not be possible. We use here an asymmetric network partition, in order to reduce the probability to cause a leader change. The partition one leader is follower for partition three and will still receive heartbeats.
+
+After disconnecting the leaders we deploy multiple process versions and after connecting the leaders again we expect that the deployments are distributed. It is expected that we can create instances of the last version on all partitions.
+
+We will run the existing experiment against the latest minor version, to verify whether the experiment still works. When we enable the experiment again for automation it will be executed against SNAPSHOT automatically.
 
 ### Actual
 
@@ -182,3 +193,13 @@ The experiment didn't reproduce the bug in [zeebe#9877](https://github.com/camun
 ## Found Bugs
 
 *none*
+
+there was an issue with the script it run against partition 4 idk why it worked before?!
+
+Running this we see now at least an incident in the operate 
+
+retry seems to resolve the issue
+
+Try now with async partition in the other way around
+
+
