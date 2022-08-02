@@ -21,7 +21,7 @@ We encountered recently a severe bug [zeebe#9877](https://github.com/camunda/zee
 
 In this chaos day I want to bring the automation of this chaos experiment back to live. If I have still time I want to enhance the experiment. 
 
-**TL;DR;** The experiment still worked, our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61).
+**TL;DR;** The experiment still worked, our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again, and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). Unfortunately, we were not able to reproduce [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) but we did some good preparation work for it.
 
 <!--truncate-->
 
@@ -61,7 +61,9 @@ chaos --version
 
 #### Executing chaos toolkit
 
-As mentioned, the deployment distribution was not enabled for Production-S clusters, which is currently the only configuration we test via [Zeebe Testbench](https://github.com/zeebe-io/zeebe-cluster-testbench). We have to use the experiment that is defined under [production-l/deployment-distribution](https://github.com/zeebe-io/zeebe-chaos/tree/master/chaos-workers/chaos-experiments/camunda-cloud/production-l/deployment-distribution), which is the same.
+As mentioned, the deployment distribution was not enabled for Production-S clusters, which is currently the only configuration we test via [Zeebe Testbench](https://github.com/zeebe-io/zeebe-cluster-testbench). We have to use the experiment that is defined under [production-l/deployment-distribution](https://github.com/zeebe-io/zeebe-chaos/tree/master/chaos-workers/chaos-experiments/camunda-cloud/production-l/deployment-distribution), which is the same*.
+
+<sub>* That is not 100% true. During running the Production-l experiment I realized that it made some assumptions regarding the <a href="https://github.com/zeebe-io/zeebe-chaos/blob/master/chaos-workers/chaos-experiments/scripts/disconnect-leaders-one-way.sh#L19">partition count</a> which needs to be adjusted for the Production-S setup.</sub>
 
 ```sh
  chaos run production-l/deployment-distribution/experiment.json 
@@ -122,11 +124,11 @@ In the following logs we can see that deployment distribution is failing for par
 2022-08-02 09:39:08.369 CEST zeebe Received new exporter state {elasticsearch=252, MetricsExporter=252}
 ```
 
-At some point the retry stopped and we can see in the experiment output that we were able to start process instances on all partitions. This is great, because it means the experiment was successful executed and our deployment distribution is failure tolerant.
+At some point the retry stopped, and we can see in the experiment output that we were able to start process instances on all partitions. This is great, because it means the experiment was successful executed and our deployment distribution is failure tolerant.
 
 #### Enhancement
 
-As described earlier the current experiment only deploys a BPMN process model it looks like this:
+As described earlier the current experiment deploys a BPMN process model only. It looks like this:
 
 ![v1](multiVersionModel.png)
 
@@ -174,13 +176,35 @@ $ chaos run production-l/deployment-distribution/experiment.json
 
 It succeeded as well.
 
+Taking a look at operate we can see some incidents.
 
-We can see in operate that the process instances have been completed, the business rule task have been executed and the decisions as well.
+![dmn-error](dmn-error.png)
 
-![businessRuleTask](businessruletask.png)
-![decisions](decisions.png)
+It seems the process instance execution runs into the Business Rule Task, but the DMN resource was not available on the partition. 
+
+![dmn-retry](dmn-retry.png)
+
+After retrying in Operate the incident was resolved, which means the DMN resource was distributed at that time.
 
 We can adjust the experiment further to await the result of the process execution, but I will stop here and leave that for a later point.
+
+#### Reproduce our bug
+
+The current experiment didn't reproduce the bug in [zeebe#9877](https://github.com/camunda/zeebe/issues/9877), since the DMN resource has to be distributed multiple times. Currently, we create a network partition such that the distribution doesn't work at all. 
+
+![](deploymentDistributionExperimentV2.png)
+
+In order to reproduce our scenario we can set the network partition on the other direction, such that the acknowledgement is not received by the leader one.
+
+Adjusting the experiment (script) like this:
+
+```diff
+-retryUntilSuccess disconnect "$leader" "$leaderTwoIp"
++retryUntilSuccess disconnect "$leaderTwo" "$leaderIp"
+```
+
+Should do the trick, but I was not yet able to reproduce the issue with 8.0.4. It seems we need to spend some more time to reproduce the bug. But I think with today's changes we already did a good step in the right direction, and we can improve based on that. I will create a follow-up issue to improve our experiment.
+
 
 ## Further Work
 
@@ -188,18 +212,8 @@ Based on today's outcome we can enable again the Deployment Distribution experim
 
 We should adjust our Chaos Worker implementation such that we also deploy DMN resources as we did in today's Chaos Day, since the scripts we changed aren't used in the automation.
 
-The experiment didn't reproduce the bug in [zeebe#9877](https://github.com/camunda/zeebe/issues/9877), since the DMN resource has to be distributed before the network partition is created and the distribution should be retried. This means the experiment to reproduce the bug is a bit more complex, but I think with today's changes we already did a good step in the right direction, and we can improve based on that. I will create a follow-up issue to improve our experiment.
+ I will create a follow-up issue to improve our experiment, so we can reproduce the critical bug.
 
 ## Found Bugs
 
 *none*
-
-there was an issue with the script it run against partition 4 idk why it worked before?!
-
-Running this we see now at least an incident in the operate 
-
-retry seems to resolve the issue
-
-Try now with async partition in the other way around
-
-
