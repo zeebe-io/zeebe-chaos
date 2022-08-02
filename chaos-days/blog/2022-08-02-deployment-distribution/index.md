@@ -14,30 +14,30 @@ authors: zell
 # Chaos Day Summary
 
 
-We encountered recently a severe bug [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) where I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:
+We encountered recently a severe bug [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) and I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:
 
- 1. The experiments only check for parts of it (BPMN resource only). The production code has changed, a new feature have been added (DMN) but the experiments / tests haven't been adjusted.
- 2. More importantly we disabled the automated execution of the deployment distribution experiment because it was flaky due to missing standalone gateway in Camunda Cloud SaaS [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). This is no longer the case, see [Standalone Gateway in CCSaaS](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md)
+ 1. The experiments only check for parts of it (BPMN resource only). The production code has changed, and a new feature has been added (DMN) but the experiments/tests haven't been adjusted.
+ 2. More importantly we disabled the automated execution of the deployment distribution experiment because it was flaky due to a missing standalone gateway in Camunda Cloud SaaS [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). This is no longer the case, see [Standalone Gateway in CCSaaS](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md)
 
-In this chaos day I want to bring the automation of this chaos experiment back to live. If I have still time I want to enhance the experiment. 
+On this chaos day I want to bring the automation of this chaos experiment back to life. If I have still time I want to enhance the experiment. 
 
-**TL;DR;** The experiment still worked, our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again, and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). Unfortunately, we were not able to reproduce [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) but we did some good preparation work for it.
+**TL;DR;** The experiment still worked, and our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again, and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). Unfortunately, we were not able to reproduce [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) but we did some good preparation work for it.
 
 <!--truncate-->
 
 ## Chaos Experiment
 
-To recap, when a deployment is created by a client it is sent to the partition one leader. The partition one is in charge of distributing the deployment to the other partitions. That means it will send the deployment to the other partition leaders, this is retried as long no ACK was received from the corresponding partition leader.
+To recap, when a deployment is created by a client it is sent to the partition one leader. Partition one is in charge of distributing the deployment to the other partitions. That means it will send the deployment to the other partition leaders, this is retried as long no ACK was received from the corresponding partition leader.
 
 ![deploymentDistribution](deploymentDistribution.png)
 
-We already have covered that in more details in another chaos day you can read [here](../2021-01-26-deployments/index.md).
+We already have covered that in more detail in another chaos day you can read [here](../2021-01-26-deployments/index.md).
 
 ### Expected
 
 ![](deploymentDistributionExperiment.png)
 
-As you can see in the image we will create an asymmetric network partition and disconnect the partition one leader from the partition three. That means the sending to partition three will not be possible. We use here an asymmetric network partition, in order to reduce the probability to cause a leader change. The partition one leader is follower for partition three and will still receive heartbeats.
+As you can see in the image we will create an asymmetric network partition and disconnect the partition one leader from partition three. That means the sending to partition three will not be possible. We use here an asymmetric network partition, in order to reduce the probability to cause a leader change. The partition one leader is a follower of partition three and will still receive heartbeats.
 
 After disconnecting the leaders we deploy multiple process versions and after connecting the leaders again we expect that the deployments are distributed. It is expected that we can create instances of the last version on all partitions.
 
@@ -47,9 +47,9 @@ We will run the existing experiment against the latest minor version, to verify 
 
 #### Setup
 
-As a first step we created a new Production-S cluster, which has three partition, three nodes (brokers) and two standalone gateways. The Zeebe version was set to 8.0.4 (latest minor).
+As a first step, we created a new Production-S cluster, which has three partitions, three nodes (brokers), and two standalone gateways. The Zeebe version was set to 8.0.4 (latest minor).
 
-It was a while since I used the [chaostoolkit](https://chaostoolkit.org/) which is the reason I had to reinstall it again, which is quite simple see [here](https://chaostoolkit.org/reference/usage/install/).
+It was a while since I used the [chaostoolkit](https://chaostoolkit.org/) which is the reason I had to reinstall it again, which is quite a simple see [here](https://chaostoolkit.org/reference/usage/install/).
 
 TL;DR:
 ```sh
@@ -95,7 +95,7 @@ As mentioned, the deployment distribution was not enabled for Production-S clust
 [2022-08-02 09:38:45 INFO] Experiment ended with status: completed
 ```
 
-Based from the tool output it looks like it succeed, to make sure it really worked, we will take a look at the logs in stackdriver.
+Based on the tool output it looks like it succeed, to make sure it really worked, we will take a look at the logs in stackdriver.
 
 In the following logs we can see that deployment distribution is failing for partition 3 and is retried, which is expected and what we wanted.
 ```
@@ -124,7 +124,7 @@ In the following logs we can see that deployment distribution is failing for par
 2022-08-02 09:39:08.369 CEST zeebe Received new exporter state {elasticsearch=252, MetricsExporter=252}
 ```
 
-At some point the retry stopped, and we can see in the experiment output that we were able to start process instances on all partitions. This is great, because it means the experiment was successful executed and our deployment distribution is failure tolerant.
+At some point, the retry stopped, and we can see in the experiment output that we were able to start process instances on all partitions. This is great because it means the experiment was successfully executed and our deployment distribution is failure tolerant.
 
 #### Enhancement
 
@@ -132,11 +132,11 @@ As described earlier the current experiment deploys a BPMN process model only. I
 
 ![v1](multiVersionModel.png)
 
-In order to make DMN part of the experiment we change the service task to a [Business Rule task](https://docs.camunda.io/docs/components/modeler/bpmn/business-rule-tasks/). 
+In order to make DMN part of the experiment, we change the service task to a [Business Rule task](https://docs.camunda.io/docs/components/modeler/bpmn/business-rule-tasks/). 
 
 ![v2](multiVersionModelv2.png)
 
-The decision is really simply and just defines a static input and returns that as output.
+The decision is really simple and just defines a static input and returns that as output.
 
 ![decision](decision.png)
 
@@ -176,7 +176,7 @@ $ chaos run production-l/deployment-distribution/experiment.json
 
 It succeeded as well.
 
-Taking a look at operate we can see some incidents.
+Taking a look at Operate we can see some incidents.
 
 ![dmn-error](dmn-error.png)
 
@@ -194,7 +194,7 @@ The current experiment didn't reproduce the bug in [zeebe#9877](https://github.c
 
 ![](deploymentDistributionExperimentV2.png)
 
-In order to reproduce our scenario we can set the network partition on the other direction, such that the acknowledgement is not received by the leader one.
+In order to reproduce our scenario, we can set the network partition in the other direction, such that the acknowledgment is not received by the leader one.
 
 Adjusting the experiment (script) like this:
 
@@ -203,7 +203,7 @@ Adjusting the experiment (script) like this:
 +retryUntilSuccess disconnect "$leaderTwo" "$leaderIp"
 ```
 
-Should do the trick, but I was not yet able to reproduce the issue with 8.0.4. It seems we need to spend some more time to reproduce the bug. But I think with today's changes we already did a good step in the right direction, and we can improve based on that. I will create a follow-up issue to improve our experiment.
+Should do the trick, but I was not yet able to reproduce the issue with 8.0.4. It seems we need to spend some more time reproducing the bug. But I think with today's changes we already did a good step in the right direction, and we can improve based on that. I will create a follow-up issue to improve our experiment.
 
 
 ## Further Work
