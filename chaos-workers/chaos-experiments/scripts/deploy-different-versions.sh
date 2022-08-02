@@ -21,6 +21,7 @@ function deployModel() {
     # if we deploy them after another it will create two different deployment versions
     # the deploy command only compares the last applied deployment - so we can do that in a loop to cause
     # multiple deployments
+    kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/fancyDecision.dmn --insecure
     if kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel.bpmn --insecure
     then
       kubectl exec "$pod" -n "$namespace" -- zbctl deploy /tmp/bpmn/multi-version/multiVersionModel_v2.bpmn --insecure
