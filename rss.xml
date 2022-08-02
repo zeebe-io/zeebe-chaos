@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Tue, 15 Feb 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 02 Aug 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Bring Deployment distribution experiment back]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2022/08/02/deployment-distribution</link>
+            <guid>Bring Deployment distribution experiment back</guid>
+            <pubDate>Tue, 02 Aug 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[We encountered recently a severe bug zeebe#9877 where I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:]]></description>
+        </item>
         <item>
             <title><![CDATA[Standalone Gateway in CCSaaS]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS</link>
