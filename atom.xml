@@ -12,7 +12,7 @@
         <id>Bring Deployment distribution experiment back</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2022/08/02/deployment-distribution"/>
         <updated>2022-08-02T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[We encountered recently a severe bug zeebe#9877 where I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:]]></summary>
+        <summary type="html"><![CDATA[We encountered recently a severe bug zeebe#9877 and I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:]]></summary>
         <author>
             <name>Christopher Zell</name>
             <uri>https://github.com/zelldon</uri>

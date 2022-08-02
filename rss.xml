@@ -12,7 +12,7 @@
             <link>https://zeebe-io.github.io/zeebe-chaos/2022/08/02/deployment-distribution</link>
             <guid>Bring Deployment distribution experiment back</guid>
             <pubDate>Tue, 02 Aug 2022 00:00:00 GMT</pubDate>
-            <description><![CDATA[We encountered recently a severe bug zeebe#9877 where I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:]]></description>
+            <description><![CDATA[We encountered recently a severe bug zeebe#9877 and I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:]]></description>
         </item>
         <item>
             <title><![CDATA[Standalone Gateway in CCSaaS]]></title>
