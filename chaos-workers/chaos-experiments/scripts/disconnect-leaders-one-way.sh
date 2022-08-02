@@ -5,7 +5,6 @@ source utils.sh
 
 ## Intended for Production L cluster
 
-# TODO: add assertion for 6 partitions or at least 4
 
 partition=1
 namespace=$(getNamespace)
@@ -16,7 +15,7 @@ index=$(getIndexOfPodForPartitionInState "$partition" "LEADER")
 leader=$(getBroker "$index")
 
 # determine leader for partition three
-index=$(getIndexOfPodForPartitionInState "4" "LEADER")
+index=$(getIndexOfPodForPartitionInState "3" "LEADER")
 leaderTwo=$(getBroker "$index")
 leaderTwoIp=$(kubectl get pod "$leaderTwo" -n "$namespace" --template="{{.status.podIP}}")
 
