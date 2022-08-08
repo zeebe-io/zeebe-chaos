@@ -13,6 +13,7 @@ gateway=$(getGateway)
 # determine leader for partition one
 index=$(getIndexOfPodForPartitionInState "$partition" "LEADER")
 leader=$(getBroker "$index")
+leaderIp=$(kubectl get pod "$leader" -n "$namespace" --template="{{.status.podIP}}")
 
 # determine leader for partition three
 index=$(getIndexOfPodForPartitionInState "3" "LEADER")
@@ -37,4 +38,4 @@ function disconnect() {
 }
 
 # We just disconnect in one way because otherwise it might lead to issues with an embedded gateway, which we currently have deployed in CC
-retryUntilSuccess disconnect "$leader" "$leaderTwoIp"
+retryUntilSuccess disconnect "$leaderTwo" "$leaderIp"
