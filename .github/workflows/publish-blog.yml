@@ -1,4 +1,4 @@
-name: publish-docs
+name: Publish Chaos Blog
 
 on:
   push:
