@@ -29,7 +29,7 @@ var rootCmd = &cobra.Command{
 }
 
 func NewCmd() *cobra.Command {
-	return rootCmd;
+	return rootCmd
 }
 
 func Execute() {
