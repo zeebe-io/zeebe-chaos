@@ -1,4 +1,4 @@
-name: Test documentation
+name: Build Chaos Blog
 
 on:
   push:
