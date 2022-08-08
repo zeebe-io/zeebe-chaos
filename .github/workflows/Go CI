@@ -1,0 +1,40 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request: { }
+
+env:
+  GO_VERSION: 1.17
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: "${{ env.GO_VERSION }}"
+
+    - name: Format
+      run: |
+        make fmt
+        diff=$(git status --porcelain)
+        if [ -n "$diff" ]
+        then
+          echo "Some files are not following the go format ($diff), run gofmt and fix your files."
+          exit 1
+        fi
+    - name: Install License Tool
+      run: make installLicense
+    - name: Check License
+      run: make checkLicense
+    - name: Install Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: "${{ env.HELM_VERSION }}"
+    - name: Test
+      run: make test
