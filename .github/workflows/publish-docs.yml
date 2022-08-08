@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - chaos-days/**
 
 env:
   # Used by docusaurus publish-site command
