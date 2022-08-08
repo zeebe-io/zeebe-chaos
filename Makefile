@@ -8,7 +8,8 @@ test:
 # go build
 .PHONY: build
 build:
-	go build -o zbchaos
+	cd $(directory); \
+	go build -o zbchaos main.go
 
 # golden: runs the tests with updating the golden files
 .PHONY: golden
