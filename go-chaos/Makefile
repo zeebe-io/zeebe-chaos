@@ -23,12 +23,12 @@ fmt:
 # addlicense: add license headers to go files
 .PHONY: addlicense
 addlicense:
-	addlicense -c 'Camunda Services GmbH' -l apache go-chaos/**/*.go
+	addlicense -c 'Camunda Services GmbH' -l apache ./**/*.go
 
 # checkLicense: checks that the go files contain license header
 .PHONY: checkLicense
 checkLicense:
-	addlicense -check -l apache go-chaos/**/*.go
+	addlicense -check -l apache ./**/*.go
 
 # installLicense: installs the addlicense tool
 .PHONY: installLicense
