@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/chaos-workers/go-chaos-worker/internal"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 func init() {

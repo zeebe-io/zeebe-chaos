@@ -5,6 +5,10 @@ directory=go-chaos
 .PHONY: test
 test:	
 	go test $(directory)/...
+# go build
+.PHONY: build
+build:
+	go build -o zbchaos
 
 # golden: runs the tests with updating the golden files
 .PHONY: golden
