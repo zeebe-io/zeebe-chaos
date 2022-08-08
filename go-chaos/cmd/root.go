@@ -28,6 +28,10 @@ var rootCmd = &cobra.Command{
     Perfect to inject some chaos into your brokers and gateways.`,
 }
 
+func NewCmd() *cobra.Command {
+	return rootCmd;
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
