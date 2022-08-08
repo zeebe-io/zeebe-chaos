@@ -3,7 +3,7 @@ name: Publish Chaos Blog
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - chaos-days/**
 
