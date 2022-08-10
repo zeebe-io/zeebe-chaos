@@ -11,7 +11,7 @@ func Test_ExtractNodeId(t *testing.T) {
 	// given
 	partitionId := 3
 	role := "LEADER"
-    topology := createTopologyStub()
+	topology := createTopologyStub()
 
 	// when
 	nodeId, err := extractNodeId(&topology, partitionId, role)
