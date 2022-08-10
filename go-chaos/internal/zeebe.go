@@ -53,13 +53,7 @@ func GetBrokerForPartitionAndRole(k8Client K8Client,
 		return "", errors.New(errorMsg)
 	}
 
-	roleValue, exist := pb.Partition_PartitionBrokerRole_value[role]
-	if !exist {
-		errorMsg := fmt.Sprintf("Expected a partition role, which is part of [LEADER, FOLLOWER], but got %s.", role)
-		return "", errors.New(errorMsg)
-	}
-
-	nodeId, err := extractNodeId(topologyResponse, partitionId, role, roleValue)
+	nodeId, err := extractNodeId(topologyResponse, partitionId, role)
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +67,13 @@ func GetBrokerForPartitionAndRole(k8Client K8Client,
 	return broker, nil
 }
 
-func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role string, roleValue int32) (int32, error) {
+func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role string) (int32, error) {
+	roleValue, exist := pb.Partition_PartitionBrokerRole_value[role]
+	if !exist {
+		errorMsg := fmt.Sprintf("Expected a partition role, which is part of [LEADER, FOLLOWER, INACTIVE], but got %s.", role)
+		return 0, errors.New(errorMsg)
+	}
+
 	nodeId := int32(-1)
 	for _, broker := range topologyResponse.Brokers {
 		for _, partition := range broker.Partitions {
