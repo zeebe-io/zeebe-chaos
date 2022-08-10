@@ -7,7 +7,7 @@ test:
 	go test $(directory)/...
 # go build
 .PHONY: build
-build:
+build:  fmt
 	go build -o zbchaos main.go
 
 # golden: runs the tests with updating the golden files
