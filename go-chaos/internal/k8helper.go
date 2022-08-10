@@ -66,8 +66,6 @@ func createK8Client(kubeconfig *string) (K8Client, error) {
 	return K8Client{Clientset: clientset, ClientConfig: clientConfig}, nil
 }
 
-
-
 func findKubeconfigPath() *string {
 	//// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
 	var kubeconfig *string
