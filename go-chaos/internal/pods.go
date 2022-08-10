@@ -17,6 +17,7 @@ package internal
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -82,6 +83,10 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		return nil, err
+	}
+
+	if len(names) <= 0 {
+		return nil , errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", c.GetCurrentNamespace()))
 	}
 
 	portForwardCreateURL := c.createPortForwardUrl(names)
