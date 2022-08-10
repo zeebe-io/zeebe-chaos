@@ -3,7 +3,7 @@ directory=.
 
 # test: runs the tests without updating the golden files (runs checks against golden files)
 .PHONY: test
-test:	
+test:   build	
 	go test $(directory)/...
 # go build
 .PHONY: build
