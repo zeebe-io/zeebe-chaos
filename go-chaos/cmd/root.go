@@ -22,8 +22,12 @@ import (
 )
 
 var (
-	partitionId int
-	role        string
+	partitionId        int
+	role               string
+	broker1PartitionId int
+	broker1Role        string
+	broker2PartitionId int
+	broker2Role        string
 )
 
 var rootCmd = &cobra.Command{

@@ -42,18 +42,7 @@ func GetBrokerForPartitionAndRole(k8Client K8Client,
 	zbClient zbc.Client,
 	partitionId int,
 	role string) (string, error) {
-	topologyResponse, err := zbClient.NewTopologyCommand().Send(context.TODO())
-	if err != nil {
-		return "", err
-	}
-
-	partitionsCount := topologyResponse.PartitionsCount
-	if partitionsCount < int32(partitionId) {
-		errorMsg := fmt.Sprintf("Expected that given partition id (%d) is smaller then the partitions count %d, but was greater.", partitionId, partitionsCount)
-		return "", errors.New(errorMsg)
-	}
-
-	nodeId, err := extractNodeId(topologyResponse, partitionId, role)
+	nodeId, err := GetBrokerNodeId(zbClient, partitionId, role)
 	if err != nil {
 		return "", err
 	}
@@ -65,6 +54,25 @@ func GetBrokerForPartitionAndRole(k8Client K8Client,
 
 	broker := brokerPodNames[nodeId]
 	return broker, nil
+}
+
+func GetBrokerNodeId(zbClient zbc.Client, partitionId int, role string) (int32, error) {
+	topologyResponse, err := zbClient.NewTopologyCommand().Send(context.TODO())
+	if err != nil {
+		return 0, err
+	}
+
+	partitionsCount := topologyResponse.PartitionsCount
+	if partitionsCount < int32(partitionId) {
+		errorMsg := fmt.Sprintf("Expected that given partition id (%d) is smaller then the partitions count %d, but was greater.", partitionId, partitionsCount)
+		return 0, errors.New(errorMsg)
+	}
+
+	nodeId, err := extractNodeId(topologyResponse, partitionId, role)
+	if err != nil {
+		return 0, err
+	}
+	return nodeId, nil
 }
 
 func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role string) (int32, error) {

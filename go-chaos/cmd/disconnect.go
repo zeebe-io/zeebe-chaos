@@ -24,12 +24,40 @@ import (
 func init() {
 	rootCmd.AddCommand(disconnect)
 
+	disconnect.AddCommand(disconnectLeaders)
+
+	disconnectLeaders.Flags().StringVar(&broker1Role, "broker1Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the first Broker")
+	if err := disconnectLeaders.MarkFlagRequired("broker1Role"); err != nil {
+		panic(err)
+	}
+
+	disconnectLeaders.Flags().IntVar(&broker1PartitionId, "broker1PartitionId", 1, "Specify the partition id of the first Broker")
+	if err := disconnectLeaders.MarkFlagRequired("broker1PartitionId"); err != nil {
+		panic(err)
+	}
+
+	disconnectLeaders.Flags().StringVar(&broker2Role, "broker2Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the second Broker")
+	if err := disconnectLeaders.MarkFlagRequired("broker2Role"); err != nil {
+		panic(err)
+	}
+
+	disconnectLeaders.Flags().IntVar(&broker2PartitionId, "broker2PartitionId", 1, "Specify the partition id of the second Broker")
+	if err := disconnectLeaders.MarkFlagRequired("broker2PartitionId"); err != nil {
+		panic(err)
+	}
+
 }
 
 var disconnect = &cobra.Command{
 	Use:   "disconnect",
-	Short: "Disconnect Zeebe brokers",
-	Long:  `Disconnect Zeebe brokers with a certain role and given partition.`,
+	Short: "Disconnect Zeebe nodes",
+	Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
+}
+
+var disconnectLeaders = &cobra.Command{
+	Use:   "leaders",
+	Short: "Disconnect Zeebe partition leaders",
+	Long:  `Disconnect Zeebe partition leaders for a given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k8Client, err := internal.CreateK8Client()
 		if err != nil {
@@ -42,5 +70,37 @@ var disconnect = &cobra.Command{
 		}
 
 		fmt.Println("Patched statefulset")
+
+		port := 26500
+		closeFn, err := k8Client.GatewayPortForward(port)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer closeFn()
+
+		zbClient, err := internal.CreateZeebeClient(port)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer zbClient.Close()
+
+		firstBrokerNodeId, err := internal.GetBrokerNodeId(zbClient, broker1PartitionId, broker1Role)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		pods, err := k8Client.GetBrokerPods()
+		if err != nil {
+			panic(err.Error())
+		}
+
+		pod := pods.Items[firstBrokerNodeId]
+
+		firstBrokerPodName := pod.Name
+		firstBrokerPodIp := pod.Status.PodIP
+
+		k8Client.ExecuteCmdOnPod([]string{"apt", "update"}, firstBrokerPodName)
+		k8Client.ExecuteCmdOnPod([]string{"apt", "install", "-y", "iproute2"}, firstBrokerPodName)
+		k8Client.ExecuteCmdOnPod([]string{"ip", "route", "add", "unreachable", "ip"}, firstBrokerPodIp) // todo find ip
 	},
 }

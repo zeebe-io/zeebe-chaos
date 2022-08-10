@@ -21,24 +21,31 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/transport/spdy"
 )
 
 func (c K8Client) GetBrokerPodNames() ([]string, error) {
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
-	}
-
-	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	list, err := c.GetBrokerPods()
 	if err != nil {
 		return nil, err
 	}
 
 	return c.extractPodNames(list)
+}
+
+func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
+	}
+
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 }
 
 func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
@@ -152,4 +159,55 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 		SubResource("portforward").
 		URL()
 	return portForwardCreateURL
+}
+
+func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
+	//cmd := []string{
+	//	"sh",
+	//	"-c",
+	//	"ls -la",
+	//}
+	//
+	//names, err := c.GetBrokerPodNames()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if len(names) <= 0 {
+	//	return errors.New(fmt.Sprintf("Expected to find broker in namespace %s to execute command.", c.GetCurrentNamespace()))
+	//}
+
+	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
+		Namespace(c.GetCurrentNamespace()).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		Stdin:   false,
+		Stdout:  true,
+		Stderr:  true,
+		TTY:     true,
+	}
+
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+
+	config, err := c.ClientConfig.ClientConfig()
+	if err != nil {
+		return err
+	}
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
