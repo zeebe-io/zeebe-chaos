@@ -1,6 +1,3 @@
-
-
-
 package internal
 
 import (
@@ -12,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (c K8Client) ApplyNetworkPatch() (error) {
+func (c K8Client) ApplyNetworkPatch() error {
 
 	// todo support cloud
 	listOptions := metav1.ListOptions{
@@ -23,7 +20,7 @@ func (c K8Client) ApplyNetworkPatch() (error) {
 	if err != nil {
 		return err
 	}
-	
+
 	if len(statefulSetList.Items) <= 0 {
 		return errors.New(fmt.Sprintf("Expected to find the Zeebe statefulset but nothing was found in namespace %s", c.GetCurrentNamespace()))
 	}

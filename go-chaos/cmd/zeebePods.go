@@ -30,10 +30,14 @@ var getZeebeBrokersCmd = &cobra.Command{
 	Short: "Print the name of the Zeebe broker pods",
 	Long:  `Show all names of deployed Zeebe brokers, in the current kubernetes namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := internal.CreateK8Client()
-		pods, err := client.GetBrokerPodNames()
+		k8Client, err := internal.CreateK8Client()
 		if err != nil {
-			panic(err.Error())
+			panic(err)
+		}
+
+		pods, err := k8Client.GetBrokerPodNames()
+		if err != nil {
+			panic(err)
 		}
 
 		for _, item := range pods {

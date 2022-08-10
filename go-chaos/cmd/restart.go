@@ -41,27 +41,31 @@ var restartCmd = &cobra.Command{
 	Short: "Restarts a Zeebe broker",
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
 		port := 26500
-		k8Client := internal.CreateK8Client()
 		closeFn, err := k8Client.GatewayPortForward(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 		defer zbClient.Close()
 		broker, err := internal.GetBrokerForPartitionAndRole(k8Client, zbClient, partitionId, role)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		err = k8Client.RestartPod(broker)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		fmt.Printf("\nDeleted %s", broker)

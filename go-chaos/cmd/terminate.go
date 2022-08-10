@@ -77,7 +77,10 @@ var terminateGatewayCmd = &cobra.Command{
 	Short: "Terminates a Zeebe gateway",
 	Long:  `Terminates a Zeebe gateway.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client := internal.CreateK8Client()
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
 
 		gatewayPodNames, err := k8Client.GetGatewayPodNames()
 		if err != nil {
@@ -91,7 +94,7 @@ var terminateGatewayCmd = &cobra.Command{
 		gatewayPod := gatewayPodNames[0]
 		err = k8Client.TerminatePod(gatewayPod)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		fmt.Printf("\nTerminated %s", gatewayPod)

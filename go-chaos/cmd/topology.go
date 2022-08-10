@@ -32,17 +32,21 @@ var topologyCmd = &cobra.Command{
 	Short: "Print the Zeebe topology deployed in the current namespace",
 	Long:  `Shows the current Zeebe topology, in the current kubernetes namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
 		port := 26500
-		k8Client := internal.CreateK8Client()
 		closeFn, err := k8Client.GatewayPortForward(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 		defer closeFn()
 
 		client, err := internal.CreateZeebeClient(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		response, err := client.NewTopologyCommand().Send(context.TODO())
@@ -53,7 +57,7 @@ var topologyCmd = &cobra.Command{
 		m := protojson.MarshalOptions{EmitUnpopulated: true, Indent: "  "}
 		valueJSON, err := m.Marshal(response)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		fmt.Printf("\nResponse topology, %s", string(valueJSON))
