@@ -15,9 +15,9 @@
 package internal
 
 import (
-	"fmt"
-	"errors"
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"

@@ -15,12 +15,8 @@
 package cmd
 
 import (
-	"context"
-	"errors"
 	"fmt"
 
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -77,4 +73,3 @@ var terminateCmd = &cobra.Command{
 		fmt.Println()
 	},
 }
-
