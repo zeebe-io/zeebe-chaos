@@ -22,24 +22,24 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(terminateCmd)
+	rootCmd.AddCommand(restartCmd)
 
-	terminateCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
-	terminateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	restartCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
+	restartCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 
-	if err := terminateCmd.MarkFlagRequired("role"); err != nil {
+	if err := restartCmd.MarkFlagRequired("role"); err != nil {
 		panic(err)
 	}
 
-	if err := terminateCmd.MarkFlagRequired("partitionId"); err != nil {
+	if err := restartCmd.MarkFlagRequired("partitionId"); err != nil {
 		panic(err)
 	}
 }
 
-var terminateCmd = &cobra.Command{
-	Use:   "terminate",
-	Short: "Terminates a Zeebe broker",
-	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
+var restartCmd = &cobra.Command{
+	Use:   "restart",
+	Short: "Restarts a Zeebe broker",
+	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		port := 26500
 		k8Client := internal.CreateK8Client()
@@ -59,7 +59,7 @@ var terminateCmd = &cobra.Command{
 			panic(err.Error())
 		}
 
-		err = k8Client.TerminatePod(broker)
+		err = k8Client.RestartPod(broker)
 		if err != nil {
 			panic(err.Error())
 		}

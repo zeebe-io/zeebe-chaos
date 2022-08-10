@@ -71,6 +71,10 @@ func (c K8Client) TerminatePod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
 }
 
+func (c K8Client) RestartPod(podName string) error {
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, metav1.DeleteOptions{})
+}
+
 // GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428

@@ -21,6 +21,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	partitionId int
+	role        string
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
 	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
