@@ -44,8 +44,12 @@ var terminateCmd = &cobra.Command{
 	Short: "Terminates a Zeebe broker",
 	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
 		port := 26500
-		k8Client := internal.CreateK8Client()
 		closeFn, err := k8Client.GatewayPortForward(port)
 		if err != nil {
 			panic(err.Error())
