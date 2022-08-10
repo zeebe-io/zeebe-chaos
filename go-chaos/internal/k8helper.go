@@ -39,7 +39,36 @@ func (c *K8Client) GetCurrentNamespace() string {
 }
 
 // Creates a kubernetes client, based on the local kubeconfig
-func CreateK8Client() K8Client {
+func CreateK8Client() (K8Client, error) {
+	kubeconfig := findKubeconfigPath()
+
+	return createK8Client(kubeconfig)
+}
+
+func createK8Client(kubeconfig *string) (K8Client, error) {
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: *kubeconfig},
+		&clientcmd.ConfigOverrides{})
+
+	k8ClientConfig, err := clientConfig.ClientConfig()
+	if err != nil {
+		return K8Client{}, err
+	}
+
+	// create the clientset
+	clientset, err := kubernetes.NewForConfig(k8ClientConfig)
+	if err != nil {
+		return K8Client{}, err
+	}
+
+	namespace, _, _ := clientConfig.Namespace()
+	fmt.Printf("Connecting to %s\n", namespace)
+	return K8Client{Clientset: clientset, ClientConfig: clientConfig}, nil
+}
+
+
+
+func findKubeconfigPath() *string {
 	//// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
@@ -48,29 +77,5 @@ func CreateK8Client() K8Client {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-
-	// use the current context in kubeconfig
-	//config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	//if err != nil {
-	//	panic(err.Error())
-	//}
-
-	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: *kubeconfig},
-		&clientcmd.ConfigOverrides{})
-
-	k8ClientConfig, err := clientConfig.ClientConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(k8ClientConfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	namespace, _, _ := clientConfig.Namespace()
-	fmt.Printf("Connecting to %s\n", namespace)
-	return K8Client{Clientset: clientset, ClientConfig: clientConfig}
+	return kubeconfig
 }
