@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -34,6 +35,8 @@ func init() {
 	if err := terminateCmd.MarkFlagRequired("partitionId"); err != nil {
 		panic(err)
 	}
+
+	terminateCmd.AddCommand(terminateGatewayCmd)
 }
 
 var terminateCmd = &cobra.Command{
@@ -64,7 +67,34 @@ var terminateCmd = &cobra.Command{
 			panic(err.Error())
 		}
 
-		fmt.Printf("\nDeleted %s", broker)
+		fmt.Printf("\nTerminated %s", broker)
+		fmt.Println()
+	},
+}
+
+var terminateGatewayCmd = &cobra.Command{
+	Use:   "gateway",
+	Short: "Terminates a Zeebe gateway",
+	Long:  `Terminates a Zeebe gateway.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client := internal.CreateK8Client()
+
+		gatewayPodNames, err := k8Client.GetGatewayPodNames()
+		if err != nil {
+			panic(err)
+		}
+
+		if len(gatewayPodNames) <= 0 {
+			panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+		}
+
+		gatewayPod := gatewayPodNames[0]
+		err = k8Client.TerminatePod(gatewayPod)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Printf("\nTerminated %s", gatewayPod)
 		fmt.Println()
 	},
 }
