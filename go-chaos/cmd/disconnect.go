@@ -55,9 +55,9 @@ var disconnect = &cobra.Command{
 }
 
 var disconnectLeaders = &cobra.Command{
-	Use:   "leaders",
-	Short: "Disconnect Zeebe partition leaders",
-	Long:  `Disconnect Zeebe partition leaders for a given partition.`,
+	Use:   "brokers",
+	Short: "Disconnect Zeebe Brokers",
+	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k8Client, err := internal.CreateK8Client()
 		if err != nil {
@@ -84,23 +84,29 @@ var disconnectLeaders = &cobra.Command{
 		}
 		defer zbClient.Close()
 
-		firstBrokerNodeId, err := internal.GetBrokerNodeId(zbClient, broker1PartitionId, broker1Role)
+		broker1Pod, err := internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, broker1PartitionId, broker1Role)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		pods, err := k8Client.GetBrokerPods()
+		broker2Pod, err := internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, broker2PartitionId, broker2Role)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		pod := pods.Items[firstBrokerNodeId]
+		if broker1Pod.Name == broker2Pod.Name {
+			fmt.Printf("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
+			return
+		}
 
-		firstBrokerPodName := pod.Name
-		firstBrokerPodIp := pod.Status.PodIP
+		err = internal.MakeIpUnreachableForPod(k8Client, broker2Pod.Status.PodIP, broker1Pod.Name)
+		if err != nil {
+			panic(err.Error())
+		}
 
-		k8Client.ExecuteCmdOnPod([]string{"apt", "update"}, firstBrokerPodName)
-		k8Client.ExecuteCmdOnPod([]string{"apt", "install", "-y", "iproute2"}, firstBrokerPodName)
-		k8Client.ExecuteCmdOnPod([]string{"ip", "route", "add", "unreachable", "ip"}, firstBrokerPodIp) // todo find ip
+		err = internal.MakeIpUnreachableForPod(k8Client, broker1Pod.Status.PodIP, broker2Pod.Name)
+		if err != nil {
+			panic(err.Error())
+		}
 	},
 }

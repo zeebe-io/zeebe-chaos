@@ -48,3 +48,28 @@ func (c K8Client) ApplyNetworkPatch() error {
 	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return err
 }
+
+func MakeIpUnreachableForPod(k8Client K8Client, podIp string, podName string) error {
+	// We try to reduce the system output in order to not break the execution. There is a limit for the sout for exec,
+	// for more details see remotecommand.StreamOptions
+
+	// the -qq flag makes the tool less noisy, remove it to get more output
+	err := k8Client.ExecuteCmdOnPod([]string{"apt", "-qq", "update"}, podName)
+	if err != nil {
+		return err
+	}
+
+	// the -qq flag makes the tool less noisy, remove it to get more output
+	err = k8Client.ExecuteCmdOnPod([]string{"apt", "-qq", "install", "-y", "iproute2"}, podName)
+	if err != nil {
+		return err
+	}
+
+	// we use replace to not break the execution, since add will return an exit code > 0 if the route exist
+	err = k8Client.ExecuteCmdOnPod([]string{"ip", "route", "replace", "unreachable", podIp}, podName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

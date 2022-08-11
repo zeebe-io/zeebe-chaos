@@ -58,7 +58,7 @@ var restartCmd = &cobra.Command{
 			panic(err)
 		}
 		defer zbClient.Close()
-		broker, err := internal.GetBrokerForPartitionAndRole(k8Client, zbClient, partitionId, role)
+		broker, err := internal.GetBrokerPodNameForPartitionAndRole(k8Client, zbClient, partitionId, role)
 		if err != nil {
 			panic(err)
 		}

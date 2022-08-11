@@ -22,6 +22,7 @@ import (
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"google.golang.org/grpc"
+	v1 "k8s.io/api/core/v1"
 )
 
 func CreateZeebeClient(port int) (zbc.Client, error) {
@@ -38,22 +39,34 @@ func CreateZeebeClient(port int) (zbc.Client, error) {
 	return client, nil
 }
 
-func GetBrokerForPartitionAndRole(k8Client K8Client,
+func GetBrokerPodNameForPartitionAndRole(k8Client K8Client,
 	zbClient zbc.Client,
 	partitionId int,
 	role string) (string, error) {
-	nodeId, err := GetBrokerNodeId(zbClient, partitionId, role)
+	pod, err := GetBrokerPodForPartitionAndRole(k8Client, zbClient, partitionId, role)
 	if err != nil {
 		return "", err
 	}
 
-	brokerPodNames, err := k8Client.GetBrokerPodNames()
+	return pod.Name, nil
+}
+
+func GetBrokerPodForPartitionAndRole(k8Client K8Client,
+	zbClient zbc.Client,
+	partitionId int,
+	role string) (*v1.Pod, error) {
+
+	firstBrokerNodeId, err := GetBrokerNodeId(zbClient, partitionId, role)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	broker := brokerPodNames[nodeId]
-	return broker, nil
+	pods, err := k8Client.GetBrokerPods()
+	if err != nil {
+		return nil, err
+	}
+
+	return &pods.Items[firstBrokerNodeId], nil
 }
 
 func GetBrokerNodeId(zbClient zbc.Client, partitionId int, role string) (int32, error) {

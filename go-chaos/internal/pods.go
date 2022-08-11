@@ -162,26 +162,13 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 }
 
 func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
-	//cmd := []string{
-	//	"sh",
-	//	"-c",
-	//	"ls -la",
-	//}
-	//
-	//names, err := c.GetBrokerPodNames()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if len(names) <= 0 {
-	//	return errors.New(fmt.Sprintf("Expected to find broker in namespace %s to execute command.", c.GetCurrentNamespace()))
-	//}
+	fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
 
 	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
 		Namespace(c.GetCurrentNamespace()).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
-		Stdin:   false,
+		Stdin:   true,
 		Stdout:  true,
 		Stderr:  true,
 		TTY:     true,
@@ -204,6 +191,7 @@ func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
+		Stdin:  os.Stdin,
 	})
 	if err != nil {
 		return err
