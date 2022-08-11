@@ -16,6 +16,7 @@ package internal
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 
@@ -112,4 +113,28 @@ func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role 
 	}
 
 	return nodeId, nil
+}
+
+// bpmnContent holds our static bpmn models, which are copied with the go:embed directive
+//
+//go:embed bpmn/*
+var bpmnContent embed.FS
+
+func DeployModel(client zbc.Client) error {
+
+	processModelFileName := "bpmn/one_task.bpmn"
+	bpmnBytes, err := bpmnContent.ReadFile(processModelFileName)
+	if err != nil {
+		return err
+	}
+
+	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, processModelFileName).Send(context.TODO())
+	if err != nil {
+		return err
+	}
+
+	if Verbosity {
+		fmt.Printf("Deployed process model %s successful with key %d.\n", processModelFileName, response.Processes[0].ProcessDefinitionKey)
+	}
+	return nil
 }

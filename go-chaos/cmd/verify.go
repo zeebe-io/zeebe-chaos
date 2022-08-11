@@ -10,6 +10,7 @@ import (
 func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
+	verifyCmd.AddCommand(verifySteadyStateCmd)
 }
 
 var verifyCmd = &cobra.Command{
@@ -35,5 +36,36 @@ var verifyReadinessCmd = &cobra.Command{
 		}
 
 		fmt.Printf("All Zeebe nodes are running.\n")
+	},
+}
+
+var verifySteadyStateCmd = &cobra.Command{
+	Use:   "steady-state",
+	Short: "Verify the steady state of the Zeebe system",
+	Long: `Verifies the steady state of the Zeebe system.
+A process model will be deployed and process instances are created until the required partition is reached.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
+		port := 26500
+		closeFn, err := k8Client.GatewayPortForward(port)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer closeFn()
+
+		zbClient, err := internal.CreateZeebeClient(port)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer zbClient.Close()
+
+		err = internal.DeployModel(zbClient)
+		if err != nil {
+			panic(err.Error())
+		}
 	},
 }
