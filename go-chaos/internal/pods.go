@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -81,6 +82,54 @@ func (c K8Client) TerminatePod(podName string) error {
 	gracePeriodSec := int64(0)
 	options := metav1.DeleteOptions{GracePeriodSeconds: &gracePeriodSec}
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
+}
+
+func (c K8Client) AwaitReadiness() error {
+	retries := 0
+	maxRetries := 300 // 5 * 60s
+	for {
+		if retries >= maxRetries {
+			return errors.New("Awaited readiness of pods in namespace %s, but timed out after 30s")
+		}
+		if retries > 0 {
+			time.Sleep(1 * time.Second)
+		}
+
+		allRunning, err := c.checkIfBrokersAreRunning()
+		if err != nil {
+			return err
+		}
+
+		if allRunning {
+			break
+		}
+		retries++
+	}
+	return nil
+}
+
+func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
+	pods, err := c.GetBrokerPods()
+	if err != nil {
+		return false, err
+	}
+
+	if len(pods.Items) <= 0 {
+		return false, errors.New(fmt.Sprintf("Expected to find brokers in namespace %s, but none found.", c.GetCurrentNamespace()))
+	}
+
+	allRunning := true
+	for _, pod := range pods.Items {
+		if pod.Status.Phase != v1.PodRunning {
+			if Verbosity {
+				fmt.Printf("Pod %s is in phase %s, which is not running. Wait for some seconds.\n", pod.Name, pod.Status.Phase)
+			}
+			allRunning = false
+			break
+		}
+	}
+
+	return allRunning, nil
 }
 
 func (c K8Client) RestartPod(podName string) error {
