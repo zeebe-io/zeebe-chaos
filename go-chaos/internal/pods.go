@@ -95,12 +95,17 @@ func (c K8Client) AwaitReadiness() error {
 			time.Sleep(1 * time.Second)
 		}
 
-		allRunning, err := c.checkIfBrokersAreRunning()
+		brokersAreRunning, err := c.checkIfBrokersAreRunning()
 		if err != nil {
 			return err
 		}
 
-		if allRunning {
+		gatewaysAreRunning, err := c.checkIfGatewaysAreRunning()
+		if err != nil {
+			return err
+		}
+
+		if brokersAreRunning && gatewaysAreRunning {
 			break
 		}
 		retries++
@@ -130,6 +135,32 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 	}
 
 	return allRunning, nil
+}
+
+func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
+	}
+
+	deploymentList, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return false, err
+	}
+
+	if len(deploymentList.Items) <= 0 {
+		return false, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
+	}
+
+	deployment := deploymentList.Items[0]
+
+	if deployment.Status.UnavailableReplicas > 0 {
+		if Verbosity {
+			fmt.Printf("Gateway deployment not fully available. [Available replicas: %d/%d]\n", deployment.Status.AvailableReplicas, deployment.Status.Replicas)
+		}
+		return false, nil
+	}
+	return true, nil
 }
 
 func (c K8Client) RestartPod(podName string) error {
