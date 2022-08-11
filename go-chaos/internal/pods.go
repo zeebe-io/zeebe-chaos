@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -162,6 +163,10 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 }
 
 func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
+	return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, os.Stdout)
+}
+
+func (c K8Client) ExecuteCmdOnPodWriteIntoOutput(cmd []string, pod string, output io.Writer) error {
 	fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
 
 	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
@@ -188,8 +193,9 @@ func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
 	if err != nil {
 		return err
 	}
+
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdout: os.Stdout,
+		Stdout: output,
 		Stderr: os.Stderr,
 		Stdin:  os.Stdin,
 	})

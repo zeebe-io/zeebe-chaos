@@ -95,7 +95,7 @@ var disconnectLeaders = &cobra.Command{
 		}
 
 		if broker1Pod.Name == broker2Pod.Name {
-			fmt.Printf("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
+			fmt.Printf("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.\n", broker1Pod.Name, broker2Pod.Name)
 			return
 		}
 

@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -67,6 +69,33 @@ func MakeIpUnreachableForPod(k8Client K8Client, podIp string, podName string) er
 
 	// we use replace to not break the execution, since add will return an exit code > 0 if the route exist
 	err = k8Client.ExecuteCmdOnPod([]string{"ip", "route", "replace", "unreachable", podIp}, podName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func MakeIpReachableForPod(k8Client K8Client, podName string) error {
+	// We try to reduce the system output in order to not break the execution. There is a limit for the sout for exec,
+	// for more details see remotecommand.StreamOptions
+
+	// we use replace to not break the execution, since add will return an exit code > 0 if the route exist
+	err := k8Client.ExecuteCmdOnPod([]string{"sh", "-c", "command -v ip"}, podName)
+
+	if err != nil && strings.Contains(err.Error(), "exit code 127") {
+		return errors.New("Execution exited with exit code 127 (Command not found). It is likely that the broker was not disconnected or restarted in between.")
+	}
+
+	var buf bytes.Buffer
+	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", "ip route | grep unreachable"}, podName, &buf)
+
+	if err != nil && strings.Contains(err.Error(), "exit code 1") {
+		return errors.New("Execution exited with exit code 1 (ip route not found). It is likely that the broker was not disconnected or restarted in between.")
+	}
+
+	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", fmt.Sprintf("ip route del %s", strings.TrimSpace(buf.String()))}, podName, &buf)
+
 	if err != nil {
 		return err
 	}
