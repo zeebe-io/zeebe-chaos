@@ -32,6 +32,9 @@ import (
 	"k8s.io/client-go/transport/spdy"
 )
 
+// defines whether the functions should print verbose output
+var Verbosity bool = false
+
 func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	list, err := c.GetBrokerPods()
 	if err != nil {
@@ -113,10 +116,16 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 	// Wait for an error or the tunnel to be ready
 	select {
 	case err = <-errChan:
-		fmt.Printf("\nError starting port forwarding tunnel: %s", err)
+		if Verbosity {
+			fmt.Printf("\nError starting port forwarding tunnel: %s\n", err)
+		}
+
 		return nil, err
 	case <-portForwarder.Ready:
-		fmt.Println("Successfully created port forwarding tunnel")
+		if Verbosity {
+			fmt.Println("Successfully created port forwarding tunnel")
+		}
+
 		return func() {
 			portForwarder.Close()
 		}, nil
@@ -133,7 +142,9 @@ func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (
 
 	transport, upgrader, err := spdy.RoundTripperFor(config)
 	if err != nil {
-		fmt.Printf("Error creating http client: %s\n", err)
+		if Verbosity {
+			fmt.Printf("Error creating http client: %s\n", err)
+		}
 		return nil, err
 	}
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", portForwardCreateURL)
@@ -144,7 +155,9 @@ func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (
 	ports := []string{fmt.Sprintf("%d:%d", port, 26500)}
 	portforwarder, err := portforward.New(dialer, ports, stopChan, readyChan, out, errOut)
 	if err != nil {
-		fmt.Printf("Error creating port forwarding tunnel: %s", err)
+		if Verbosity {
+			fmt.Printf("Error creating port forwarding tunnel: %s\n", err)
+		}
 		return nil, err
 	}
 	return portforwarder, nil
@@ -163,11 +176,16 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 }
 
 func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
-	return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, os.Stdout)
+	if Verbosity {
+		return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, os.Stdout)
+	}
+	return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, io.Discard)
 }
 
 func (c K8Client) ExecuteCmdOnPodWriteIntoOutput(cmd []string, pod string, output io.Writer) error {
-	fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
+	if Verbosity {
+		fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
+	}
 
 	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
 		Namespace(c.GetCurrentNamespace()).SubResource("exec")

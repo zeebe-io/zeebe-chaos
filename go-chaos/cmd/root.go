@@ -30,11 +30,16 @@ var (
 	broker2Role        string
 )
 
+var Verbose bool
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
 	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
 	Long: `A chaos experimenting toolkit for Zeebe.
     Perfect to inject some chaos into your brokers and gateways.`,
+}
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 }
 
 func NewCmd() *cobra.Command {

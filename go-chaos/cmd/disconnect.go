@@ -59,6 +59,7 @@ var disconnectLeaders = &cobra.Command{
 	Short: "Disconnect Zeebe Brokers",
 	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		internal.Verbosity = Verbose
 		k8Client, err := internal.CreateK8Client()
 		if err != nil {
 			panic(err)
@@ -69,7 +70,9 @@ var disconnectLeaders = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println("Patched statefulset")
+		if Verbose {
+			fmt.Println("Patched statefulset")
+		}
 
 		port := 26500
 		closeFn, err := k8Client.GatewayPortForward(port)
@@ -103,10 +106,12 @@ var disconnectLeaders = &cobra.Command{
 		if err != nil {
 			panic(err.Error())
 		}
+		fmt.Printf("Disconnect %s from %s\n", broker1Pod.Name, broker2Pod.Name)
 
 		err = internal.MakeIpUnreachableForPod(k8Client, broker1Pod.Status.PodIP, broker2Pod.Name)
 		if err != nil {
 			panic(err.Error())
 		}
+		fmt.Printf("Disconnect %s from %s\n", broker2Pod.Name, broker1Pod.Name)
 	},
 }

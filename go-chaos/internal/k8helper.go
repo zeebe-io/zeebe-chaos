@@ -62,7 +62,11 @@ func createK8Client(kubeconfig *string) (K8Client, error) {
 	}
 
 	namespace, _, _ := clientConfig.Namespace()
-	fmt.Printf("Connecting to %s\n", namespace)
+
+	if Verbosity {
+		fmt.Printf("Connecting to %s\n", namespace)
+	}
+
 	return K8Client{Clientset: clientset, ClientConfig: clientConfig}, nil
 }
 

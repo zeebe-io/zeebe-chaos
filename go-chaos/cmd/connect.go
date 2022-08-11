@@ -37,6 +37,7 @@ var connectBrokers = &cobra.Command{
 	Short: "Connect Zeebe Brokers",
 	Long:  `Connect all Zeebe Brokers again, after they have been disconnected.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		internal.Verbosity = Verbose
 		k8Client, err := internal.CreateK8Client()
 		if err != nil {
 			panic(err)
@@ -59,7 +60,9 @@ var connectBrokers = &cobra.Command{
 		for _, pod := range podNames {
 			err = internal.MakeIpReachableForPod(k8Client, pod)
 			if err != nil {
-				fmt.Printf("Error on connection Broker: %s. Error: %s\n", pod, err.Error())
+				if Verbose {
+					fmt.Printf("Error on connection Broker: %s. Error: %s\n", pod, err.Error())
+				}
 			} else {
 				fmt.Printf("Connected %s again, removed unreachable routes.\n", pod)
 			}
