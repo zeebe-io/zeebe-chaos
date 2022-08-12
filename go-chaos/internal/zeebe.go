@@ -72,6 +72,10 @@ func GetBrokerPodForNodeId(k8Client K8Client, brokerNodeId int32) (*v1.Pod, erro
 		return nil, err
 	}
 
+	if int(brokerNodeId) >= len(pods.Items) {
+		return nil, errors.New(fmt.Sprintf("Expected to find Broker with nodeId %d, but running pod count is %d. Be aware node id's start with zero.", brokerNodeId, len(pods.Items)))
+	}
+
 	// the following works since the pods are returned in alphabetical order (and end with '-id')
 	return &pods.Items[brokerNodeId], nil
 }
