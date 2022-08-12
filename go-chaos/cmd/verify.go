@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -70,7 +72,9 @@ A process model will be deployed and process instances are created until the req
 			panic(err.Error())
 		}
 
-		err = internal.CreateProcessInstanceOnPartition(zbClient, int32(partitionId), 30*time.Second)
+		err = internal.CreateProcessInstanceOnPartition(func(processName string) (*pb.CreateProcessInstanceResponse, error) {
+			return zbClient.NewCreateInstanceCommand().BPMNProcessId(processName).LatestVersion().Send(context.TODO())
+		}, int32(partitionId), 30*time.Second)
 		if err != nil {
 			panic(err.Error())
 		}

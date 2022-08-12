@@ -140,7 +140,9 @@ func DeployModel(client zbc.Client) error {
 	return nil
 }
 
-func CreateProcessInstanceOnPartition(client zbc.Client, requiredPartition int32, timeout time.Duration) error {
+type ProcessInstanceCreator func(processName string) (*pb.CreateProcessInstanceResponse, error)
+
+func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, requiredPartition int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
 	tickerChan := time.Tick(100 * time.Millisecond)
 
@@ -148,9 +150,9 @@ func CreateProcessInstanceOnPartition(client zbc.Client, requiredPartition int32
 	for {
 		select {
 		case <-timeoutChan:
-			return errors.New(fmt.Sprintf("Expected to create process instance on partition %d, but timed out after %s", requiredPartition, timeout.String()))
+			return errors.New(fmt.Sprintf("Expected to create process instance on partition %d, but timed out after %s.", requiredPartition, timeout.String()))
 		case <-tickerChan:
-			processInstanceResponse, err := client.NewCreateInstanceCommand().BPMNProcessId("benchmark").LatestVersion().Send(context.TODO())
+			processInstanceResponse, err := piCreator("benchmark") // client.NewCreateInstanceCommand().BPMNProcessId("benchmark").LatestVersion().Send(context.TODO())
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
 				fmt.Printf("Encountered an error during process instance creation. Error: %s\n", err.Error())
