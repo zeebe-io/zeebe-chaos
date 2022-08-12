@@ -28,14 +28,6 @@ func init() {
 	terminateCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
 	terminateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 
-	if err := terminateCmd.MarkFlagRequired("role"); err != nil {
-		panic(err)
-	}
-
-	if err := terminateCmd.MarkFlagRequired("partitionId"); err != nil {
-		panic(err)
-	}
-
 	terminateCmd.AddCommand(terminateGatewayCmd)
 }
 
@@ -71,8 +63,7 @@ var terminateCmd = &cobra.Command{
 			panic(err.Error())
 		}
 
-		fmt.Printf("\nTerminated %s", broker)
-		fmt.Println()
+		fmt.Printf("Terminated %s\n", broker)
 	},
 }
 
@@ -101,7 +92,6 @@ var terminateGatewayCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("\nTerminated %s", gatewayPod)
-		fmt.Println()
+		fmt.Printf("Terminated %s\n", gatewayPod)
 	},
 }
