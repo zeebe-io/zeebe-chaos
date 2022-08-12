@@ -88,7 +88,7 @@ func MakeIpReachableForPod(k8Client K8Client, podName string) error {
 	}
 
 	var buf bytes.Buffer
-	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", "ip route | grep unreachable"}, podName, &buf)
+	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", "ip route | grep -m 1 unreachable"}, podName, &buf)
 
 	if err != nil && strings.Contains(err.Error(), "exit code 1") {
 		return errors.New("Execution exited with exit code 1 (ip route not found). It is likely that the broker was not disconnected or restarted in between.")

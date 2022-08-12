@@ -27,8 +27,10 @@ var (
 	role               string
 	broker1PartitionId int
 	broker1Role        string
+	broker1NodeId      int
 	broker2PartitionId int
 	broker2Role        string
+	broker2NodeId      int
 )
 
 var Verbose bool

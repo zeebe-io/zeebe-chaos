@@ -17,34 +17,32 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
+	v1 "k8s.io/api/core/v1"
 )
 
 func init() {
 	rootCmd.AddCommand(disconnect)
 
-	disconnect.AddCommand(disconnectLeaders)
+	disconnect.AddCommand(disconnectBrokers)
 
-	disconnectLeaders.Flags().StringVar(&broker1Role, "broker1Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the first Broker")
-	if err := disconnectLeaders.MarkFlagRequired("broker1Role"); err != nil {
-		panic(err)
-	}
+	// broker 1
+	disconnectBrokers.Flags().StringVar(&broker1Role, "broker1Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the first Broker")
+	disconnectBrokers.Flags().IntVar(&broker1PartitionId, "broker1PartitionId", 1, "Specify the partition id of the first Broker")
 
-	disconnectLeaders.Flags().IntVar(&broker1PartitionId, "broker1PartitionId", 1, "Specify the partition id of the first Broker")
-	if err := disconnectLeaders.MarkFlagRequired("broker1PartitionId"); err != nil {
-		panic(err)
-	}
+	disconnectBrokers.Flags().IntVar(&broker1NodeId, "broker1NodeId", -1, "Specify the nodeId of the first Broker")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker1PartitionId", "broker1NodeId")
 
-	disconnectLeaders.Flags().StringVar(&broker2Role, "broker2Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the second Broker")
-	if err := disconnectLeaders.MarkFlagRequired("broker2Role"); err != nil {
-		panic(err)
-	}
+	// broker 2
+	disconnectBrokers.Flags().StringVar(&broker2Role, "broker2Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the second Broker")
+	disconnectBrokers.Flags().IntVar(&broker2PartitionId, "broker2PartitionId", 2, "Specify the partition id of the second Broker")
 
-	disconnectLeaders.Flags().IntVar(&broker2PartitionId, "broker2PartitionId", 1, "Specify the partition id of the second Broker")
-	if err := disconnectLeaders.MarkFlagRequired("broker2PartitionId"); err != nil {
-		panic(err)
-	}
+	disconnectBrokers.Flags().IntVar(&broker2NodeId, "broker2NodeId", -1, "Specify the nodeId of the second Broker")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId")
+
+	// general
 
 }
 
@@ -54,7 +52,7 @@ var disconnect = &cobra.Command{
 	Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
 }
 
-var disconnectLeaders = &cobra.Command{
+var disconnectBrokers = &cobra.Command{
 	Use:   "brokers",
 	Short: "Disconnect Zeebe Brokers",
 	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
@@ -87,15 +85,8 @@ var disconnectLeaders = &cobra.Command{
 		}
 		defer zbClient.Close()
 
-		broker1Pod, err := internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, broker1PartitionId, broker1Role)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		broker2Pod, err := internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, broker2PartitionId, broker2Role)
-		if err != nil {
-			panic(err.Error())
-		}
+		broker1Pod := getBrokerPod(k8Client, zbClient, broker1NodeId, broker1PartitionId, broker1Role)
+		broker2Pod := getBrokerPod(k8Client, zbClient, broker2NodeId, broker2PartitionId, broker2Role)
 
 		if broker1Pod.Name == broker2Pod.Name {
 			fmt.Printf("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.\n", broker1Pod.Name, broker2Pod.Name)
@@ -114,4 +105,28 @@ var disconnectLeaders = &cobra.Command{
 		}
 		fmt.Printf("Disconnect %s from %s\n", broker2Pod.Name, broker1Pod.Name)
 	},
+}
+
+func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId int, brokerPartitionId int, brokerRole string) *v1.Pod {
+	var brokerPod *v1.Pod
+	var err error
+	if brokerNodeId >= 0 {
+		brokerPod, err = internal.GetBrokerPodForNodeId(k8Client, int32(brokerNodeId))
+		if err != nil {
+			panic(err.Error())
+		}
+		if Verbose {
+			fmt.Printf("Found Broker %s with node id %d.\n", brokerPod.Name, brokerNodeId)
+		}
+	} else {
+		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
+		if err != nil {
+			panic(err.Error())
+		}
+		if Verbose {
+			fmt.Printf("Found Broker %s as %s for partition %d.\n", brokerPod.Name, role, brokerPartitionId)
+		}
+	}
+
+	return brokerPod
 }

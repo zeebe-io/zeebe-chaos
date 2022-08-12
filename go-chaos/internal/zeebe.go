@@ -63,12 +63,17 @@ func GetBrokerPodForPartitionAndRole(k8Client K8Client,
 		return nil, err
 	}
 
+	return GetBrokerPodForNodeId(k8Client, firstBrokerNodeId)
+}
+
+func GetBrokerPodForNodeId(k8Client K8Client, brokerNodeId int32) (*v1.Pod, error) {
 	pods, err := k8Client.GetBrokerPods()
 	if err != nil {
 		return nil, err
 	}
 
-	return &pods.Items[firstBrokerNodeId], nil
+	// the following works since the pods are returned in alphabetical order (and end with '-id')
+	return &pods.Items[brokerNodeId], nil
 }
 
 func GetBrokerNodeId(zbClient zbc.Client, partitionId int, role string) (int32, error) {
