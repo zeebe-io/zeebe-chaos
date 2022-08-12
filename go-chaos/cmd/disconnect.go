@@ -23,6 +23,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+var (
+	oneDirection bool
+)
+
 func init() {
 	rootCmd.AddCommand(disconnect)
 
@@ -40,10 +44,10 @@ func init() {
 	disconnectBrokers.Flags().IntVar(&broker2PartitionId, "broker2PartitionId", 2, "Specify the partition id of the second Broker")
 
 	disconnectBrokers.Flags().IntVar(&broker2NodeId, "broker2NodeId", -1, "Specify the nodeId of the second Broker")
-	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId")
 
 	// general
-
+	disconnectBrokers.Flags().BoolVar(&oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId", "one-direction")
 }
 
 var disconnect = &cobra.Command{
@@ -99,11 +103,13 @@ var disconnectBrokers = &cobra.Command{
 		}
 		fmt.Printf("Disconnect %s from %s\n", broker1Pod.Name, broker2Pod.Name)
 
-		err = internal.MakeIpUnreachableForPod(k8Client, broker1Pod.Status.PodIP, broker2Pod.Name)
-		if err != nil {
-			panic(err.Error())
+		if !oneDirection {
+			err = internal.MakeIpUnreachableForPod(k8Client, broker1Pod.Status.PodIP, broker2Pod.Name)
+			if err != nil {
+				panic(err.Error())
+			}
+			fmt.Printf("Disconnect %s from %s\n", broker2Pod.Name, broker1Pod.Name)
 		}
-		fmt.Printf("Disconnect %s from %s\n", broker2Pod.Name, broker1Pod.Name)
 	},
 }
 
