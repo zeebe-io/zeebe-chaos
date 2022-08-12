@@ -19,13 +19,34 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
+var (
+	partitionId        int
+	role               string
+	nodeId             int
+	broker1PartitionId int
+	broker1Role        string
+	broker1NodeId      int
+	broker2PartitionId int
+	broker2Role        string
+	broker2NodeId      int
+)
+
+var Verbose bool
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
 	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
 	Long: `A chaos experimenting toolkit for Zeebe.
     Perfect to inject some chaos into your brokers and gateways.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		internal.Verbosity = Verbose
+	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 }
 
 func NewCmd() *cobra.Command {

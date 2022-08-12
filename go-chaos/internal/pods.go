@@ -17,27 +17,40 @@ package internal
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/portforward"
+	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/transport/spdy"
 )
 
-func (c K8Client) GetBrokerPodNames() ([]string, error) {
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
-	}
+// defines whether the functions should print verbose output
+var Verbosity bool = false
 
-	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+func (c K8Client) GetBrokerPodNames() ([]string, error) {
+	list, err := c.GetBrokerPods()
 	if err != nil {
 		return nil, err
 	}
 
 	return c.extractPodNames(list)
+}
+
+func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
+	}
+
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 }
 
 func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
@@ -71,6 +84,89 @@ func (c K8Client) TerminatePod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
 }
 
+func (c K8Client) AwaitReadiness() error {
+	retries := 0
+	maxRetries := 300 // 5 * 60s
+	for {
+		if retries >= maxRetries {
+			return errors.New("Awaited readiness of pods in namespace %s, but timed out after 30s")
+		}
+		if retries > 0 {
+			time.Sleep(1 * time.Second)
+		}
+
+		brokersAreRunning, err := c.checkIfBrokersAreRunning()
+		if err != nil {
+			return err
+		}
+
+		gatewaysAreRunning, err := c.checkIfGatewaysAreRunning()
+		if err != nil {
+			return err
+		}
+
+		if brokersAreRunning && gatewaysAreRunning {
+			break
+		}
+		retries++
+	}
+	return nil
+}
+
+func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
+	pods, err := c.GetBrokerPods()
+	if err != nil {
+		return false, err
+	}
+
+	if len(pods.Items) <= 0 {
+		return false, errors.New(fmt.Sprintf("Expected to find brokers in namespace %s, but none found.", c.GetCurrentNamespace()))
+	}
+
+	allRunning := true
+	for _, pod := range pods.Items {
+		if pod.Status.Phase != v1.PodRunning {
+			if Verbosity {
+				fmt.Printf("Pod %s is in phase %s, which is not running. Wait for some seconds.\n", pod.Name, pod.Status.Phase)
+			}
+			allRunning = false
+			break
+		}
+	}
+
+	return allRunning, nil
+}
+
+func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
+	}
+
+	deploymentList, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return false, err
+	}
+
+	if len(deploymentList.Items) <= 0 {
+		return false, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
+	}
+
+	deployment := deploymentList.Items[0]
+
+	if deployment.Status.UnavailableReplicas > 0 {
+		if Verbosity {
+			fmt.Printf("Gateway deployment not fully available. [Available replicas: %d/%d]\n", deployment.Status.AvailableReplicas, deployment.Status.Replicas)
+		}
+		return false, nil
+	}
+	return true, nil
+}
+
+func (c K8Client) RestartPod(podName string) error {
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, metav1.DeleteOptions{})
+}
+
 // GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
@@ -78,6 +174,10 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		return nil, err
+	}
+
+	if len(names) <= 0 {
+		return nil, errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", c.GetCurrentNamespace()))
 	}
 
 	portForwardCreateURL := c.createPortForwardUrl(names)
@@ -96,10 +196,16 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 	// Wait for an error or the tunnel to be ready
 	select {
 	case err = <-errChan:
-		fmt.Printf("\nError starting port forwarding tunnel: %s", err)
+		if Verbosity {
+			fmt.Printf("\nError starting port forwarding tunnel: %s\n", err)
+		}
+
 		return nil, err
 	case <-portForwarder.Ready:
-		fmt.Println("Successfully created port forwarding tunnel")
+		if Verbosity {
+			fmt.Println("Successfully created port forwarding tunnel")
+		}
+
 		return func() {
 			portForwarder.Close()
 		}, nil
@@ -116,7 +222,9 @@ func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (
 
 	transport, upgrader, err := spdy.RoundTripperFor(config)
 	if err != nil {
-		fmt.Printf("Error creating http client: %s\n", err)
+		if Verbosity {
+			fmt.Printf("Error creating http client: %s\n", err)
+		}
 		return nil, err
 	}
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", portForwardCreateURL)
@@ -127,7 +235,9 @@ func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (
 	ports := []string{fmt.Sprintf("%d:%d", port, 26500)}
 	portforwarder, err := portforward.New(dialer, ports, stopChan, readyChan, out, errOut)
 	if err != nil {
-		fmt.Printf("Error creating port forwarding tunnel: %s", err)
+		if Verbosity {
+			fmt.Printf("Error creating port forwarding tunnel: %s\n", err)
+		}
 		return nil, err
 	}
 	return portforwarder, nil
@@ -143,4 +253,53 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 		SubResource("portforward").
 		URL()
 	return portForwardCreateURL
+}
+
+func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
+	if Verbosity {
+		return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, os.Stdout)
+	}
+	return c.ExecuteCmdOnPodWriteIntoOutput(cmd, pod, io.Discard)
+}
+
+func (c K8Client) ExecuteCmdOnPodWriteIntoOutput(cmd []string, pod string, output io.Writer) error {
+	if Verbosity {
+		fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
+	}
+
+	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
+		Namespace(c.GetCurrentNamespace()).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		Stdin:   true,
+		Stdout:  true,
+		Stderr:  true,
+		TTY:     true,
+	}
+
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+
+	config, err := c.ClientConfig.ClientConfig()
+	if err != nil {
+		return err
+	}
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: output,
+		Stderr: os.Stderr,
+		Stdin:  os.Stdin,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

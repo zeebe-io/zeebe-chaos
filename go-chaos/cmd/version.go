@@ -16,32 +16,30 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
-	rootCmd.AddCommand(getZeebeBrokersCmd)
+var (
+	Version = "development"
+	Commit  = "HEAD"
+)
+
+func VersionString() string {
+	commit := Commit[0:int(math.Min(8, float64(len(Commit))))]
+	return fmt.Sprintf("zbchaos %s (commit: %s)", Version, commit)
 }
 
-var getZeebeBrokersCmd = &cobra.Command{
-	Use:   "brokers",
-	Short: "Print the name of the Zeebe broker pods",
-	Long:  `Show all names of deployed Zeebe brokers, in the current kubernetes namespace.`,
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version of zbchaos",
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		pods, err := k8Client.GetBrokerPodNames()
-		if err != nil {
-			panic(err)
-		}
-
-		for _, item := range pods {
-			fmt.Printf("%s\n", item)
-		}
+		fmt.Println(VersionString())
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(versionCmd)
 }

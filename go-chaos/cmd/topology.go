@@ -17,10 +17,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"text/tabwriter"
 
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func init() {
@@ -32,17 +35,21 @@ var topologyCmd = &cobra.Command{
 	Short: "Print the Zeebe topology deployed in the current namespace",
 	Long:  `Shows the current Zeebe topology, in the current kubernetes namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
 		port := 26500
-		k8Client := internal.CreateK8Client()
 		closeFn, err := k8Client.GatewayPortForward(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 		defer closeFn()
 
 		client, err := internal.CreateZeebeClient(port)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 		response, err := client.NewTopologyCommand().Send(context.TODO())
@@ -50,13 +57,48 @@ var topologyCmd = &cobra.Command{
 			panic(err)
 		}
 
-		m := protojson.MarshalOptions{EmitUnpopulated: true, Indent: "  "}
-		valueJSON, err := m.Marshal(response)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Printf("\nResponse topology, %s", string(valueJSON))
-		fmt.Println()
+		writeTopologyToOutput(os.Stdout, response)
 	},
+}
+
+func writeTopologyToOutput(output io.Writer, response *pb.TopologyResponse) {
+	writer := tabwriter.NewWriter(output, 10, 0, 2, ' ', tabwriter.Debug)
+	addLineToWriter(writer, writeHeader(response.PartitionsCount))
+	writeTopology(response, writer)
+	writer.Flush()
+}
+
+func writeTopology(response *pb.TopologyResponse, writer *tabwriter.Writer) {
+	for _, broker := range response.Brokers {
+		addLineToWriter(writer, createBrokerTopologyString(response.PartitionsCount, broker))
+	}
+}
+
+func createBrokerTopologyString(partitionsCount int32, broker *pb.BrokerInfo) string {
+	line := fmt.Sprintf("%d", broker.NodeId)
+	for i := int32(1); i < partitionsCount+1; i++ {
+		line = fmt.Sprintf("%s\t", line)
+		for _, partition := range broker.Partitions {
+			if partition.PartitionId == i {
+				line = fmt.Sprintf("%s%s (%s)", line, partition.Role.String(), partition.Health.String())
+				break
+			}
+		}
+	}
+	return line
+}
+
+func writeHeader(partitionsCount int32) string {
+	line := fmt.Sprintf("Node")
+	for i := int32(0); i < partitionsCount; i++ {
+		line = fmt.Sprintf("%s\tPartition %d", line, i+1)
+	}
+	return line
+}
+
+func addLineToWriter(writer *tabwriter.Writer, line string) {
+	_, err := fmt.Fprintln(writer, line)
+	if err != nil {
+		panic(err.Error())
+	}
 }
