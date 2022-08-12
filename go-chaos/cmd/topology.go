@@ -17,10 +17,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+	"text/tabwriter"
 
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func init() {
@@ -54,13 +56,34 @@ var topologyCmd = &cobra.Command{
 			panic(err)
 		}
 
-		m := protojson.MarshalOptions{EmitUnpopulated: true, Indent: "  "}
-		valueJSON, err := m.Marshal(response)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("\nResponse topology, %s", string(valueJSON))
-		fmt.Println()
+		writer := tabwriter.NewWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
+		addLineToWriter(writer, writeHeader(response.PartitionsCount))
+		writeTopology(response, writer)
+		writer.Flush()
 	},
+}
+
+func writeTopology(response *pb.TopologyResponse, writer *tabwriter.Writer) {
+	for _, broker := range response.Brokers {
+		line := fmt.Sprintf("%d", broker.NodeId)
+		for _, partition := range broker.Partitions {
+			line = fmt.Sprintf("%s\t%s (%s)", line, partition.Role.String(), partition.Health.String())
+		}
+		addLineToWriter(writer, line)
+	}
+}
+
+func writeHeader(partitionsCount int32) string {
+	line := fmt.Sprintf("Node")
+	for i := int32(0); i < partitionsCount; i++ {
+		line = fmt.Sprintf("%s\tPartition %d", line, i+1)
+	}
+	return line
+}
+
+func addLineToWriter(writer *tabwriter.Writer, line string) {
+	_, err := fmt.Fprintln(writer, line)
+	if err != nil {
+		panic(err.Error())
+	}
 }
