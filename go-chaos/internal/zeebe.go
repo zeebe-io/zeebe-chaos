@@ -19,6 +19,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
@@ -137,4 +138,37 @@ func DeployModel(client zbc.Client) error {
 		fmt.Printf("Deployed process model %s successful with key %d.\n", processModelFileName, response.Processes[0].ProcessDefinitionKey)
 	}
 	return nil
+}
+
+func CreateProcessInstanceOnPartition(client zbc.Client, requiredPartition int32, timeout time.Duration) error {
+	timeoutChan := time.After(timeout)
+	tickerChan := time.Tick(100 * time.Millisecond)
+
+	partitionId := int32(0)
+	for {
+		select {
+		case <-timeoutChan:
+			return errors.New(fmt.Sprintf("Expected to create process instance on partition %d, but timed out after %s", requiredPartition, timeout.String()))
+		case <-tickerChan:
+			processInstanceResponse, err := client.NewCreateInstanceCommand().BPMNProcessId("benchmark").LatestVersion().Send(context.TODO())
+			if err != nil {
+				// we do not return here, since we want to retry until the timeout
+				fmt.Printf("Encountered an error during process instance creation. Error: %s\n", err.Error())
+				break
+			}
+			partitionId = ExtractPartitionIdFromKey(processInstanceResponse.ProcessInstanceKey)
+
+			if Verbosity {
+				fmt.Printf("Created process instance with key %d on partition %d, required partition %d.\n", processInstanceResponse.ProcessInstanceKey, partitionId, requiredPartition)
+			}
+
+			if partitionId == requiredPartition {
+				return nil
+			}
+		}
+	}
+}
+
+func ExtractPartitionIdFromKey(key int64) int32 {
+	return int32(key >> 51)
 }

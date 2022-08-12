@@ -115,3 +115,14 @@ func createTopologyStub() pb.TopologyResponse {
 		},
 	}
 }
+
+func Test_ExtractPartitionId(t *testing.T) {
+	// given
+	key := int64(6755399441055751)
+
+	// when
+	partitionId := ExtractPartitionIdFromKey(key)
+
+	// then
+	assert.Equal(t, int32(3), partitionId)
+}

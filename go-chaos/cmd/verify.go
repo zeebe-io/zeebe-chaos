@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
@@ -11,6 +12,7 @@ func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifySteadyStateCmd)
+	verifySteadyStateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 }
 
 var verifyCmd = &cobra.Command{
@@ -67,5 +69,12 @@ A process model will be deployed and process instances are created until the req
 		if err != nil {
 			panic(err.Error())
 		}
+
+		err = internal.CreateProcessInstanceOnPartition(zbClient, int32(partitionId), 30*time.Second)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Printf("The steady-state was successfully verified!\n")
 	},
 }
