@@ -25,6 +25,7 @@ import (
 var (
 	partitionId        int
 	role               string
+	nodeId             int
 	broker1PartitionId int
 	broker1Role        string
 	broker1NodeId      int

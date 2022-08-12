@@ -27,6 +27,8 @@ func init() {
 
 	terminateCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
 	terminateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	terminateCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	terminateCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
 }
@@ -53,17 +55,14 @@ var terminateCmd = &cobra.Command{
 			panic(err.Error())
 		}
 		defer zbClient.Close()
-		broker, err := internal.GetBrokerPodNameForPartitionAndRole(k8Client, zbClient, partitionId, role)
+
+		brokerPod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
+		err = k8Client.TerminatePod(brokerPod.Name)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		err = k8Client.TerminatePod(broker)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Printf("Terminated %s\n", broker)
+		fmt.Printf("Terminated %s\n", brokerPod.Name)
 	},
 }
 
