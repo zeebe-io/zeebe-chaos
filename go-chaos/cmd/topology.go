@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"text/tabwriter"
 
@@ -56,21 +57,35 @@ var topologyCmd = &cobra.Command{
 			panic(err)
 		}
 
-		writer := tabwriter.NewWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
-		addLineToWriter(writer, writeHeader(response.PartitionsCount))
-		writeTopology(response, writer)
-		writer.Flush()
+		writeTopologyToOutput(os.Stdout, response)
 	},
+}
+
+func writeTopologyToOutput(output io.Writer, response *pb.TopologyResponse) {
+	writer := tabwriter.NewWriter(output, 10, 0, 2, ' ', tabwriter.Debug)
+	addLineToWriter(writer, writeHeader(response.PartitionsCount))
+	writeTopology(response, writer)
+	writer.Flush()
 }
 
 func writeTopology(response *pb.TopologyResponse, writer *tabwriter.Writer) {
 	for _, broker := range response.Brokers {
-		line := fmt.Sprintf("%d", broker.NodeId)
-		for _, partition := range broker.Partitions {
-			line = fmt.Sprintf("%s\t%s (%s)", line, partition.Role.String(), partition.Health.String())
-		}
-		addLineToWriter(writer, line)
+		addLineToWriter(writer, createBrokerTopologyString(response.PartitionsCount, broker))
 	}
+}
+
+func createBrokerTopologyString(partitionsCount int32, broker *pb.BrokerInfo) string {
+	line := fmt.Sprintf("%d", broker.NodeId)
+	for i := int32(1); i < partitionsCount+1; i++ {
+		line = fmt.Sprintf("%s\t", line)
+		for _, partition := range broker.Partitions {
+			if partition.PartitionId == i {
+				line = fmt.Sprintf("%s%s (%s)", line, partition.Role.String(), partition.Health.String())
+				break
+			}
+		}
+	}
+	return line
 }
 
 func writeHeader(partitionsCount int32) string {
