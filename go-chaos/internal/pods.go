@@ -42,11 +42,11 @@ func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
 	}
 
 	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
 
-	if (list != nil && len(list.Items) > 0) {
+	if list != nil && len(list.Items) > 0 {
 		return list, err
 	}
 
@@ -87,15 +87,15 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 		return nil, err
 	}
 
-	if (list == nil || len(list.Items) == 0 ) {
+	if list == nil || len(list.Items) == 0 {
 		// lets check for SaaS setup
 		listOptions.LabelSelector = getSaasGatewayLabels()
 		list, err = c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
-		if (err != nil) {
+		if err != nil {
 			return nil, err
 		}
 
-		if (list == nil || len(list.Items) == 0) {
+		if list == nil || len(list.Items) == 0 {
 			// maybe we have an embedded gateway setup
 			return c.GetBrokerPodNames()
 		}

@@ -112,12 +112,12 @@ func Test_GetSelfManagedGatewayPodNames(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
 
-		// gateway
+	// gateway
 	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
 	require.NoError(t, err)
 	k8Client.CreatePodWithLabelsAndName(t, selector, "gateway")
 
-		// broker
+	// broker
 	selector, err = metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
 	require.NoError(t, err)
 	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")

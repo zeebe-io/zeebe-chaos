@@ -17,6 +17,7 @@ func CreateFakeClient() K8Client {
 	k8Client := K8Client{Clientset: fake.NewSimpleClientset(), ClientConfig: &testClientConfig{namespace: "testNamespace"}}
 	return k8Client
 }
+
 type testClientConfig struct {
 	namespace          string
 	namespaceSpecified bool
