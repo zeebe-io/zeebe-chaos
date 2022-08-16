@@ -2,7 +2,9 @@ package internal
 
 import (
 	"context"
+	"testing"
 
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -37,13 +39,15 @@ func (c *testClientConfig) ConfigAccess() clientcmd.ConfigAccess {
 	panic("implement me")
 }
 
-func (k K8Client) CreatePodWithLabels(selector *metav1.LabelSelector) (*v1.Pod, error) {
-	return k.CreatePodWithLabelsAndName(selector, "testPod")
+func (k K8Client) CreatePodWithLabels(t *testing.T, selector *metav1.LabelSelector) {
+	k.CreatePodWithLabelsAndName(t, selector, "testPod")
 }
 
-func (k K8Client) CreatePodWithLabelsAndName(selector *metav1.LabelSelector, podName string) (*v1.Pod, error) {
-	return k.Clientset.CoreV1().Pods(k.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
+func (k K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+	_, err := k.Clientset.CoreV1().Pods(k.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v1.PodSpec{},
 	}, metav1.CreateOptions{})
+
+	require.NoError(t, err)
 }

@@ -14,7 +14,7 @@ func Test_GetSelfManagedBrokerPods(t *testing.T) {
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
-	k8Client.CreatePodWithLabels(selector)
+	k8Client.CreatePodWithLabels(t, selector)
 
 	// when
 	pods, err := k8Client.GetBrokerPods()
@@ -32,7 +32,7 @@ func Test_GetSelfManagedBrokerPodNames(t *testing.T) {
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
-	k8Client.CreatePodWithLabels(selector)
+	k8Client.CreatePodWithLabels(t, selector)
 
 	// when
 	names, err := k8Client.GetBrokerPodNames()
@@ -50,7 +50,7 @@ func Test_GetSaasBrokerPods(t *testing.T) {
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
-	k8Client.CreatePodWithLabels(selector)
+	k8Client.CreatePodWithLabels(t, selector)
 
 	// when
 	pods, err := k8Client.GetBrokerPods()
@@ -68,8 +68,8 @@ func Test_GetBrokersInOrder(t *testing.T) {
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
-	k8Client.CreatePodWithLabelsAndName(selector, "zeebe-0")
-	k8Client.CreatePodWithLabelsAndName(selector, "zeebe-1")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "zeebe-0")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "zeebe-1")
 
 	// when
 	pods, err := k8Client.GetBrokerPods()
@@ -115,12 +115,12 @@ func Test_GetSelfManagedGatewayPodNames(t *testing.T) {
 		// gateway
 	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
 	require.NoError(t, err)
-	k8Client.CreatePodWithLabelsAndName(selector, "gateway")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "gateway")
 
 		// broker
 	selector, err = metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
 	require.NoError(t, err)
-	k8Client.CreatePodWithLabelsAndName(selector, "broker")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")
 
 	// when
 	names, err := k8Client.GetGatewayPodNames()
@@ -139,12 +139,12 @@ func Test_GetSaasGatewayPodNames(t *testing.T) {
 	// gateway
 	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
 	require.NoError(t, err)
-	k8Client.CreatePodWithLabelsAndName(selector, "gateway")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "gateway")
 
 	// broker
 	selector, err = metav1.ParseToLabelSelector(getSaasBrokerLabels())
 	require.NoError(t, err)
-	k8Client.CreatePodWithLabelsAndName(selector, "broker")
+	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")
 
 	// when
 	names, err := k8Client.GetGatewayPodNames()
