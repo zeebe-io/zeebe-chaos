@@ -58,7 +58,7 @@ func (k K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *meta
 	_, err := k.Clientset.AppsV1().Deployments(k.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v12.DeploymentSpec{},
-		Status: 	v12.DeploymentStatus{},
+		Status:     v12.DeploymentStatus{},
 	}, metav1.CreateOptions{})
 
 	require.NoError(t, err)
