@@ -35,6 +35,17 @@ import (
 
 // defines whether the functions should print verbose output
 var Verbosity bool = false
+var EmbeddedGateway bool = false
+
+
+func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
+
+	listOptions := metav1.ListOptions{
+		LabelSelector: getSelfManagedBrokerLabels(),
+	}
+
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+}
 
 func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	list, err := c.GetBrokerPods()
@@ -43,14 +54,6 @@ func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	}
 
 	return c.extractPodNames(list)
-}
-
-func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
-	}
-
-	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 }
 
 func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
