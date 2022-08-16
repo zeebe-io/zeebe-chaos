@@ -38,8 +38,12 @@ func (c *testClientConfig) ConfigAccess() clientcmd.ConfigAccess {
 }
 
 func (k K8Client) CreatePodWithLabels(selector *metav1.LabelSelector) (*v1.Pod, error) {
+	return k.CreatePodWithLabelsAndName(selector, "testPod")
+}
+
+func (k K8Client) CreatePodWithLabelsAndName(selector *metav1.LabelSelector, podName string) (*v1.Pod, error) {
 	return k.Clientset.CoreV1().Pods(k.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: "testPod"},
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v1.PodSpec{},
 	}, metav1.CreateOptions{})
 }

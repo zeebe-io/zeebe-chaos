@@ -87,3 +87,64 @@ func Test_GetNoBrokerPodNames(t *testing.T) {
 	require.NotNil(t, names)
 	require.Empty(t, names)
 }
+
+func Test_GetSelfManagedGatewayPodNames(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+		// gateway
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(selector, "gateway")
+
+		// broker
+	selector, err = metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(selector, "broker")
+
+	// when
+	names, err := k8Client.GetGatewayPodNames()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, names)
+	require.NotEmpty(t, names)
+	assert.Equal(t, "gateway", names[0], "Expected to retrieve gateway")
+}
+
+func Test_GetSaasGatewayPodNames(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// gateway
+	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(selector, "gateway")
+
+	// broker
+	selector, err = metav1.ParseToLabelSelector(getSaasBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(selector, "broker")
+
+	// when
+	names, err := k8Client.GetGatewayPodNames()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, names)
+	require.NotEmpty(t, names)
+	assert.Equal(t, "gateway", names[0], "Expected to retrieve gateway")
+}
+
+func Test_GetNoGatewayPodNames(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	names, err := k8Client.GetGatewayPodNames()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, names)
+	require.Empty(t, names)
+}
