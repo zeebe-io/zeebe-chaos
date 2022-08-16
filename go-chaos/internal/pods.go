@@ -94,6 +94,11 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 		if (err != nil) {
 			return nil, err
 		}
+
+		if (list == nil || len(list.Items) == 0) {
+			// maybe we have an embedded gateway setup
+			return c.GetBrokerPodNames()
+		}
 	}
 
 	return c.extractPodNames(list)

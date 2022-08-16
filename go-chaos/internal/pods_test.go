@@ -168,3 +168,22 @@ func Test_GetNoGatewayPodNames(t *testing.T) {
 	require.NotNil(t, names)
 	require.Empty(t, names)
 }
+
+func Test_GetEmbeddedGateway(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// broker
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")
+
+	// when
+	names, err := k8Client.GetGatewayPodNames()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, names)
+	require.NotEmpty(t, names)
+	assert.Equal(t, "broker", names[0], "Expected to retrieve broker")
+}
