@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	v12 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -48,6 +49,16 @@ func (k K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.Labe
 	_, err := k.Clientset.CoreV1().Pods(k.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v1.PodSpec{},
+	}, metav1.CreateOptions{})
+
+	require.NoError(t, err)
+}
+
+func (k K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+	_, err := k.Clientset.AppsV1().Deployments(k.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
+		Spec:       v12.DeploymentSpec{},
+		Status: 	v12.DeploymentStatus{},
 	}, metav1.CreateOptions{})
 
 	require.NoError(t, err)
