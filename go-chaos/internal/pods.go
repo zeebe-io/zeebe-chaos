@@ -39,11 +39,23 @@ var EmbeddedGateway bool = false
 
 
 func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
-
 	listOptions := metav1.ListOptions{
 		LabelSelector: getSelfManagedBrokerLabels(),
 	}
 
+	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if (err != nil) {
+		return nil, err
+	}
+
+	if (list != nil && len(list.Items) > 0) {
+		return list, err
+	}
+
+	// lets check for SaaS setup
+	listOptions = metav1.ListOptions{
+		LabelSelector: getSaasBrokerLabels(),
+	}
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 }
 
