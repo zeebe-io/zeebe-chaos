@@ -74,3 +74,16 @@ func Test_GetNoBrokerPods(t *testing.T) {
 	require.NotNil(t, pods)
 	require.Empty(t, pods.Items)
 }
+
+func Test_GetNoBrokerPodNames(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	names, err := k8Client.GetBrokerPodNames()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, names)
+	require.Empty(t, names)
+}
