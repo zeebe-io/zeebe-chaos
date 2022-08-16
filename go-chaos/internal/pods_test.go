@@ -62,6 +62,26 @@ func Test_GetSaasBrokerPods(t *testing.T) {
 	assert.Equal(t, "testPod", pods.Items[0].Name, "Expected to retrieve pod")
 }
 
+func Test_GetBrokersInOrder(t *testing.T) {
+	// given
+	selector, err := metav1.ParseToLabelSelector(getSaasBrokerLabels())
+	require.NoError(t, err)
+
+	k8Client := CreateFakeClient()
+	k8Client.CreatePodWithLabelsAndName(selector, "zeebe-0")
+	k8Client.CreatePodWithLabelsAndName(selector, "zeebe-1")
+
+	// when
+	pods, err := k8Client.GetBrokerPods()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, pods)
+	require.NotEmpty(t, pods.Items)
+	assert.Equal(t, "zeebe-0", pods.Items[0].Name, "Expected to retrieve pod")
+	assert.Equal(t, "zeebe-1", pods.Items[1].Name, "Expected to retrieve pod")
+}
+
 func Test_GetNoBrokerPods(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
