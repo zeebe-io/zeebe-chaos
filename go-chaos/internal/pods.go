@@ -36,6 +36,25 @@ import (
 // defines whether the functions should print verbose output
 var Verbosity bool = false
 
+func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
+	listOptions := metav1.ListOptions{
+		LabelSelector: getSelfManagedBrokerLabels(),
+	}
+
+	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	if list != nil && len(list.Items) > 0 {
+		return list, err
+	}
+
+	// lets check for SaaS setup
+	listOptions.LabelSelector = getSaasBrokerLabels()
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+}
+
 func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	list, err := c.GetBrokerPods()
 	if err != nil {
@@ -43,14 +62,6 @@ func (c K8Client) GetBrokerPodNames() ([]string, error) {
 	}
 
 	return c.extractPodNames(list)
-}
-
-func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-broker",
-	}
-
-	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 }
 
 func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
@@ -66,13 +77,28 @@ func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
 
 func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
+		LabelSelector: getSelfManagedGatewayLabels(),
+		// we check for running gateways, since terminated gateways can be lying around
 		FieldSelector: "status.phase=Running",
 	}
 
 	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 	if err != nil {
 		return nil, err
+	}
+
+	if list == nil || len(list.Items) == 0 {
+		// lets check for SaaS setup
+		listOptions.LabelSelector = getSaasGatewayLabels()
+		list, err = c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+		if err != nil {
+			return nil, err
+		}
+
+		if list == nil || len(list.Items) == 0 {
+			// maybe we have an embedded gateway setup
+			return c.GetBrokerPodNames()
+		}
 	}
 
 	return c.extractPodNames(list)
@@ -138,18 +164,27 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 }
 
 func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
-
 	listOptions := metav1.ListOptions{
-		LabelSelector: "app.kubernetes.io/component=zeebe-gateway",
+		LabelSelector: getSelfManagedGatewayLabels(),
 	}
-
 	deploymentList, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 	if err != nil {
 		return false, err
 	}
 
-	if len(deploymentList.Items) <= 0 {
-		return false, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
+	if deploymentList == nil || len(deploymentList.Items) <= 0 {
+		// lets check for SaaS setup
+		listOptions.LabelSelector = getSaasGatewayLabels()
+		deploymentList, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+		if err != nil {
+			return false, err
+		}
+
+		// here it is currently hard to distingush between not existing and embedded gateway;
+		// since we don't use embedded gateway in our current chaos setup I would not support it right now here
+		if deploymentList == nil || len(deploymentList.Items) <= 0 {
+			return false, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
+		}
 	}
 
 	deployment := deploymentList.Items[0]
