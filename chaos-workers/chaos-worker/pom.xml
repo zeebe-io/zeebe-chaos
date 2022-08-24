@@ -36,7 +36,7 @@
     <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
 
     <plugin.version.build-helper>3.2.0</plugin.version.build-helper>
-    <plugin.version.checkstyle>3.1.2</plugin.version.checkstyle>
+    <plugin.version.checkstyle>3.2.0</plugin.version.checkstyle>
     <plugin.version.dependency>3.3.0</plugin.version.dependency>
     <plugin.version.fmt>2.13</plugin.version.fmt>
     <plugin.version.jacoco>0.8.8</plugin.version.jacoco>
