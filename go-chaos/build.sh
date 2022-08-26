@@ -1,4 +1,10 @@
-#!/bin/bash -xeu
+#!/bin/bash -xe
+
+if [ -z $RELEASE_VERSION ];
+then
+  echo "Release version (export RELEASE_VERSION) must be specified, example: zbchaos-v0.1.0"
+  exit 1
+fi
 
 OS=( linux windows darwin )
 BINARY=( zbchaos zbchaos.exe zbchaos.darwin )
