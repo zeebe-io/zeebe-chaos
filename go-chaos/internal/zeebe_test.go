@@ -239,3 +239,27 @@ func Test_ShouldSucceedOnCorrectPartition(t *testing.T) {
 	// then
 	assert.NoError(t, err, "expected no error")
 }
+
+func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
+	// given
+	expectedPartition := 47
+	// this function only works if the count is larger then the expected partition
+	partitionCount := 49
+
+	// when
+	correlationKeyForPartition := FindCorrelationKeyForPartition(expectedPartition)
+
+	// then
+	hashCode := getSubscriptionHashCode(correlationKeyForPartition)
+	actualPartition := (hashCode % partitionCount) + 1
+
+	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
+}
+
+func getSubscriptionHashCode(correlationKey string) int {
+	hashCode := 0
+	for i := 0; i < len(correlationKey); i++ {
+		hashCode = 31*hashCode + int(correlationKey[i])
+	}
+	return hashCode
+}

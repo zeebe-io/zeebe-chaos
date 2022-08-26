@@ -183,3 +183,42 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 func ExtractPartitionIdFromKey(key int64) int32 {
 	return int32(key >> 51)
 }
+
+func FindCorrelationKeyForPartition(expectedPartition int) string {
+	// The message publish partition distribution is based
+	// on the following hashcode and modulo by the partition count
+	//
+	// Since this calculation is used not only on publish, but also for
+	// opening the message and instance subscriptions we must support for
+	// backwards compatibility, otherwise message will not be correlated
+	//
+	// This allows us to make certain assumptions, and shortcuts.
+	//
+	// static int getSubscriptionHashCode(final DirectBuffer correlationKey) {
+	//   is equal to java.lang.String#hashCode
+	//   int hashCode = 0;
+	//
+	//   for (int i = 0, length = correlationKey.capacity(); i < length; i++) {
+	//      	hashCode = 31 * hashCode + correlationKey.getByte(i);
+	//   }
+	//   return hashCode;
+	// }
+	//
+	// and
+	//   public static int getSubscriptionPartitionId(
+	//      final DirectBuffer correlationKey, final int partitionCount) {
+	//    final int hashCode = getSubscriptionHashCode(correlationKey);
+	//    // partition ids range from START_PARTITION_ID .. START_PARTITION_ID + partitionCount
+	//    return Math.abs(hashCode % partitionCount) + START_PARTITION_ID;
+	//  }
+
+	// Based on the hash code function, we now that if the string has a length of one byte
+	// no multiplication will happen.
+	//
+	// This means the hashCode will correlate to the ASCII code of the character.
+	//
+	// expectedPartition = ((expectedPartition - partitionStartId) mod partitionCount) + partitionStartId
+	//
+	//
+	return string(rune(expectedPartition - 1))
+}
