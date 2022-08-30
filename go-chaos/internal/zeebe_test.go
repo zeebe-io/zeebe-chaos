@@ -257,6 +257,22 @@ func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
 	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
 }
 
+func Test_ShouldFindCorrelationKeyForPartitionWhichIsEqualToCount(t *testing.T) {
+	// given
+	expectedPartition := 3
+	partitionCount := 3
+
+	// when
+	correlationKeyForPartition, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.NoError(t, err)
+	hashCode := getSubscriptionHashCode(correlationKeyForPartition)
+	actualPartition := (hashCode % partitionCount) + 1
+
+	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
+}
+
 func Test_ShouldFailToFindCorrelationKeyForPartition(t *testing.T) {
 	// given
 	expectedPartition := 47
