@@ -178,7 +178,7 @@ func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
 	return bpmnBytes, fileName, nil
 }
 
-type ProcessInstanceCreator func(processName string) (*pb.CreateProcessInstanceResponse, error)
+type ProcessInstanceCreator func() (int64, error)
 
 func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, requiredPartition int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
@@ -190,16 +190,16 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 		case <-timeoutChan:
 			return errors.New(fmt.Sprintf("Expected to create process instance on partition %d, but timed out after %s.", requiredPartition, timeout.String()))
 		case <-tickerChan:
-			processInstanceResponse, err := piCreator("benchmark") // client.NewCreateInstanceCommand().BPMNProcessId("benchmark").LatestVersion().Send(context.TODO())
+			processInstanceKey, err := piCreator()
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
 				fmt.Printf("Encountered an error during process instance creation. Error: %s\n", err.Error())
 				break
 			}
-			partitionId = ExtractPartitionIdFromKey(processInstanceResponse.ProcessInstanceKey)
+			partitionId = ExtractPartitionIdFromKey(processInstanceKey)
 
 			if Verbosity {
-				fmt.Printf("Created process instance with key %d on partition %d, required partition %d.\n", processInstanceResponse.ProcessInstanceKey, partitionId, requiredPartition)
+				fmt.Printf("Created process instance with key %d on partition %d, required partition %d.\n", processInstanceKey, partitionId, requiredPartition)
 			}
 
 			if partitionId == requiredPartition {

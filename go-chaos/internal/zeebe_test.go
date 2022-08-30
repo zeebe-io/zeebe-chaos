@@ -146,10 +146,8 @@ func Test_ExtractPartitionId(t *testing.T) {
 
 func Test_ShouldTimeoutIfProcessInstanceWasNotCreatedOnRequiredPartition(t *testing.T) {
 	// given
-	dummyCreator := func(processName string) (*pb.CreateProcessInstanceResponse, error) {
-		return &pb.CreateProcessInstanceResponse{
-			ProcessInstanceKey: 6755399441055751,
-		}, nil
+	dummyCreator := func() (int64, error) {
+		return 6755399441055751, nil
 	}
 
 	// when
@@ -162,10 +160,8 @@ func Test_ShouldTimeoutIfProcessInstanceWasNotCreatedOnRequiredPartition(t *test
 
 func Test_ShouldImmediatelyTimeout(t *testing.T) {
 	// given
-	dummyCreator := func(processName string) (*pb.CreateProcessInstanceResponse, error) {
-		return &pb.CreateProcessInstanceResponse{
-			ProcessInstanceKey: 6755399441055751,
-		}, nil
+	dummyCreator := func() (int64, error) {
+		return 6755399441055751, nil
 	}
 
 	// when
@@ -179,14 +175,12 @@ func Test_ShouldImmediatelyTimeout(t *testing.T) {
 func Test_ShouldRetryOnProcessInstanceCreationError(t *testing.T) {
 	// given
 	counter := 1
-	dummyCreator := func(processName string) (*pb.CreateProcessInstanceResponse, error) {
+	dummyCreator := func() (int64, error) {
 		if counter == 3 {
-			return &pb.CreateProcessInstanceResponse{
-				ProcessInstanceKey: 2251799813685279,
-			}, nil
+			return 2251799813685279, nil
 		}
 		counter++
-		return nil, errors.New("foo")
+		return 0, errors.New("foo")
 	}
 
 	// when
@@ -199,24 +193,18 @@ func Test_ShouldRetryOnProcessInstanceCreationError(t *testing.T) {
 func Test_ShouldRetryOnProcessInstanceCreationErrorAndWrongPartitionId(t *testing.T) {
 	// given
 	counter := 0
-	dummyCreator := func(processName string) (*pb.CreateProcessInstanceResponse, error) {
+	dummyCreator := func() (int64, error) {
 		counter++
 		if counter == 1 {
-			return &pb.CreateProcessInstanceResponse{
-				ProcessInstanceKey: 4503599627370515,
-			}, nil
+			return 4503599627370515, nil
 		}
 		if counter == 2 {
-			return &pb.CreateProcessInstanceResponse{
-				ProcessInstanceKey: 2251799813685279,
-			}, nil
+			return 2251799813685279, nil
 		}
 		if counter == 4 {
-			return &pb.CreateProcessInstanceResponse{
-				ProcessInstanceKey: 6755399441055757,
-			}, nil
+			return 6755399441055757, nil
 		}
-		return nil, errors.New("foo")
+		return 0, errors.New("foo")
 	}
 
 	// when
@@ -228,10 +216,8 @@ func Test_ShouldRetryOnProcessInstanceCreationErrorAndWrongPartitionId(t *testin
 
 func Test_ShouldSucceedOnCorrectPartition(t *testing.T) {
 	// given
-	dummyCreator := func(processName string) (*pb.CreateProcessInstanceResponse, error) {
-		return &pb.CreateProcessInstanceResponse{
-			ProcessInstanceKey: 4503599627370515,
-		}, nil
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
 	}
 
 	// when
