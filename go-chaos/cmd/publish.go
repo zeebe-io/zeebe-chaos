@@ -25,6 +25,7 @@ import (
 func init() {
 	rootCmd.AddCommand(publishCmd)
 	publishCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	publishCmd.Flags().StringVar(&msgName, "msgName", "msg", "Specify the name of the message, which should be published.")
 }
 
 var publishCmd = &cobra.Command{
@@ -56,7 +57,7 @@ var publishCmd = &cobra.Command{
 			fmt.Printf("Send message with correaltion key '%s' (ASCII: %d) \n", correlationKey, int(correlationKey[0]))
 		}
 
-		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName("test").CorrelationKey(correlationKey).Send(context.TODO())
+		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
 		if Verbose {
