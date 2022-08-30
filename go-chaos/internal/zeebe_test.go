@@ -247,13 +247,41 @@ func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
 	partitionCount := 49
 
 	// when
-	correlationKeyForPartition := FindCorrelationKeyForPartition(expectedPartition)
+	correlationKeyForPartition, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
 
 	// then
+	assert.NoError(t, err)
 	hashCode := getSubscriptionHashCode(correlationKeyForPartition)
 	actualPartition := (hashCode % partitionCount) + 1
 
 	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
+}
+
+func Test_ShouldFailToFindCorrelationKeyForPartition(t *testing.T) {
+	// given
+	expectedPartition := 47
+	// this function only works if the count is larger than the expected partition
+	partitionCount := 149
+
+	// when
+	_, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.Error(t, err, "Expect error for too large partitionCount")
+	assert.Contains(t, err.Error(), "must not exceed 78 partitions.")
+}
+
+func Test_ShouldFailIfExpectedPartitionIsLargenThanCount(t *testing.T) {
+	// given
+	expectedPartition := 47
+	partitionCount := 3
+
+	// when
+	_, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.Error(t, err, "Expect error for too small partitionCount")
+	assert.Contains(t, err.Error(), "must be smaller than partitionsCount")
 }
 
 func getSubscriptionHashCode(correlationKey string) int {

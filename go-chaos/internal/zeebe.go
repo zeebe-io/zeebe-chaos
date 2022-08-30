@@ -81,7 +81,7 @@ func GetBrokerPodForNodeId(k8Client K8Client, brokerNodeId int32) (*v1.Pod, erro
 }
 
 func GetBrokerNodeId(zbClient zbc.Client, partitionId int, role string) (int32, error) {
-	topologyResponse, err := zbClient.NewTopologyCommand().Send(context.TODO())
+	topologyResponse, err := GetTopology(zbClient)
 	if err != nil {
 		return 0, err
 	}
@@ -97,6 +97,10 @@ func GetBrokerNodeId(zbClient zbc.Client, partitionId int, role string) (int32, 
 		return 0, err
 	}
 	return nodeId, nil
+}
+
+func GetTopology(zbClient zbc.Client) (*pb.TopologyResponse, error) {
+	return zbClient.NewTopologyCommand().Send(context.TODO())
 }
 
 func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role string) (int32, error) {
@@ -184,7 +188,15 @@ func ExtractPartitionIdFromKey(key int64) int32 {
 	return int32(key >> 51)
 }
 
-func FindCorrelationKeyForPartition(expectedPartition int) string {
+func FindCorrelationKeyForPartition(expectedPartition int, partitionsCount int) (string, error) {
+	if expectedPartition >= partitionsCount {
+		return "", errors.New(fmt.Sprintf("expected partition (%d) must be smaller than partitionsCount (%d)", expectedPartition, partitionsCount))
+	}
+
+	if partitionsCount >= 78 {
+		return "", errors.New(fmt.Sprintf("partitionsCount (%d) must not exceed 78 partitions. Hashcode calculation is based of ASCII 48 to 126.", partitionsCount))
+	}
+
 	// The message publish partition distribution is based
 	// on the following hashcode and modulo by the partition count
 	//
@@ -211,14 +223,19 @@ func FindCorrelationKeyForPartition(expectedPartition int) string {
 	//    // partition ids range from START_PARTITION_ID .. START_PARTITION_ID + partitionCount
 	//    return Math.abs(hashCode % partitionCount) + START_PARTITION_ID;
 	//  }
-
 	// Based on the hash code function, we now that if the string has a length of one byte
 	// no multiplication will happen.
 	//
-	// This means the hashCode will correlate to the ASCII code of the character.
+	// Since we need a printable (for variables) character we start with ASCII code 48, until 126.
+	// Formulas:
 	//
-	// expectedPartition = ((expectedPartition - partitionStartId) mod partitionCount) + partitionStartId
+	// expectedPartition = (hashcode mod partitionCount) + partitionStartId
+	// hashcode = i ( 48 >= i >= 126) == ASCII CODE
 	//
-	//
-	return string(rune(expectedPartition - 1))
+	for hashcode := 48; hashcode < 127; hashcode++ {
+		if expectedPartition == (( hashcode % partitionsCount) + 1) {
+			return string(rune(hashcode)), nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("Found no matching correlationKey for expectedPartition %d and partitionCount %d.", expectedPartition, partitionsCount))
 }

@@ -35,24 +35,22 @@ var publishCmd = &cobra.Command{
 	Long:  `Publish a message to a certain partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
+		panicOnError(err)
 
 		port := 26500
 		closeFn, err := k8Client.GatewayPortForward(port)
-		if err != nil {
-			panic(err.Error())
-		}
+		panicOnError(err)
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err.Error())
-		}
+		panicOnError(err)
 		defer zbClient.Close()
 
-		correlationKey := internal.FindCorrelationKeyForPartition(partitionId)
+		topology, err := internal.GetTopology(zbClient)
+		panicOnError(err)
+
+		correlationKey, err := internal.FindCorrelationKeyForPartition(partitionId, int(topology.PartitionsCount))
+		panicOnError(err)
 
 		if Verbose {
 			fmt.Printf("Send message with correaltion key '%s' (ASCII: %d) \n", correlationKey, int(correlationKey[0]))
@@ -65,4 +63,10 @@ var publishCmd = &cobra.Command{
 			fmt.Printf("Message was sent and returned key %d, which corresponds to partition: %d\n", messageResponse.Key, partitionIdFromKey)
 		}
 	},
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
 }
