@@ -19,6 +19,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
@@ -130,23 +131,43 @@ func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role 
 //go:embed bpmn/*
 var bpmnContent embed.FS
 
-func DeployModel(client zbc.Client) error {
-
-	processModelFileName := "bpmn/one_task.bpmn"
-	bpmnBytes, err := bpmnContent.ReadFile(processModelFileName)
+func DeployModel(client zbc.Client, fileName string) error {
+	bpmnBytes, err := readBPMNFileOrDefault(fileName)
 	if err != nil {
 		return err
 	}
 
-	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, processModelFileName).Send(context.TODO())
+	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
 	if err != nil {
 		return err
 	}
 
 	if Verbosity {
-		fmt.Printf("Deployed process model %s successful with key %d.\n", processModelFileName, response.Processes[0].ProcessDefinitionKey)
+		fmt.Printf("Deployed process model %s successful with key %d.\n", fileName, response.Processes[0].ProcessDefinitionKey)
 	}
 	return nil
+}
+
+// if file not exist we read our default BPMN process model and return the content
+func readBPMNFileOrDefault(fileName string) ([]byte, error) {
+	var bpmnBytes []byte
+	var err error
+
+	if len(fileName) == 0 {
+		fileName = "bpmn/one_task.bpmn"
+
+		bpmnBytes, err = bpmnContent.ReadFile(fileName)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		bpmnBytes, err = os.ReadFile(fileName)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return bpmnBytes, nil
 }
 
 type ProcessInstanceCreator func(processName string) (*pb.CreateProcessInstanceResponse, error)
