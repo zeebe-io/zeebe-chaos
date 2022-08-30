@@ -53,7 +53,7 @@ var publishCmd = &cobra.Command{
 		panicOnError(err)
 
 		if Verbose {
-			fmt.Printf("Send message with correaltion key '%s' (ASCII: %d) \n", correlationKey, int(correlationKey[0]))
+			fmt.Printf("Send message '%s', with correaltion key '%s' (ASCII: %d) \n", msgName, correlationKey, int(correlationKey[0]))
 		}
 
 		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
