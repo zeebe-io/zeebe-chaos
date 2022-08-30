@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
@@ -57,7 +58,7 @@ var publishCmd = &cobra.Command{
 			fmt.Printf("Send message with correaltion key '%s' (ASCII: %d) \n", correlationKey, int(correlationKey[0]))
 		}
 
-		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).Send(context.TODO())
+		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
 		if Verbose {
