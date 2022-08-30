@@ -215,7 +215,7 @@ func ExtractPartitionIdFromKey(key int64) int32 {
 }
 
 func FindCorrelationKeyForPartition(expectedPartition int, partitionsCount int) (string, error) {
-	if expectedPartition > partitionsCount { // partition ids start at 1
+	if expectedPartition >= partitionsCount {
 		return "", errors.New(fmt.Sprintf("expected partition (%d) must be smaller than partitionsCount (%d)", expectedPartition, partitionsCount))
 	}
 
