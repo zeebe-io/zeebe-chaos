@@ -30,6 +30,7 @@ var (
 	processModelPath   string
 	variables          string
 	msgName            string
+	awaitResult        bool
 	broker1PartitionId int
 	broker1Role        string
 	broker1NodeId      int
