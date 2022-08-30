@@ -135,10 +135,10 @@ func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role 
 //go:embed bpmn/*
 var bpmnContent embed.FS
 
-func DeployModel(client zbc.Client, fileName string) error {
+func DeployModel(client zbc.Client, fileName string) (int64, error) {
 	bpmnBytes, fileName, err := readBPMNFileOrDefault(fileName)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if Verbosity {
@@ -147,13 +147,14 @@ func DeployModel(client zbc.Client, fileName string) error {
 
 	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
 	if err != nil {
-		return err
+		return 0, err
 	}
 
+	processDefinitionKey := response.Processes[0].ProcessDefinitionKey
 	if Verbosity {
-		fmt.Printf("Deployed process model %s successful with key %d.\n", fileName, response.Processes[0].ProcessDefinitionKey)
+		fmt.Printf("Deployed process model %s successful with key %d.\n", fileName, processDefinitionKey)
 	}
-	return nil
+	return processDefinitionKey, nil
 }
 
 // if file not exist we read our default BPMN process model and return the content
