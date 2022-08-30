@@ -31,6 +31,7 @@ func init() {
 
 	verifySteadyStateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 	verifySteadyStateCmd.Flags().StringVar(&processModelPath, "processModelPath", "", "Specify the path to a BPMN process model, which should be deployed and an instance should be created of.")
+	verifySteadyStateCmd.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
 }
 
 var verifyCmd = &cobra.Command{
@@ -89,7 +90,14 @@ A process model will be deployed and process instances are created until the req
 		}
 
 		err = internal.CreateProcessInstanceOnPartition(func(processName string) (*pb.CreateProcessInstanceResponse, error) {
-			return zbClient.NewCreateInstanceCommand().BPMNProcessId(processName).LatestVersion().Send(context.TODO())
+			commandStep3 := zbClient.NewCreateInstanceCommand().BPMNProcessId(processName).LatestVersion()
+			if len(variables) != 0 {
+				_, err := commandStep3.VariablesFromString(variables)
+				if err != nil {
+					return nil, err
+				}
+			}
+			return commandStep3.Send(context.TODO())
 		}, int32(partitionId), 30*time.Second)
 		if err != nil {
 			panic(err.Error())
