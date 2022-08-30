@@ -28,7 +28,9 @@ func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifySteadyStateCmd)
+
 	verifySteadyStateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	verifySteadyStateCmd.Flags().StringVar(&processModelPath, "processModelPath", "", "Specify the path to a BPMN process model, which should be deployed and an instance should be created of.")
 }
 
 var verifyCmd = &cobra.Command{
@@ -81,7 +83,7 @@ A process model will be deployed and process instances are created until the req
 		}
 		defer zbClient.Close()
 
-		err = internal.DeployModel(zbClient)
+		err = internal.DeployModel(zbClient, processModelPath)
 		if err != nil {
 			panic(err.Error())
 		}

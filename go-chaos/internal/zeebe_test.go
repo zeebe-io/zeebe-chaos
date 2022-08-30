@@ -16,6 +16,7 @@ package internal
 
 import (
 	"errors"
+	"os"
 	"testing"
 	"time"
 
@@ -306,4 +307,35 @@ func getSubscriptionHashCode(correlationKey string) int {
 		hashCode = 31*hashCode + int(correlationKey[i])
 	}
 	return hashCode
+}
+
+func Test_ShouldReadDefaultFile(t *testing.T) {
+	// given
+	fileName := ""
+	expectedBytes, err := bpmnContent.ReadFile("bpmn/one_task.bpmn")
+	assert.NoError(t, err)
+
+	// when
+	defaultFileBytes, err := readBPMNFileOrDefault(fileName)
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, expectedBytes, defaultFileBytes)
+}
+
+func Test_ShouldReadGivenFile(t *testing.T) {
+	// given
+	fileName := "somefile.txt"
+	expectedBytes := []byte("content")
+	err := os.WriteFile(fileName, expectedBytes, 0644)
+	assert.NoError(t, err)
+
+	// when
+	fileBytes, err := readBPMNFileOrDefault(fileName)
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, expectedBytes, fileBytes)
+	err = os.RemoveAll(fileName)
+	assert.NoError(t, err)
 }

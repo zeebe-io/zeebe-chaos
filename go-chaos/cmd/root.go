@@ -27,6 +27,7 @@ var (
 	role               string
 	nodeId             int
 	msgName            string
+	processModelPath   string
 	broker1PartitionId int
 	broker1Role        string
 	broker1NodeId      int
