@@ -233,7 +233,7 @@ func FindCorrelationKeyForPartition(expectedPartition int, partitionsCount int) 
 	// hashcode = i ( 48 >= i >= 126) == ASCII CODE
 	//
 	for hashcode := 48; hashcode < 127; hashcode++ {
-		if expectedPartition == (( hashcode % partitionsCount) + 1) {
+		if expectedPartition == ((hashcode % partitionsCount) + 1) {
 			return string(rune(hashcode)), nil
 		}
 	}
