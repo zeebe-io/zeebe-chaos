@@ -136,9 +136,13 @@ func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role 
 var bpmnContent embed.FS
 
 func DeployModel(client zbc.Client, fileName string) error {
-	bpmnBytes, err := readBPMNFileOrDefault(fileName)
+	bpmnBytes, fileName, err := readBPMNFileOrDefault(fileName)
 	if err != nil {
 		return err
+	}
+
+	if Verbosity {
+		fmt.Printf("Deploy file %s (size: %d bytes).\n", fileName, len(bpmnBytes))
 	}
 
 	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
@@ -153,7 +157,7 @@ func DeployModel(client zbc.Client, fileName string) error {
 }
 
 // if file not exist we read our default BPMN process model and return the content
-func readBPMNFileOrDefault(fileName string) ([]byte, error) {
+func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
 	var bpmnBytes []byte
 	var err error
 
@@ -162,16 +166,16 @@ func readBPMNFileOrDefault(fileName string) ([]byte, error) {
 
 		bpmnBytes, err = bpmnContent.ReadFile(fileName)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	} else {
 		bpmnBytes, err = os.ReadFile(fileName)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 
-	return bpmnBytes, nil
+	return bpmnBytes, fileName, nil
 }
 
 type ProcessInstanceCreator func(processName string) (*pb.CreateProcessInstanceResponse, error)

@@ -316,10 +316,11 @@ func Test_ShouldReadDefaultFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	// when
-	defaultFileBytes, err := readBPMNFileOrDefault(fileName)
+	defaultFileBytes, defaultFileName, err := readBPMNFileOrDefault(fileName)
 
 	// then
 	assert.NoError(t, err)
+	assert.Equal(t, "bpmn/one_task.bpmn", defaultFileName)
 	assert.Equal(t, expectedBytes, defaultFileBytes)
 }
 
@@ -331,10 +332,11 @@ func Test_ShouldReadGivenFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	// when
-	fileBytes, err := readBPMNFileOrDefault(fileName)
+	fileBytes, actualFileName, err := readBPMNFileOrDefault(fileName)
 
 	// then
 	assert.NoError(t, err)
+	assert.Equal(t, "somefile.txt", actualFileName)
 	assert.Equal(t, expectedBytes, fileBytes)
 	err = os.RemoveAll(fileName)
 	assert.NoError(t, err)
