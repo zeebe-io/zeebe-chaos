@@ -4,9 +4,16 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Tue, 02 Aug 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 31 Aug 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Message Correlation after Network Partition]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2022/08/31/Message-Correlation-after-Network-Partition</link>
+            <guid>Message Correlation after Network Partition</guid>
+            <pubDate>Wed, 31 Aug 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[In the last weeks, we made several changes in our core components, we introduce some new abstractions, and changed how we communicate between partitions.]]></description>
+        </item>
         <item>
             <title><![CDATA[Bring Deployment distribution experiment back]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2022/08/02/deployment-distribution</link>
