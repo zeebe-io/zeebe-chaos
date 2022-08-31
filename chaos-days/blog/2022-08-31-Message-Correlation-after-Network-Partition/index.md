@@ -24,7 +24,7 @@ Today we experimented with Message Correlation and what happens when a network p
 
 ## Chaos Experiment
 
-The experiment is related to our previously described [deployment distribution experiment](../2022-08-02-deployment-distribution).
+The experiment is related to our previously described [deployment distribution experiment](../2022-08-02-deployment-distribution/index.md).
 
 When a user/client publishes a message, the message will be sent to a certain partition, based on the correlation key. There is some calculation going on related to the hashcode and the partition count.
 This calculation is deterministic in order to find later the message again if we reach a message catch event.
