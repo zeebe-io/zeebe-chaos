@@ -26,7 +26,6 @@ var (
 	partitionId        int
 	role               string
 	nodeId             int
-	msgName            string
 	processModelPath   string
 	variables          string
 	msgName            string
