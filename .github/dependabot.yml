@@ -9,3 +9,7 @@ updates:
     directory: "/chaos-workers/chaos-worker" # Location of package manifests
     schedule:
       interval: "daily"
+  - package-ecosystem: "gomod" # See documentation for possible values
+    directory: "/go-chaos/" # Location of package manifests
+    schedule:
+      interval: "daily"
