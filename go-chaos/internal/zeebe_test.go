@@ -239,3 +239,71 @@ func Test_ShouldSucceedOnCorrectPartition(t *testing.T) {
 	// then
 	assert.NoError(t, err, "expected no error")
 }
+
+func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
+	// given
+	expectedPartition := 47
+	// this function only works if the count is larger then the expected partition
+	partitionCount := 49
+
+	// when
+	correlationKeyForPartition, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.NoError(t, err)
+	hashCode := getSubscriptionHashCode(correlationKeyForPartition)
+	actualPartition := (hashCode % partitionCount) + 1
+
+	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
+}
+
+func Test_ShouldFindCorrelationKeyForPartitionWhichIsEqualToCount(t *testing.T) {
+	// given
+	expectedPartition := 3
+	partitionCount := 3
+
+	// when
+	correlationKeyForPartition, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.NoError(t, err)
+	hashCode := getSubscriptionHashCode(correlationKeyForPartition)
+	actualPartition := (hashCode % partitionCount) + 1
+
+	assert.Equal(t, expectedPartition, actualPartition, "The partitions should be equal")
+}
+
+func Test_ShouldFailToFindCorrelationKeyForPartition(t *testing.T) {
+	// given
+	expectedPartition := 47
+	// this function only works if the count is larger than the expected partition
+	partitionCount := 149
+
+	// when
+	_, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.Error(t, err, "Expect error for too large partitionCount")
+	assert.Contains(t, err.Error(), "must not exceed 78 partitions.")
+}
+
+func Test_ShouldFailIfExpectedPartitionIsLargenThanCount(t *testing.T) {
+	// given
+	expectedPartition := 47
+	partitionCount := 3
+
+	// when
+	_, err := FindCorrelationKeyForPartition(expectedPartition, partitionCount)
+
+	// then
+	assert.Error(t, err, "Expect error for too small partitionCount")
+	assert.Contains(t, err.Error(), "must be smaller than partitionsCount")
+}
+
+func getSubscriptionHashCode(correlationKey string) int {
+	hashCode := 0
+	for i := 0; i < len(correlationKey); i++ {
+		hashCode = 31*hashCode + int(correlationKey[i])
+	}
+	return hashCode
+}
