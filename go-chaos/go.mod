@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/camunda-cloud/zeebe/clients/go v1.3.14
 	github.com/spf13/cobra v1.5.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.0
 	google.golang.org/grpc v1.44.0
 	k8s.io/api v0.23.4
 	k8s.io/apimachinery v0.23.4
@@ -46,7 +46,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
