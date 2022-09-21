@@ -59,9 +59,7 @@ var publishCmd = &cobra.Command{
 		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
-		if Verbose {
-			fmt.Printf("Message was sent and returned key %d, which corresponds to partition: %d\n", messageResponse.Key, partitionIdFromKey)
-		}
+		fmt.Printf("Message was sent and returned key %d, which corresponds to partition: %d\n", messageResponse.Key, partitionIdFromKey)
 	},
 }
 
