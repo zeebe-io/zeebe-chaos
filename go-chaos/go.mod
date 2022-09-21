@@ -3,7 +3,7 @@ module github.com/zeebe-io/zeebe-chaos/go-chaos
 go 1.17
 
 require (
-	github.com/camunda-cloud/zeebe/clients/go v1.3.5
+	github.com/camunda-cloud/zeebe/clients/go v1.3.14
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.44.0
