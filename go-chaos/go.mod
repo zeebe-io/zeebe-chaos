@@ -6,7 +6,7 @@ require (
 	github.com/camunda-cloud/zeebe/clients/go v1.3.14
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	google.golang.org/grpc v1.44.0
+	google.golang.org/grpc v1.49.0
 	k8s.io/api v0.23.4
 	k8s.io/apimachinery v0.23.4
 	k8s.io/client-go v0.23.4
