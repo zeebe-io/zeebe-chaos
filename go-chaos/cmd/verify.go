@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
+	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -28,7 +28,11 @@ func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifySteadyStateCmd)
+
 	verifySteadyStateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	verifySteadyStateCmd.Flags().StringVar(&processModelPath, "processModelPath", "", "Specify the path to a BPMN process model, which should be deployed and an instance should be created of.")
+	verifySteadyStateCmd.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
+	verifySteadyStateCmd.Flags().BoolVar(&awaitResult, "awaitResult", false, "Specify whether the completion of the created process instance should be awaited.")
 }
 
 var verifyCmd = &cobra.Command{
@@ -81,13 +85,13 @@ A process model will be deployed and process instances are created until the req
 		}
 		defer zbClient.Close()
 
-		err = internal.DeployModel(zbClient)
+		processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		err = internal.CreateProcessInstanceOnPartition(func(processName string) (*pb.CreateProcessInstanceResponse, error) {
-			return zbClient.NewCreateInstanceCommand().BPMNProcessId(processName).LatestVersion().Send(context.TODO())
+		err = internal.CreateProcessInstanceOnPartition(func() (int64, error) {
+			return createInstance(zbClient, processDefinitionKey)
 		}, int32(partitionId), 30*time.Second)
 		if err != nil {
 			panic(err.Error())
@@ -95,4 +99,30 @@ A process model will be deployed and process instances are created until the req
 
 		fmt.Printf("The steady-state was successfully verified!\n")
 	},
+}
+
+func createInstance(zbClient zbc.Client, processDefinitionKey int64) (int64, error) {
+	if Verbose {
+		fmt.Printf("Create process instance with defition key %d [variables: '%s', awaitResult: %t]\n", processDefinitionKey, variables, awaitResult)
+	}
+
+	commandStep3 := zbClient.NewCreateInstanceCommand().ProcessDefinitionKey(processDefinitionKey)
+	if len(variables) != 0 {
+		_, err := commandStep3.VariablesFromString(variables)
+		if err != nil {
+			return 0, err
+		}
+	}
+	if awaitResult {
+		instanceWithResultResponse, err := commandStep3.WithResult().Send(context.TODO())
+		if err != nil {
+			return 0, err
+		}
+		return instanceWithResultResponse.ProcessInstanceKey, nil
+	}
+	instanceResponse, err := commandStep3.Send(context.TODO())
+	if err != nil {
+		return 0, err
+	}
+	return instanceResponse.ProcessInstanceKey, nil
 }
