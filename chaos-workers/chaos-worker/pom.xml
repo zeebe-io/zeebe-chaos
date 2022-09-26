@@ -52,7 +52,7 @@
     <version.assertj>3.20.2</version.assertj>
     <version.awaitility>4.2.0</version.awaitility>
     <version.java>11</version.java>
-    <version.junit>5.9.0</version.junit>
+    <version.junit>5.9.1</version.junit>
     <version.log4j>2.19.0</version.log4j>
     <version.slf4j>2.0.2</version.slf4j>
     <version.kotlin>1.7.10</version.kotlin>
