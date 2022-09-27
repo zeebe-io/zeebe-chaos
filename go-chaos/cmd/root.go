@@ -26,7 +26,10 @@ var (
 	partitionId        int
 	role               string
 	nodeId             int
+	processModelPath   string
+	variables          string
 	msgName            string
+	awaitResult        bool
 	broker1PartitionId int
 	broker1Role        string
 	broker1NodeId      int

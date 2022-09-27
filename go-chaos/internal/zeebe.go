@@ -19,6 +19,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
@@ -134,26 +135,51 @@ func extractNodeId(topologyResponse *pb.TopologyResponse, partitionId int, role 
 //go:embed bpmn/*
 var bpmnContent embed.FS
 
-func DeployModel(client zbc.Client) error {
-
-	processModelFileName := "bpmn/one_task.bpmn"
-	bpmnBytes, err := bpmnContent.ReadFile(processModelFileName)
+func DeployModel(client zbc.Client, fileName string) (int64, error) {
+	bpmnBytes, fileName, err := readBPMNFileOrDefault(fileName)
 	if err != nil {
-		return err
-	}
-
-	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, processModelFileName).Send(context.TODO())
-	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if Verbosity {
-		fmt.Printf("Deployed process model %s successful with key %d.\n", processModelFileName, response.Processes[0].ProcessDefinitionKey)
+		fmt.Printf("Deploy file %s (size: %d bytes).\n", fileName, len(bpmnBytes))
 	}
-	return nil
+
+	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
+	if err != nil {
+		return 0, err
+	}
+
+	processDefinitionKey := response.Processes[0].ProcessDefinitionKey
+	if Verbosity {
+		fmt.Printf("Deployed process model %s successful with key %d.\n", fileName, processDefinitionKey)
+	}
+	return processDefinitionKey, nil
 }
 
-type ProcessInstanceCreator func(processName string) (*pb.CreateProcessInstanceResponse, error)
+// if file not exist we read our default BPMN process model and return the content
+func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
+	var bpmnBytes []byte
+	var err error
+
+	if len(fileName) == 0 {
+		fileName = "bpmn/one_task.bpmn"
+
+		bpmnBytes, err = bpmnContent.ReadFile(fileName)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		bpmnBytes, err = os.ReadFile(fileName)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
+	return bpmnBytes, fileName, nil
+}
+
+type ProcessInstanceCreator func() (int64, error)
 
 func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, requiredPartition int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
@@ -165,16 +191,16 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 		case <-timeoutChan:
 			return errors.New(fmt.Sprintf("Expected to create process instance on partition %d, but timed out after %s.", requiredPartition, timeout.String()))
 		case <-tickerChan:
-			processInstanceResponse, err := piCreator("benchmark") // client.NewCreateInstanceCommand().BPMNProcessId("benchmark").LatestVersion().Send(context.TODO())
+			processInstanceKey, err := piCreator()
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
 				fmt.Printf("Encountered an error during process instance creation. Error: %s\n", err.Error())
 				break
 			}
-			partitionId = ExtractPartitionIdFromKey(processInstanceResponse.ProcessInstanceKey)
+			partitionId = ExtractPartitionIdFromKey(processInstanceKey)
 
 			if Verbosity {
-				fmt.Printf("Created process instance with key %d on partition %d, required partition %d.\n", processInstanceResponse.ProcessInstanceKey, partitionId, requiredPartition)
+				fmt.Printf("Created process instance with key %d on partition %d, required partition %d.\n", processInstanceKey, partitionId, requiredPartition)
 			}
 
 			if partitionId == requiredPartition {
@@ -189,7 +215,7 @@ func ExtractPartitionIdFromKey(key int64) int32 {
 }
 
 func FindCorrelationKeyForPartition(expectedPartition int, partitionsCount int) (string, error) {
-	if expectedPartition > partitionsCount { // partition ids start at 1
+	if expectedPartition > partitionsCount {
 		return "", errors.New(fmt.Sprintf("expected partition (%d) must be smaller than partitionsCount (%d)", expectedPartition, partitionsCount))
 	}
 
