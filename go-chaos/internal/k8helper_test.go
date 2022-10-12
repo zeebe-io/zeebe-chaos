@@ -25,10 +25,10 @@ import (
 
 func Test_CreateK8ClientWithPath(t *testing.T) {
 	// given
-	path := "kubeconfigtest.yml"
+	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml"}
 
 	// when
-	client, err := createK8Client(&path)
+	client, err := createK8Client(settings)
 
 	// then
 	assert.NoError(t, err)
@@ -39,8 +39,8 @@ func Test_CreateK8ClientWithPath(t *testing.T) {
 
 func Test_ShouldReturnNamespace(t *testing.T) {
 	// given
-	path := "kubeconfigtest.yml"
-	client, err := createK8Client(&path)
+	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml"}
+	client, err := createK8Client(settings)
 	require.NoError(t, err)
 
 	// when
@@ -54,13 +54,29 @@ func Test_ShouldReturnNamespace(t *testing.T) {
 	assert.Equal(t, namespace, currentNamespace)
 }
 
+func Test_ShouldReturnNamespaceOverride(t *testing.T) {
+	// given
+	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml", namespace: "namespace-override"}
+	client, err := createK8Client(settings)
+	require.NoError(t, err)
+
+	// when
+	currentNamespace := client.GetCurrentNamespace()
+	clientNamespace, _, err := client.ClientConfig.Namespace()
+	assert.NoError(t, err)
+
+	// then
+	assert.Equal(t, "namespace-override", currentNamespace)
+	assert.Equal(t, currentNamespace, clientNamespace)
+}
+
 func Test_ResolveDefaultKubePath(t *testing.T) {
 	// given
 	home := homedir.HomeDir()
 
 	// when
-	path := findKubeconfigPath()
+	settings := findKubernetesSettings()
 
 	// then
-	assert.Equal(t, strings.Join([]string{home, ".kube/config"}, "/"), *path)
+	assert.Equal(t, strings.Join([]string{home, ".kube/config"}, "/"), settings.kubeConfigPath)
 }
