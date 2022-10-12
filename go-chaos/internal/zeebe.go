@@ -22,8 +22,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 )

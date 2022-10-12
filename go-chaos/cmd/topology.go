@@ -21,7 +21,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/pb"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
