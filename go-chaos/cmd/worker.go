@@ -63,7 +63,11 @@ func start_worker(cmd *cobra.Command, args []string) {
 func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 	ctx := context.Background()
 
-	var jobVariables ZbChaosVariables
+	jobVariables := ZbChaosVariables{
+		provider: ChaosProvider{
+			timeout: 15 * 60, // 15 minute default timeout
+		},
+	}
 	err := job.GetVariablesAs(&jobVariables)
 	if err != nil {
 		// Can't parse variables, no sense in retrying
@@ -71,7 +75,8 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	commandCtx, cancelCommand := context.WithTimeout(ctx, time.Duration(jobVariables.provider.timeout)*time.Second)
+	timeout := time.Duration(jobVariables.provider.timeout) * time.Second
+	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
 
 	err = runZbChaosCommand(jobVariables.provider.args, commandCtx)
