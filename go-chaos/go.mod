@@ -1,6 +1,6 @@
 module github.com/zeebe-io/zeebe-chaos/go-chaos
 
-go 1.17
+go 1.19
 
 require (
 	github.com/camunda/zeebe/clients/go/v8 v8.1.0
