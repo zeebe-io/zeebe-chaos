@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"context"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
@@ -51,18 +49,12 @@ type ZbChaosVariables struct {
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
-	credsProvider, err := zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
-		ClientID:               os.Getenv("TESTBENCH_CLIENT_ID"),
-		ClientSecret:           os.Getenv("TESTBENCH_CLIENT_SECRET"),
-		Audience:               strings.TrimSuffix(os.Getenv("TESTBENCH_ADDRESS"), ":443"),
-		AuthorizationServerURL: os.Getenv("TESTBENCH_AUTHORIZATION_SERVER_URL"),
-	})
+	credsProvider, err := zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{})
 	if err != nil {
 		panic(err)
 	}
 
 	client, err := zbc.NewClient(&zbc.ClientConfig{
-		GatewayAddress:      os.Getenv("TESTBENCH_ADDRESS"),
 		CredentialsProvider: credsProvider,
 	})
 
