@@ -33,9 +33,6 @@ import (
 	"k8s.io/client-go/transport/spdy"
 )
 
-// defines whether the functions should print verbose output
-var Verbosity bool = false
-
 func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
 	listOptions := metav1.ListOptions{
 		LabelSelector: getSelfManagedBrokerLabels(),

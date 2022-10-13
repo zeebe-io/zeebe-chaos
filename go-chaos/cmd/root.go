@@ -39,6 +39,9 @@ var (
 )
 
 var Verbose bool
+var KubeConfigPath string
+var Namespace string
+
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
 	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
@@ -46,11 +49,15 @@ var rootCmd = &cobra.Command{
     Perfect to inject some chaos into your brokers and gateways.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		internal.Verbosity = Verbose
+		internal.Namespace = Namespace
+		internal.KubeConfigPath = KubeConfigPath
 	},
 }
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
+	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
 }
 
 func NewCmd() *cobra.Command {
