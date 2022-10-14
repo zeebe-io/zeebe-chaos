@@ -17,15 +17,21 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
+var (
+	backupId string
+)
+
 func init() {
 	rootCmd.AddCommand(backupCommand)
 	backupCommand.AddCommand(takeBackupCommand)
+	takeBackupCommand.Flags().StringVar(&backupId, "backup-id", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 }
 
 var backupCommand = &cobra.Command{
@@ -52,8 +58,7 @@ func take_backup(cmd *cobra.Command, args []string) error {
 		panic(err.Error())
 	}
 	defer closeFn()
-	timestamp := time.Now().UnixMilli()
-	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%d", port, timestamp)
+	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
 	_, err = http.Post(url, "", nil)
 	return err
 }
