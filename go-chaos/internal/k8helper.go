@@ -15,13 +15,14 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
+
 	// in order to authenticate with gcp
 	// https://github.com/kubernetes/client-go/issues/242#issuecomment-314642965
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -40,15 +41,14 @@ func (c *K8Client) GetCurrentNamespace() string {
 
 // Creates a kubernetes client, based on the local kubeconfig
 func CreateK8Client() (K8Client, error) {
-	kubeconfig := findKubeconfigPath()
-
-	return createK8Client(kubeconfig)
+	settings := findKubernetesSettings()
+	return createK8Client(settings)
 }
 
-func createK8Client(kubeconfig *string) (K8Client, error) {
+func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: *kubeconfig},
-		&clientcmd.ConfigOverrides{})
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: settings.kubeConfigPath},
+		&clientcmd.ConfigOverrides{Context: api.Context{Namespace: settings.namespace}})
 
 	k8ClientConfig, err := clientConfig.ClientConfig()
 	if err != nil {
@@ -70,14 +70,21 @@ func createK8Client(kubeconfig *string) (K8Client, error) {
 	return K8Client{Clientset: clientset, ClientConfig: clientConfig}, nil
 }
 
-func findKubeconfigPath() *string {
-	//// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+type KubernetesSettings struct {
+	kubeConfigPath string
+	namespace      string
+}
+
+func findKubernetesSettings() KubernetesSettings {
+	kubeconfig := KubeConfigPath
+	if kubeconfig == "" {
+		// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
+		if home := homedir.HomeDir(); home != "" {
+			kubeconfig = filepath.Join(home, ".kube", "config")
+		}
 	}
-	flag.Parse()
-	return kubeconfig
+	return KubernetesSettings{
+		kubeConfigPath: kubeconfig,
+		namespace:      Namespace,
+	}
 }
