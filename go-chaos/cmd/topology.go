@@ -41,7 +41,7 @@ var topologyCmd = &cobra.Command{
 		}
 
 		port := 26500
-		closeFn, err := k8Client.GatewayPortForward(port)
+		closeFn, err := k8Client.GatewayPortForward(port, port)
 		if err != nil {
 			panic(err)
 		}

@@ -73,7 +73,7 @@ A process model will be deployed and process instances are created until the req
 		}
 
 		port := 26500
-		closeFn, err := k8Client.GatewayPortForward(port)
+		closeFn, err := k8Client.GatewayPortForward(port, port)
 		if err != nil {
 			panic(err.Error())
 		}
