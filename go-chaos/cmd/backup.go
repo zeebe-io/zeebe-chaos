@@ -15,7 +15,10 @@
 package cmd
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -30,8 +33,11 @@ var (
 
 func init() {
 	rootCmd.AddCommand(backupCommand)
+
 	backupCommand.AddCommand(takeBackupCommand)
-	takeBackupCommand.Flags().StringVar(&backupId, "backup-id", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
+	takeBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
+	backupCommand.AddCommand(waitForBackupCommand)
+	waitForBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 }
 
 var backupCommand = &cobra.Command{
@@ -43,22 +49,92 @@ var backupCommand = &cobra.Command{
 var takeBackupCommand = &cobra.Command{
 	Use:   "take",
 	Short: "Trigger a backup",
-	RunE:  take_backup,
+	RunE:  takeBackup,
 }
 
-func take_backup(cmd *cobra.Command, args []string) error {
+var waitForBackupCommand = &cobra.Command{
+	Use:   "wait",
+	Short: "Wait for a backup to complete or fail",
+	RunE:  waitForBackup,
+}
+
+func takeBackup(cmd *cobra.Command, args []string) error {
 	k8Client, err := internal.CreateK8Client()
 	if err != nil {
 		panic(err)
 	}
 
 	port := 9600
-	closeFn, err := k8Client.GatewayPortForward(port, port)
+	closePortForward, err := k8Client.GatewayPortForward(port, port)
 	if err != nil {
 		panic(err.Error())
 	}
-	defer closeFn()
+	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
-	_, err = http.Post(url, "", nil)
+	resp, err := http.Post(url, "", nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 	return err
+}
+
+func waitForBackup(cmd *cobra.Command, args []string) error {
+	k8Client, err := internal.CreateK8Client()
+	if err != nil {
+		panic(err)
+	}
+
+	port := 9600
+	closePortForward, err := k8Client.GatewayPortForward(port, port)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer closePortForward()
+
+	for {
+		backup, err := getBackupStatus(port, backupId)
+		if err != nil {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		switch backup.Status {
+		case "COMPLETED":
+			return nil
+		case "FAILED":
+			return errors.New("backup failed")
+		case "DOES_NOT_EXIST":
+			return errors.New("backup does not exist")
+		}
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func getBackupStatus(port int, backupId string) (*BackupStatus, error) {
+	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var backup BackupStatus
+	err = json.Unmarshal(body, &backup)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("Found backup %s with status: %s\n", backupId, backup.Status)
+
+	return &backup, nil
+}
+
+type BackupStatus struct {
+	Status string
 }
