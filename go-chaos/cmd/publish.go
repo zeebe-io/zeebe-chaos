@@ -38,7 +38,7 @@ var publishCmd = &cobra.Command{
 		panicOnError(err)
 
 		port := 26500
-		closeFn, err := k8Client.GatewayPortForward(port)
+		closeFn, err := k8Client.GatewayPortForward(port, port)
 		panicOnError(err)
 		defer closeFn()
 

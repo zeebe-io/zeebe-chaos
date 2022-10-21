@@ -202,7 +202,7 @@ func (c K8Client) RestartPod(podName string) error {
 // GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
-func (c K8Client) GatewayPortForward(port int) (func(), error) {
+func (c K8Client) GatewayPortForward(localPort int, remotePort int) (func(), error) {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		return nil, err
@@ -213,7 +213,7 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 	}
 
 	portForwardCreateURL := c.createPortForwardUrl(names)
-	portForwarder, err := c.createPortForwarder(port, portForwardCreateURL)
+	portForwarder, err := c.createPortForwarder(localPort, remotePort, portForwardCreateURL)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func (c K8Client) GatewayPortForward(port int) (func(), error) {
 }
 
 // Create the k8 port forwarder, with the given port and k8 client
-func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (*portforward.PortForwarder, error) {
+func (c K8Client) createPortForwarder(localPort int, remotePort int, portForwardCreateURL *url.URL) (*portforward.PortForwarder, error) {
 	// Construct the spdy client required by the client-go portforward library
 	config, err := c.ClientConfig.ClientConfig()
 	if err != nil {
@@ -264,7 +264,7 @@ func (c K8Client) createPortForwarder(port int, portForwardCreateURL *url.URL) (
 	// Construct a new PortForwarder struct that manages the instructed port forward tunnel
 	stopChan, readyChan := make(chan struct{}, 1), make(chan struct{}, 1)
 	out, errOut := new(bytes.Buffer), new(bytes.Buffer)
-	ports := []string{fmt.Sprintf("%d:%d", port, 26500)}
+	ports := []string{fmt.Sprintf("%d:%d", localPort, remotePort)}
 	portforwarder, err := portforward.New(dialer, ports, stopChan, readyChan, out, errOut)
 	if err != nil {
 		if Verbosity {
