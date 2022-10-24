@@ -54,10 +54,7 @@ func pauseExporting(cmd *cobra.Command, args []string) error {
 	}
 
 	port := 9600
-	closePortForward, err := k8Client.GatewayPortForward(port, port)
-	if err != nil {
-		panic(err.Error())
-	}
+	closePortForward := k8Client.GatewayPortForward(port, port)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/exporting/pause", port)
 	resp, err := http.Post(url, "", nil)
@@ -75,10 +72,7 @@ func resumeExporting(cmd *cobra.Command, args []string) error {
 	}
 
 	port := 9600
-	closePortForward, err := k8Client.GatewayPortForward(port, port)
-	if err != nil {
-		panic(err.Error())
-	}
+	closePortForward := k8Client.GatewayPortForward(port, port)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/exporting/resume", port)
 	resp, err := http.Post(url, "", nil)
