@@ -47,10 +47,7 @@ var restartCmd = &cobra.Command{
 		}
 
 		port := 26500
-		closeFn, err := k8Client.GatewayPortForward(port, port)
-		if err != nil {
-			panic(err)
-		}
+		closeFn := k8Client.MustGatewayPortForward(port, port)
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)

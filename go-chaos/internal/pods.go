@@ -199,23 +199,24 @@ func (c K8Client) RestartPod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, metav1.DeleteOptions{})
 }
 
-// GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
+// MustGatewayPortForward creates a port forwarding to a zeebe gateway with the given port.
+// Panics when port forwarding fails.
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
-func (c K8Client) GatewayPortForward(localPort int, remotePort int) (func(), error) {
+func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) func() {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if len(names) <= 0 {
-		return nil, errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", c.GetCurrentNamespace()))
+		panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", c.GetCurrentNamespace())))
 	}
 
 	portForwardCreateURL := c.createPortForwardUrl(names)
 	portForwarder, err := c.createPortForwarder(localPort, remotePort, portForwardCreateURL)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	// Open the tunnel in a goroutine so that it is available in the background. Report errors to the main goroutine via
@@ -232,7 +233,7 @@ func (c K8Client) GatewayPortForward(localPort int, remotePort int) (func(), err
 			fmt.Printf("\nError starting port forwarding tunnel: %s\n", err)
 		}
 
-		return nil, err
+		panic(err)
 	case <-portForwarder.Ready:
 		if Verbosity {
 			fmt.Println("Successfully created port forwarding tunnel")
@@ -240,7 +241,7 @@ func (c K8Client) GatewayPortForward(localPort int, remotePort int) (func(), err
 
 		return func() {
 			portForwarder.Close()
-		}, nil
+		}
 	}
 }
 
