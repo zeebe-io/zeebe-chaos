@@ -73,7 +73,7 @@ A process model will be deployed and process instances are created until the req
 		}
 
 		port := 26500
-		closeFn := k8Client.GatewayPortForward(port, port)
+		closeFn := k8Client.MustGatewayPortForward(port, port)
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)

@@ -65,7 +65,7 @@ func takeBackup(cmd *cobra.Command, args []string) error {
 	}
 
 	port := 9600
-	closePortForward := k8Client.GatewayPortForward(port, port)
+	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
 	resp, err := http.Post(url, "", nil)
@@ -83,7 +83,7 @@ func waitForBackup(cmd *cobra.Command, args []string) error {
 	}
 
 	port := 9600
-	closePortForward := k8Client.GatewayPortForward(port, port)
+	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
 
 	for {

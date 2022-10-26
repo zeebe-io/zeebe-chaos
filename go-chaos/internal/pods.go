@@ -199,10 +199,11 @@ func (c K8Client) RestartPod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, metav1.DeleteOptions{})
 }
 
-// GatewayPortForward creates a port forwarding to a zeebe gateway with the given port
+// MustGatewayPortForward creates a port forwarding to a zeebe gateway with the given port.
+// Panics when port forwarding fails.
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
-func (c K8Client) GatewayPortForward(localPort int, remotePort int) func() {
+func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) func() {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		panic(err)

@@ -41,7 +41,7 @@ var topologyCmd = &cobra.Command{
 		}
 
 		port := 26500
-		closeFn := k8Client.GatewayPortForward(port, port)
+		closeFn := k8Client.MustGatewayPortForward(port, port)
 		defer closeFn()
 
 		client, err := internal.CreateZeebeClient(port)

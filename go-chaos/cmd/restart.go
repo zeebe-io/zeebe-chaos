@@ -47,7 +47,7 @@ var restartCmd = &cobra.Command{
 		}
 
 		port := 26500
-		closeFn := k8Client.GatewayPortForward(port, port)
+		closeFn := k8Client.MustGatewayPortForward(port, port)
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)
