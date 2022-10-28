@@ -86,7 +86,9 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
 
-	err = runZbChaosCommand(jobVariables.provider.args, commandCtx)
+	commandArgs := append([]string{"--namespace", jobVariables.clusterId + "-zeebe"}, jobVariables.provider.args...)
+
+	err = runZbChaosCommand(commandArgs, commandCtx)
 	if err != nil {
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
 		return
