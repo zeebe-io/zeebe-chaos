@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/util/retry"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -44,7 +45,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(backupCommand)
-
+	backupCommand.AddCommand(setupBackupCommand)
 	backupCommand.AddCommand(takeBackupCommand)
 	takeBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 	backupCommand.AddCommand(waitForBackupCommand)
@@ -57,6 +58,12 @@ var backupCommand = &cobra.Command{
 	Use:   "backup",
 	Short: "Controls Zeebe backups",
 	Long:  "Can be used to take backups and query their status",
+}
+
+var setupBackupCommand = &cobra.Command{
+	Use:   "setup",
+	Short: "Configures a zeebe cluster's backup settings",
+	RunE:  setupBackup,
 }
 
 var takeBackupCommand = &cobra.Command{
@@ -75,6 +82,62 @@ var restoreBackupCommand = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore from a given backup id",
 	RunE:  restoreFromBackup,
+}
+
+func setupBackup(cmd *cobra.Command, args []string) error {
+	k8Client, err := internal.CreateK8Client()
+	if err != nil {
+		panic(err)
+	}
+
+	namespace := k8Client.GetCurrentNamespace()
+
+	err = pauseReconciliation(cmd.Context(), k8Client, true)
+	if err != nil {
+		return err
+	}
+
+	sfsName, err := findStatefulSetName(cmd.Context(), k8Client, namespace)
+	sfs, err := k8Client.Clientset.AppsV1().StatefulSets(namespace).Get(cmd.Context(), sfsName, metav1.GetOptions{})
+	initialScale := *sfs.Spec.Replicas
+	// Create secret with AWS creds
+
+	_, err = k8Client.Clientset.CoreV1().Secrets(namespace).Create(
+		cmd.Context(),
+		&v1.Secret{
+			Type:       "Opaque",
+			ObjectMeta: metav1.ObjectMeta{Name: "zeebe-backup-store-s3"},
+			Data: map[string][]byte{
+				"ZEEBE_BROKER_DATA_BACKUP_S3_BUCKETNAME": []byte(os.Getenv("ZEEBE_BROKER_DATA_BACKUP_S3_BUCKETNAME")),
+				"ZEEBE_BROKER_DATA_BACKUP_S3_REGION":     []byte(os.Getenv("ZEEBE_BROKER_DATA_BACKUP_S3_REGION")),
+				"ZEEBE_BROKER_DATA_BACKUP_S3_ACCESSKEY":  []byte(os.Getenv("ZEEBE_BROKER_DATA_BACKUP_S3_ACCESSKEY")),
+				"ZEEBE_BROKER_DATA_BACKUP_S3_SECRETKEY":  []byte(os.Getenv("ZEEBE_BROKER_DATA_BACKUP_S3_SECRETKEY")),
+			}},
+		metav1.CreateOptions{},
+	)
+	if err != nil {
+		return err
+	}
+
+	sfsEnv := sfs.Spec.Template.Spec.Containers[0].EnvFrom
+	newEnv := append(sfsEnv, v1.EnvFromSource{SecretRef: &v1.SecretEnvSource{LocalObjectReference: v1.LocalObjectReference{Name: "zeebe-backup-store-s3"}}})
+	sfs.Spec.Template.Spec.Containers[0].EnvFrom = newEnv
+	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(cmd.Context(), sfs, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = scaleStatefulSet(cmd.Context(), k8Client, sfsName, 0)
+	if err != nil {
+		return err
+	}
+
+	err = scaleStatefulSet(cmd.Context(), k8Client, sfsName, initialScale)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func takeBackup(cmd *cobra.Command, args []string) error {
