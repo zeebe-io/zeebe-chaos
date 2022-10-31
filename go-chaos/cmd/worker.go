@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
@@ -52,7 +53,7 @@ type AuthenticationProvider struct {
 }
 
 type ZbChaosVariables struct {
-	ClusterId             *string
+	ClusterId *string
 	Provider              ChaosProvider
 	AuthenticationDetails AuthenticationProvider
 }
@@ -108,6 +109,7 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 }
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
+	fmt.Printf("Running command with args: %v \n", args)
 	rootCmd.SetArgs(args)
 	_, err := rootCmd.ExecuteContextC(ctx)
 	if err != nil {
