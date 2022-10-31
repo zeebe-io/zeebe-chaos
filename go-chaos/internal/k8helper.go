@@ -16,6 +16,7 @@ package internal
 
 import (
 	"fmt"
+	"k8s.io/client-go/dynamic"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
@@ -29,8 +30,9 @@ import (
 )
 
 type K8Client struct {
-	ClientConfig clientcmd.ClientConfig
-	Clientset    kubernetes.Interface
+	ClientConfig  clientcmd.ClientConfig
+	DynamicClient dynamic.Interface
+	Clientset     kubernetes.Interface
 }
 
 // Returns the current namespace, defined in the kubeconfig
@@ -66,8 +68,11 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	if Verbosity {
 		fmt.Printf("Connecting to %s\n", namespace)
 	}
-
-	return K8Client{Clientset: clientset, ClientConfig: clientConfig}, nil
+	dynamicClient, err := dynamic.NewForConfig(k8ClientConfig)
+	if err != nil {
+		return K8Client{}, err
+	}
+	return K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}, nil
 }
 
 type KubernetesSettings struct {
