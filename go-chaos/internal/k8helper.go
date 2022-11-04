@@ -36,7 +36,7 @@ type K8Client struct {
 }
 
 // Returns the current namespace, defined in the kubeconfig
-func (c *K8Client) GetCurrentNamespace() string {
+func (c K8Client) GetCurrentNamespace() string {
 	namespace, _, _ := c.ClientConfig.Namespace()
 	return namespace
 }
