@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,7 +23,6 @@ import (
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/util/retry"
 	"net/http"
 	"os"
 	"strconv"
@@ -246,6 +244,10 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
+	initialScale, err := k8Client.ScaleZeebeCluster(0)
+	if err != nil {
+		return err
+	}
 
 	sfs, err := k8Client.GetZeebeStatefulSet()
 	if err != nil {
@@ -279,9 +281,6 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 			},
 		},
 	}
-	initialScale := *sfs.Spec.Replicas
-
-	*sfs.Spec.Replicas = 0
 	sfs.Spec.Template.Spec.InitContainers = []core.Container{deleteContainer, restoreContainer}
 
 	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(cmd.Context(), sfs, meta.UpdateOptions{})
@@ -289,18 +288,8 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	err = waitForScale(k8Client, 0)
-	if err != nil {
-		return err
-	}
-
 	// Scale up after adding init containers.
-	err = scaleStatefulSet(cmd.Context(), k8Client, sfs.Name, initialScale)
-	if err != nil {
-		return err
-	}
-
-	err = waitForScale(k8Client, int(initialScale))
+	_, err = k8Client.ScaleZeebeCluster(initialScale)
 	if err != nil {
 		return err
 	}
@@ -316,39 +305,6 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	}
 
 	return nil
-}
-
-func waitForScale(k8Client internal.K8Client, scale int) error {
-	var retries = 0
-	for {
-		if retries > 30 {
-			return errors.New("zeebe did not scale as expected")
-		}
-		pods, err := k8Client.GetBrokerPods()
-		if err != nil {
-			return err
-		}
-		if len(pods.Items) == scale {
-			break
-		}
-		time.Sleep(1 * time.Second)
-		retries++
-	}
-	return nil
-}
-
-func scaleStatefulSet(ctx context.Context, client internal.K8Client, statefulSetName string, replicas int32) error {
-	namespace := client.GetCurrentNamespace()
-	statefulSets := client.Clientset.AppsV1().StatefulSets(namespace)
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		currentScale, err := statefulSets.GetScale(ctx, statefulSetName, meta.GetOptions{})
-		if err != nil {
-			return err
-		}
-		currentScale.Spec.Replicas = replicas
-		_, err = statefulSets.UpdateScale(ctx, statefulSetName, currentScale, meta.UpdateOptions{})
-		return err
-	})
 }
 
 func restoreEnvFromSfs(sfs *apps.StatefulSet) []core.EnvVar {
