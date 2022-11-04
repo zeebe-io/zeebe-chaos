@@ -110,11 +110,7 @@ func setupBackup(cmd *cobra.Command, _ []string) error {
 }
 
 func setupStatefulSetForBackups(cmd *cobra.Command, err error, k8Client internal.K8Client, namespace string) error {
-	sfsName, err := findStatefulSetName(cmd.Context(), k8Client, namespace)
-	if err != nil {
-		return err
-	}
-	sfs, err := k8Client.Clientset.AppsV1().StatefulSets(namespace).Get(cmd.Context(), sfsName, meta.GetOptions{})
+	sfs, err := k8Client.GetZeebeStatefulSet()
 	if err != nil {
 		return err
 	}
@@ -255,8 +251,10 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	sfsName, err := findStatefulSetName(cmd.Context(), k8Client, namespace)
-	sfs, err := k8Client.Clientset.AppsV1().StatefulSets(namespace).Get(cmd.Context(), sfsName, meta.GetOptions{})
+	sfs, err := k8Client.GetZeebeStatefulSet()
+	if err != nil {
+		return err
+	}
 
 	deleteContainer := core.Container{
 		Name:            "delete-data",
@@ -301,7 +299,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Scale up after adding init containers.
-	err = scaleStatefulSet(cmd.Context(), k8Client, sfsName, initialScale)
+	err = scaleStatefulSet(cmd.Context(), k8Client, sfs.Name, initialScale)
 	if err != nil {
 		return err
 	}
@@ -341,27 +339,6 @@ func waitForScale(k8Client internal.K8Client, scale int) error {
 		retries++
 	}
 	return nil
-}
-
-func findStatefulSetName(ctx context.Context, k8Client internal.K8Client, namespace string) (string, error) {
-	helmLabel := meta.LabelSelector{
-		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
-	}
-	sfs, err := k8Client.Clientset.AppsV1().StatefulSets(namespace).List(ctx, meta.ListOptions{LabelSelector: labels.Set(helmLabel.MatchLabels).String()})
-	if err != nil {
-		return "", err
-	}
-	if len(sfs.Items) == 1 {
-		return sfs.Items[0].Name, nil
-	}
-	if len(sfs.Items) == 0 {
-		saasSfs, err := k8Client.Clientset.AppsV1().StatefulSets(namespace).Get(ctx, "zeebe", meta.GetOptions{})
-		if err != nil {
-			return "", err
-		}
-		return saasSfs.Name, nil
-	}
-	return "", errors.New("could not uniquely identify the stateful set for Zeebe")
 }
 
 func setPauseLabel(ctx context.Context, client internal.K8Client, pauseReconciliation bool) error {
