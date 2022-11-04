@@ -22,16 +22,12 @@ import (
 	"io"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -91,7 +87,7 @@ func setupBackup(cmd *cobra.Command, _ []string) error {
 
 	namespace := k8Client.GetCurrentNamespace()
 
-	err = setPauseLabel(cmd.Context(), k8Client, true)
+	err = k8Client.PauseReconciliation()
 	if err != nil {
 		return err
 	}
@@ -246,7 +242,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	}
 
 	namespace := k8Client.GetCurrentNamespace()
-	err = setPauseLabel(cmd.Context(), k8Client, true)
+	err = k8Client.PauseReconciliation()
 	if err != nil {
 		return err
 	}
@@ -314,7 +310,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	err = setPauseLabel(cmd.Context(), k8Client, false)
+	err = k8Client.ResumeReconciliation()
 	if err != nil {
 		return err
 	}
@@ -339,24 +335,6 @@ func waitForScale(k8Client internal.K8Client, scale int) error {
 		retries++
 	}
 	return nil
-}
-
-func setPauseLabel(ctx context.Context, client internal.K8Client, pauseReconciliation bool) error {
-	namespace := client.GetCurrentNamespace()
-	clusterId := strings.TrimSuffix(namespace, "-zeebe")
-	dynamicClient := client.DynamicClient
-	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
-	payload := fmt.Sprintf(`{"metadata": {"labels": {"cloud.camunda.io/pauseReconciliation": "%t"}}}`, pauseReconciliation)
-	err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		_, err := dynamicClient.Resource(zeebeCrd).Patch(ctx, clusterId, types.MergePatchType, []byte(payload), meta.PatchOptions{})
-		return err
-	})
-	if k8sErrors.IsNotFound(err) {
-		// No zb resource found so probably not Saas. Ignore for now.
-		fmt.Printf("Did not find zeebe cluster to patch, %s\n", err)
-		return nil
-	}
-	return err
 }
 
 func scaleStatefulSet(ctx context.Context, client internal.K8Client, statefulSetName string, replicas int32) error {
