@@ -38,14 +38,14 @@ var workerCommand = &cobra.Command{
 }
 
 type ChaosProvider struct {
-	path    string
-	args    []string
-	timeout int64
+	Path      string
+	Arguments []string
+	Timeout   int64
 }
 
 type ZbChaosVariables struct {
-	clusterId string
-	provider  ChaosProvider
+	ClusterId *string
+	Provider  ChaosProvider
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
@@ -71,8 +71,8 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 	ctx := context.Background()
 
 	jobVariables := ZbChaosVariables{
-		provider: ChaosProvider{
-			timeout: 15 * 60, // 15 minute default timeout
+		Provider: ChaosProvider{
+			Timeout: 15 * 60, // 15 minute default Timeout
 		},
 	}
 	err := job.GetVariablesAs(&jobVariables)
@@ -82,11 +82,13 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	timeout := time.Duration(jobVariables.provider.timeout) * time.Second
+	timeout := time.Duration(jobVariables.Provider.Timeout) * time.Second
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
 
-	err = runZbChaosCommand(jobVariables.provider.args, commandCtx)
+	commandArgs := append([]string{"--namespace", *jobVariables.ClusterId + "-zeebe"}, jobVariables.Provider.Arguments...)
+
+	err = runZbChaosCommand(commandArgs, commandCtx)
 	if err != nil {
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
 		return
