@@ -14,6 +14,8 @@
 
 package internal
 
+import "github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
+
 // defines whether the functions should print verbose output
 var Verbosity bool = false
 
@@ -22,3 +24,5 @@ var KubeConfigPath string
 
 // sets the namespace to be used instead of the namespace from the current kube context
 var Namespace string
+
+var ZeebeClientCredential zbc.CredentialsProvider

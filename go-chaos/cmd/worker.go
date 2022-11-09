@@ -43,9 +43,18 @@ type ChaosProvider struct {
 	Timeout   int64
 }
 
+type AuthenticationProvider struct {
+	Audience         string
+	AuthorizationUrl string
+	ClientId         string
+	ClientSecret     string
+	ContactPoint     string
+}
+
 type ZbChaosVariables struct {
-	ClusterId *string
-	Provider  ChaosProvider
+	ClusterId             *string
+	Provider              ChaosProvider
+	AuthenticationDetails AuthenticationProvider
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
@@ -86,7 +95,8 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
 
-	commandArgs := append([]string{"--namespace", *jobVariables.ClusterId + "-zeebe"}, jobVariables.Provider.Arguments...)
+	clusterAccessArgs := append([]string{""}, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
+	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
 
 	err = runZbChaosCommand(commandArgs, commandCtx)
 	if err != nil {

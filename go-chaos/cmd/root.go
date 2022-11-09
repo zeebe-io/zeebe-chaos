@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -41,6 +42,9 @@ var (
 var Verbose bool
 var KubeConfigPath string
 var Namespace string
+var ClientId string
+var ClientSecret string
+var Audience string
 
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
@@ -51,6 +55,13 @@ var rootCmd = &cobra.Command{
 		internal.Verbosity = Verbose
 		internal.Namespace = Namespace
 		internal.KubeConfigPath = KubeConfigPath
+		if ClientId != "" && ClientSecret != "" {
+			internal.ZeebeClientCredential, _ = zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
+				ClientID:     ClientId,
+				ClientSecret: ClientSecret,
+				Audience:     Audience,
+			})
+		}
 	},
 }
 
@@ -58,6 +69,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
+	rootCmd.PersistentFlags().StringVarP(&ClientId, "clientId", "c", "", "connect using the given clientId")
+	rootCmd.PersistentFlags().StringVar(&ClientSecret, "clientSecret", "", "connect using the given client secret")
+	rootCmd.PersistentFlags().StringVar(&Audience, "audience", "", "connect using the given client secret")
 }
 
 func NewCmd() *cobra.Command {
