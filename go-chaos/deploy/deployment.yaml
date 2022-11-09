@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zbchaos-worker
+  labels:
+    app: zbchaos-worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zbchaos-worker
+  template:
+    metadata:
+      name: zbchaos-worker
+      labels:
+        app: zbchaos-worker
+    spec:
+      containers:
+        - image: gcr.io/zeebe-io/zbchaos:latest
+          name: zbchaos-worker
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 150m
+              memory: 128Mi
+          volumeMounts:
+            - mountPath: /.kube
+              name: kubeconfig
+          envFrom:
+            - secretRef:
+                name: zeebe-backup-store-s3
+            - secretRef:
+                name: zbchaos-worker-client-config
+      volumes:
+        - name: kubeconfig
+          secret:
+            defaultMode: 420
+            items:
+              - key: kubeconfig
+                path: config
+            secretName: zbchaos-worker-kubeconfig

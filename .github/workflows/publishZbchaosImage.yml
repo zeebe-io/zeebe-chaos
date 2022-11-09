@@ -7,10 +7,33 @@ on:
 jobs:
   publish-image:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ github.event.release.name || github.sha }}
     steps:
       - uses: actions/checkout@v3
+      - name: Collect image tags
+        uses: actions/github-script@v6
+        id: image-tags
+        with:
+          # language=javascript
+          script: |
+            // noinspection JSUnresolvedVariable
+            
+            const imageName = `gcr.io/zeebe-io/zbchaos`
+            const versionRegex = /zbchaos v(?<version>\d+\.\d+\.\d+)/i
+            if (context.eventName === "release") {
+                const versionMatch = context.payload.release.name.match(versionRegex)
+                if (versionMatch == null) {
+                    core.warning(`Release was published but not detected as a zbchaos release. Tagging image only with sha ${context.sha}`)
+                    return `${imageName}:${context.sha}`
+                }
+                // For releases, tag with release version, sha and 'latest'
+                let version = versionMatch.groups["version"];
+                core.info(`Detected zbchaos release ${version}, tagging image ${imageName} with ${version}, 'latest' and sha ${context.sha}`)
+                return `${imageName}:${version},${imageName}:latest,${imageName}:${context.sha}`
+            } else {
+                // If not a release, tag only with sha
+                return `${imageName}:${context.sha}`
+            }
+          result-encoding: string
       - name: Setup BuildKit
         uses: docker/setup-buildx-action@v2
       - name: Login to GitHub Container Registry
@@ -24,6 +47,6 @@ jobs:
         with:
           context: go-chaos
           push: true
-          tags: gcr.io/zeebe-io/zbchaos:${{ env.VERSION }}
+          tags: ${{ steps.image-tags.outputs.result }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
