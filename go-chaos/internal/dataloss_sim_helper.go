@@ -10,7 +10,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"strconv"
 )
+
+const configMapName = "zeebe-control-pod-restart-flags"
 
 /*
 	Used for dataloss simulation test, to restrict when a deleted zeebe broker is restarted.
@@ -93,7 +96,6 @@ func (c K8Client) ApplyInitContainerPatch() error {
 }
 
 func createConfigMapForInitContainer(c K8Client) error {
-	configMapName := "zeebe-control-pod-restart-flags"
 	cm, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err == nil {
 		fmt.Printf("Config map %s already exists. Will not create again. \n", cm.Name)
@@ -140,6 +142,24 @@ func createConfigMapForInitContainer(c K8Client) error {
 
 	fmt.Printf("Failed to query configmap \n", err)
 	return err
+}
+
+// If the flag set to true, init container will be caught in a loop and prevents the start up of the zeebe broker.
+// When the flag is set to false, init container exits and zeebe broker will be restarted.
+func SetInitContainerBlockFlag(k8Client K8Client, nodeId int, flag string) error {
+	cm, err := k8Client.Clientset.CoreV1().ConfigMaps(k8Client.GetCurrentNamespace()).Get(context.TODO(), configMapName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	cm.Data["block_"+strconv.Itoa(nodeId)] = flag
+
+	cm, err = k8Client.Clientset.CoreV1().ConfigMaps(k8Client.GetCurrentNamespace()).Update(context.TODO(), cm, metav1.UpdateOptions{})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Works both for helm and SaaS
