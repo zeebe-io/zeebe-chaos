@@ -21,7 +21,6 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,12 +33,8 @@ func (c K8Client) GetZeebeStatefulSet() (*v1.StatefulSet, error) {
 	namespace := c.GetCurrentNamespace()
 	ctx := context.TODO()
 
-	helmLabel := meta.LabelSelector{
-		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
-	}
-
 	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
-	sfs, err := statefulSets.List(ctx, meta.ListOptions{LabelSelector: labels.Set(helmLabel.MatchLabels).String()})
+	sfs, err := statefulSets.List(ctx, meta.ListOptions{LabelSelector: getSelfManagedZeebeStatefulSetLabels()})
 	if err != nil {
 		return nil, err
 	}

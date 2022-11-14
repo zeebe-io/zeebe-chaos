@@ -19,6 +19,13 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+func getSelfManagedZeebeStatefulSetLabels() string {
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
+	}
+	return labels.Set(labelSelector.MatchLabels).String()
+}
+
 func getSelfManagedBrokerLabels() string {
 	labelSelector := metav1.LabelSelector{
 		MatchLabels: map[string]string{"app.kubernetes.io/component": "zeebe-broker"},
