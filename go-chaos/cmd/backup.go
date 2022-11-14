@@ -90,7 +90,7 @@ func setupBackup(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	_, err = copyBackupSecret(cmd, k8Client, namespace)
+	_, err = createBackupSecret(cmd, k8Client, namespace)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func setupGatewayForBackups(cmd *cobra.Command, err error, k8Client internal.K8C
 	return err
 }
 
-func copyBackupSecret(cmd *cobra.Command, k8Client internal.K8Client, namespace string) (*core.Secret, error) {
+func createBackupSecret(cmd *cobra.Command, k8Client internal.K8Client, namespace string) (*core.Secret, error) {
 	return k8Client.Clientset.CoreV1().Secrets(namespace).Create(
 		cmd.Context(),
 		&core.Secret{
