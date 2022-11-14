@@ -53,7 +53,7 @@ type AuthenticationProvider struct {
 }
 
 type ZbChaosVariables struct {
-	ClusterId *string
+	ClusterId             *string
 	Provider              ChaosProvider
 	AuthenticationDetails AuthenticationProvider
 }
