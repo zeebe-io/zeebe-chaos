@@ -27,7 +27,7 @@ var prepareCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("\nPrepared")
+		fmt.Printf("Prepared cluster in namesapce %s\n", k8Client.GetCurrentNamespace())
 		fmt.Println()
 	},
 }
