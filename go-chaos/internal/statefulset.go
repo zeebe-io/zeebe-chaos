@@ -1,0 +1,167 @@
+package internal
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
+)
+
+/*
+	Used for dataloss simulation test, to restrict when a deleted zeebe broker is restarted.
+
+This add an InitContainer to zeebe pods. The init container is blocked in an infinite loop, until the value  of `block_{node_id}` in the config map is set to false.
+To restrict when a deleted pod is restarted, first update the configmap and set the respective `block_{node_id}` true.
+Then delete the pod. Once it is time to restart the pod, update the config map to set the `block_{nodeId}` to false.
+The updated config map will be eventually (usually with in a minute) by the init container and breaks out of the loop.
+The init container exits and the zeebe container will be started.
+*/
+func (c K8Client) ApplyInitContainerPatch() error {
+	// apply config map
+	err := createConfigMapForInitContainer(c)
+	if err != nil {
+		fmt.Printf("Failed to create config map %s", err)
+		return err
+	}
+
+	statefulSet, err := c.GetZeebeStatefulSet()
+	if err != nil {
+		fmt.Printf("Failed to get statefulset %s", err)
+		return err
+	}
+
+	// Adds init container patch
+	patch := []byte(`{
+  "spec": {
+    "template": {
+      "spec": {
+        "volumes": [
+          {
+            "name": "zeebe-control-pod-restart-flags-mount",
+            "configMap": {
+              "name": "zeebe-control-pod-restart-flags"
+            }
+          }
+        ],
+        "initContainers": [
+          {
+            "name": "busybox",
+            "image": "busybox:1.28",
+            "command": [
+              "/bin/sh",
+              "-c"
+            ],
+            "args": [
+              "while true; do block=$(cat /etc/config/block_${K8S_NAME##*-}); if [ $block == \"false\" ]; then break; fi; sleep 10; done"
+            ],
+            "env": [
+              {
+                "name": "K8S_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "metadata.name"
+                  }
+                }
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "zeebe-control-pod-restart-flags-mount",
+                "mountPath": "/etc/config"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}`)
+	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		fmt.Printf("Failed to apply init container patch %s", err)
+		return err
+	}
+	if Verbosity {
+		fmt.Printf("Applied init container patch to %s \n", statefulSet.Name)
+	}
+	return err
+}
+
+func createConfigMapForInitContainer(c K8Client) error {
+	configMapName := "zeebe-control-pod-restart-flags"
+	cm, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Get(context.TODO(), configMapName, metav1.GetOptions{})
+	if err == nil {
+		fmt.Printf("Config map %s already exists. Will not create again. \n", cm.Name)
+		return nil
+	}
+
+	if k8sErrors.IsNotFound(err) {
+		// create config map
+		cm := corev1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ConfigMap",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      configMapName,
+				Namespace: c.GetCurrentNamespace(),
+			},
+
+			Data: map[string]string{
+				// When set to true the corresponding zeebe pods will be prevented from starting up.
+				// It will be blocked in the Init container until this flag is set back to false.
+				"block_0": "false",
+				"block_1": "false",
+				"block_2": "false",
+				"block_3": "false",
+				"block_4": "false",
+				"block_5": "false",
+				"block_6": "false",
+				"block_7": "false",
+				"block_8": "false",
+			},
+		}
+
+		_, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Create(context.TODO(), &cm, metav1.CreateOptions{})
+		if err != nil {
+			fmt.Printf("Failed to create configmap %s", err)
+			return err
+		}
+		if Verbosity {
+			fmt.Printf("Created config map %s in namespace \n", cm.Name, c.GetCurrentNamespace())
+		}
+		return nil
+	}
+
+	fmt.Printf("Failed to query configmap \n", err)
+	return err
+}
+
+// Works both for helm and SaaS
+func (c K8Client) GetZeebeStatefulSet() (*v1.StatefulSet, error) {
+	namespace := c.GetCurrentNamespace()
+	ctx := context.TODO()
+
+	helmLabel := metav1.LabelSelector{
+		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
+	}
+
+	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
+	sfs, err := statefulSets.List(ctx, metav1.ListOptions{LabelSelector: labels.Set(helmLabel.MatchLabels).String()})
+	if err != nil {
+		return nil, err
+	}
+	if len(sfs.Items) == 1 {
+		return &sfs.Items[0], nil
+	}
+	if len(sfs.Items) == 0 {
+		// On SaaS the StatefulSet is just named "zeebe" without any identifying labels
+		return statefulSets.Get(ctx, "zeebe", metav1.GetOptions{})
+	}
+	return nil, errors.New("could not uniquely identify the stateful set for Zeebe")
+}
