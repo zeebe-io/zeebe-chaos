@@ -55,12 +55,12 @@ func (c *testClientConfig) ConfigAccess() clientcmd.ConfigAccess {
 	panic("implement me")
 }
 
-func (k K8Client) CreatePodWithLabels(t *testing.T, selector *metav1.LabelSelector) {
-	k.CreatePodWithLabelsAndName(t, selector, "testPod")
+func (c K8Client) CreatePodWithLabels(t *testing.T, selector *metav1.LabelSelector) {
+	c.CreatePodWithLabelsAndName(t, selector, "testPod")
 }
 
-func (k K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
-	_, err := k.Clientset.CoreV1().Pods(k.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
+func (c K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+	_, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v1.PodSpec{},
 	}, metav1.CreateOptions{})
@@ -68,8 +68,8 @@ func (k K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.Labe
 	require.NoError(t, err)
 }
 
-func (k K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
-	_, err := k.Clientset.AppsV1().Deployments(k.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
+func (c K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+	_, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
 		Spec:       v12.DeploymentSpec{},
 		Status:     v12.DeploymentStatus{},
