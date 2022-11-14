@@ -135,12 +135,12 @@ func createConfigMapForInitContainer(c K8Client) error {
 			return err
 		}
 		if Verbosity {
-			fmt.Printf("Created config map %s in namespace \n", cm.Name, c.GetCurrentNamespace())
+			fmt.Printf("Created config map %s in namespace %s \n", cm.Name, c.GetCurrentNamespace())
 		}
 		return nil
 	}
 
-	fmt.Printf("Failed to query configmap \n", err)
+	fmt.Printf("Failed to query configmap %s\n", err)
 	return err
 }
 
