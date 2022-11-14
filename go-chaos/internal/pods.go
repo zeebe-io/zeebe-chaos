@@ -148,9 +148,9 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 
 	allRunning := true
 	for _, pod := range pods.Items {
-		if pod.Status.Phase != v1.PodRunning {
+		if pod.Status.ContainerStatuses[0].Ready != true { // assuming there is only one container
 			if Verbosity {
-				fmt.Printf("Pod %s is in phase %s, which is not running. Wait for some seconds.\n", pod.Name, pod.Status.Phase)
+				fmt.Printf("Pod %s is in phase %s, but not ready. Wait for some seconds.\n", pod.Name, pod.Status.Phase)
 			}
 			allRunning = false
 			break
