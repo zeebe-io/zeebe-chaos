@@ -22,6 +22,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(datalossCmd)
+	datalossCmd.AddCommand(prepareCmd)
 	datalossCmd.AddCommand(datalossDelete)
 	datalossCmd.AddCommand(datalossRecover)
 
@@ -32,7 +33,28 @@ func init() {
 var datalossCmd = &cobra.Command{
 	Use:   "dataloss",
 	Short: "Simulate dataloss and recover",
-	Long:  `Simulate dataloss of a broker, and restart from it. "zbchaos prepare" must be executed once on this cluster before this command`,
+	Long:  `Simulate dataloss of a broker, and recover from it.`,
+}
+
+var prepareCmd = &cobra.Command{
+	Use:   "prepare",
+	Short: "Prepare the k8s deployment for dataloss test",
+	Long:  `Prepares the k8s deployment - such as applying patches to statefulsets - to enable applying dataloss commands.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
+		// Add Init container for dataloss simulation test
+		err = k8Client.ApplyInitContainerPatch()
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Prepared cluster in namesapce %s\n", k8Client.GetCurrentNamespace())
+	},
 }
 
 var datalossDelete = &cobra.Command{
