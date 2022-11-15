@@ -55,3 +55,13 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 	}
 	return err
 }
+
+func (c K8Client) isSaaSEnvironment() bool {
+	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
+	list, err := c.DynamicClient.Resource(zeebeCrd).List(context.TODO(), meta.ListOptions{})
+
+	if err != nil || len(list.Items) <= 0 {
+		return false
+	}
+	return true
+}
