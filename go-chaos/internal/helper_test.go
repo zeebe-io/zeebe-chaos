@@ -68,11 +68,21 @@ func (c K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.Labe
 	require.NoError(t, err)
 }
 
-func (c K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+func (c K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, name string) {
 	_, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: name},
 		Spec:       v12.DeploymentSpec{},
 		Status:     v12.DeploymentStatus{},
+	}, metav1.CreateOptions{})
+
+	require.NoError(t, err)
+}
+
+func (c K8Client) CreateStatefulSetWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, name string) {
+	_, err := c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Create(context.TODO(), &v12.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: name},
+		Spec:       v12.StatefulSetSpec{},
+		Status:     v12.StatefulSetStatus{},
 	}, metav1.CreateOptions{})
 
 	require.NoError(t, err)
