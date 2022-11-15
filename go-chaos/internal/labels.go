@@ -58,3 +58,11 @@ func getSaasGatewayLabels() string {
 	}
 	return labels.Set(labelSelector.MatchLabels).String()
 }
+
+func getGatewayLabels() string {
+	if saasEnv {
+		return getSaasGatewayLabels()
+	} else {
+		return getSelfManagedGatewayLabels()
+	}
+}

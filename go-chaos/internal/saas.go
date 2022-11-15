@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"strings"
 
-	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -39,6 +38,13 @@ func (c K8Client) ResumeReconciliation() error {
 // otherwise it gets overwritten on the next reconcilation loop by the controller
 // Based on https://github.com/camunda-cloud/zeebe-controller-k8s#turning-the-controller-off
 func (c K8Client) setPauseFlag(pauseEnabled bool) error {
+	if !saasEnv {
+		if Verbosity {
+			fmt.Printf("Did not find zeebe cluster to pause reconciliation, ignoring. \n")
+		}
+		return nil
+	}
+
 	ctx := context.TODO()
 	namespace := c.GetCurrentNamespace()
 	clusterId := strings.TrimSuffix(namespace, "-zeebe")
@@ -48,11 +54,6 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 		_, err := c.DynamicClient.Resource(zeebeCrd).Patch(ctx, clusterId, types.MergePatchType, []byte(payload), meta.PatchOptions{})
 		return err
 	})
-	if k8sErrors.IsNotFound(err) {
-		// No zb resource found so probably not Saas. Ignore for now.
-		fmt.Printf("Did not find zeebe cluster to pause reconciliation, ignoring. %s\n", err)
-		return nil
-	}
 	return err
 }
 

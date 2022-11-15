@@ -42,6 +42,7 @@ func Test_ShouldReturnTrueForRunningSaaSGatewayDeployment(t *testing.T) {
 	k8Client := CreateFakeClient()
 	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
 	require.NoError(t, err)
+	k8Client.createSaaSCRD(t)
 	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "gateway")
 
 	// when
@@ -85,6 +86,7 @@ func Test_ShouldReturnSaaSGatewayDeployment(t *testing.T) {
 	k8Client := CreateFakeClient()
 	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
 	require.NoError(t, err)
+	k8Client.createSaaSCRD(t)
 	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "gateway")
 
 	// when
