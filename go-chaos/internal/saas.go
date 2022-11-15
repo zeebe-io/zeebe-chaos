@@ -38,7 +38,7 @@ func (c K8Client) ResumeReconciliation() error {
 // otherwise it gets overwritten on the next reconcilation loop by the controller
 // Based on https://github.com/camunda-cloud/zeebe-controller-k8s#turning-the-controller-off
 func (c K8Client) setPauseFlag(pauseEnabled bool) error {
-	if !saasEnv {
+	if !c.SaaSEnv {
 		if Verbosity {
 			fmt.Printf("Did not find zeebe cluster to pause reconciliation, ignoring. \n")
 		}
@@ -63,7 +63,7 @@ func (c K8Client) isSaaSEnvironment() bool {
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
 	resource, err := c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
 
-	if err != nil || resource == nil  {
+	if err != nil || resource == nil {
 		return false
 	}
 	return true

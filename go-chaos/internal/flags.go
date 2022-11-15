@@ -19,10 +19,6 @@ import "github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 // defines whether the functions should print verbose output
 var Verbosity = false
 
-// defines whether we running in saas or self-managed
-// will be resolved automatically when creating the k8 client
-var saasEnv = false
-
 // defines if a custom kube config should be used instead of the default one found by k8s
 var KubeConfigPath string
 

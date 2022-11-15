@@ -26,7 +26,7 @@ import (
 func (c K8Client) getGatewayDeployment() (*v12.Deployment, error) {
 
 	listOptions := metav1.ListOptions{
-		LabelSelector: getGatewayLabels(),
+		LabelSelector: getGatewayLabels(c.SaaSEnv),
 	}
 	deploymentList, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
 	if err != nil {

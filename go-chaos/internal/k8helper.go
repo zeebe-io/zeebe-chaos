@@ -34,6 +34,7 @@ type K8Client struct {
 	ClientConfig  clientcmd.ClientConfig
 	DynamicClient dynamic.Interface
 	Clientset     kubernetes.Interface
+	SaaSEnv       bool
 }
 
 // Returns the current namespace, defined in the kubeconfig
@@ -75,10 +76,10 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	}
 
 	client := K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}
-	saasEnv = client.isSaaSEnvironment()
+	client.SaaSEnv = client.isSaaSEnvironment()
 
 	if Verbosity {
-		if saasEnv {
+		if client.SaaSEnv {
 			fmt.Println("Running experiment in SaaS environment.")
 		} else {
 			fmt.Println("Running experiment in self-managed environment.")

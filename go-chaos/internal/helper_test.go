@@ -100,7 +100,7 @@ func (c K8Client) createSaaSCRD(t *testing.T) {
 	_, err := c.DynamicClient.Resource(zeebeCrd).Create(context.TODO(), obj, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	saasEnv = c.isSaaSEnvironment()
+	c.SaaSEnv = c.isSaaSEnvironment()
 }
 
 func (c K8Client) CreateStatefulSetWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, name string) {

@@ -64,6 +64,7 @@ func Test_GetSaasBrokerPods(t *testing.T) {
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 	k8Client.CreatePodWithLabels(t, selector)
 
 	// when
@@ -78,7 +79,7 @@ func Test_GetSaasBrokerPods(t *testing.T) {
 
 func Test_GetBrokersInOrder(t *testing.T) {
 	// given
-	selector, err := metav1.ParseToLabelSelector(getSaasBrokerLabels())
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
 	require.NoError(t, err)
 
 	k8Client := CreateFakeClient()
@@ -149,6 +150,7 @@ func Test_GetSelfManagedGatewayPodNames(t *testing.T) {
 func Test_GetSaasGatewayPodNames(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 
 	// gateway
 	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
