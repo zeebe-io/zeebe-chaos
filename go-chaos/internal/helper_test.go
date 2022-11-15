@@ -89,8 +89,7 @@ func (c K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *meta
 	require.NoError(t, err)
 }
 
-
-func (c K8Client) createSaaSCRD(t *testing.T) {
+func (c *K8Client) createSaaSCRD(t *testing.T) {
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
 	obj := &unstructured.Unstructured{}
 	namespace := c.GetCurrentNamespace()
