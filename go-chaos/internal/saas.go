@@ -57,10 +57,12 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 }
 
 func (c K8Client) isSaaSEnvironment() bool {
+	namespace := c.GetCurrentNamespace()
+	clusterId := strings.TrimSuffix(namespace, "-zeebe")
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
-	list, err := c.DynamicClient.Resource(zeebeCrd).List(context.TODO(), meta.ListOptions{})
+	resource, err := c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
 
-	if err != nil || len(list.Items) <= 0 {
+	if err != nil || resource == nil  {
 		return false
 	}
 	return true
