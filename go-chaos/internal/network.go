@@ -27,21 +27,10 @@ import (
 
 func (c K8Client) ApplyNetworkPatch() error {
 
-	// todo support cloud
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app=camunda-platform",
-	}
-
-	statefulSetList, err := c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	statefulSet, err := c.GetZeebeStatefulSet()
 	if err != nil {
 		return err
 	}
-
-	if len(statefulSetList.Items) <= 0 {
-		return errors.New(fmt.Sprintf("Expected to find the Zeebe statefulset but nothing was found in namespace %s", c.GetCurrentNamespace()))
-	}
-
-	statefulSet := statefulSetList.Items[0]
 
 	patch := []byte(`{
 		"spec":{
