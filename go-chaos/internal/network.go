@@ -27,21 +27,10 @@ import (
 
 func (c K8Client) ApplyNetworkPatch() error {
 
-	// todo support cloud
-	listOptions := metav1.ListOptions{
-		LabelSelector: "app=camunda-platform",
-	}
-
-	statefulSetList, err := c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	statefulSet, err := c.GetZeebeStatefulSet()
 	if err != nil {
 		return err
 	}
-
-	if len(statefulSetList.Items) <= 0 {
-		return errors.New(fmt.Sprintf("Expected to find the Zeebe statefulset but nothing was found in namespace %s", c.GetCurrentNamespace()))
-	}
-
-	statefulSet := statefulSetList.Items[0]
 
 	patch := []byte(`{
 		"spec":{
@@ -62,6 +51,35 @@ func (c K8Client) ApplyNetworkPatch() error {
 	}`)
 
 	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	return err
+}
+
+func (c K8Client) ApplyNetworkPatchOnGateway() error {
+
+	deployment, err := c.getGatewayDeployment()
+	if err != nil {
+		return err
+	}
+
+	patch := []byte(`{
+		"spec":{
+			"template":{
+				"spec":{
+					"containers":[
+						{
+							"name": "zeebe",
+							"securityContext":{
+								"capabilities":{
+									"add":["NET_ADMIN"]
+								}
+							}
+						}]
+				}
+			}
+		}
+	}`)
+
+	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Patch(context.TODO(), deployment.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return err
 }
 
