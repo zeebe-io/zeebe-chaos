@@ -16,13 +16,10 @@ package internal
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"strconv"
 )
@@ -174,28 +171,4 @@ func SetInitContainerBlockFlag(k8Client K8Client, nodeId int, flag string) error
 		return err
 	}
 	return nil
-}
-
-// Works both for helm and SaaS
-func (c K8Client) GetZeebeStatefulSet() (*v1.StatefulSet, error) {
-	namespace := c.GetCurrentNamespace()
-	ctx := context.TODO()
-
-	helmLabel := metav1.LabelSelector{
-		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
-	}
-
-	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
-	sfs, err := statefulSets.List(ctx, metav1.ListOptions{LabelSelector: labels.Set(helmLabel.MatchLabels).String()})
-	if err != nil {
-		return nil, err
-	}
-	if len(sfs.Items) == 1 {
-		return &sfs.Items[0], nil
-	}
-	if len(sfs.Items) == 0 {
-		// On SaaS the StatefulSet is just named "zeebe" without any identifying labels
-		return statefulSets.Get(ctx, "zeebe", metav1.GetOptions{})
-	}
-	return nil, errors.New("could not uniquely identify the stateful set for Zeebe")
 }
