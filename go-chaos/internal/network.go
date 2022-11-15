@@ -54,6 +54,35 @@ func (c K8Client) ApplyNetworkPatch() error {
 	return err
 }
 
+func (c K8Client) ApplyNetworkPatchOnGateway() error {
+
+	deployment, err := c.getGatewayDeployment()
+	if err != nil {
+		return err
+	}
+
+	patch := []byte(`{
+		"spec":{
+			"template":{
+				"spec":{
+					"containers":[
+						{
+							"name": "zeebe",
+							"securityContext":{
+								"capabilities":{
+									"add":["NET_ADMIN"]
+								}
+							}
+						}]
+				}
+			}
+		}
+	}`)
+
+	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Patch(context.TODO(), deployment.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	return err
+}
+
 func MakeIpUnreachableForPod(k8Client K8Client, podIp string, podName string) error {
 	// We try to reduce the system output in order to not break the execution. There is a limit for the sout for exec,
 	// for more details see remotecommand.StreamOptions

@@ -40,3 +40,23 @@ func Test_ShouldApplyNetworkPatchOnStatefulSet(t *testing.T) {
 	require.NotNil(t, statefulSet)
 	assert.Equal(t, v1.Capability("NET_ADMIN"), statefulSet.Spec.Template.Spec.Containers[0].SecurityContext.Capabilities.Add[0], "Expected to add capability to statefulset")
 }
+
+func Test_ShouldApplyNetworkPatchOnDeployment(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "gateway")
+
+	// when
+	err = k8Client.ApplyNetworkPatchOnGateway()
+
+	// then
+	require.NoError(t, err)
+
+	deployment, err := k8Client.getGatewayDeployment()
+	require.NoError(t, err)
+
+	require.NotNil(t, deployment)
+	assert.Equal(t, v1.Capability("NET_ADMIN"), deployment.Spec.Template.Spec.Containers[0].SecurityContext.Capabilities.Add[0], "Expected to add capability to deployment")
+}
