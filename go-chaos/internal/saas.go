@@ -34,6 +34,10 @@ func (c K8Client) ResumeReconciliation() error {
 	return c.setPauseFlag(false)
 }
 
+// Sets the pause reconciliation flag in SaaS environment
+// this is necessary to make changes at the deployed resources
+// otherwise it gets overwritten on the next reconcilation loop by the controller
+// Based on https://github.com/camunda-cloud/zeebe-controller-k8s#turning-the-controller-off
 func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 	ctx := context.TODO()
 	namespace := c.GetCurrentNamespace()
