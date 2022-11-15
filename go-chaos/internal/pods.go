@@ -161,30 +161,10 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 }
 
 func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
-	listOptions := metav1.ListOptions{
-		LabelSelector: getSelfManagedGatewayLabels(),
-	}
-	deploymentList, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	deployment, err := c.getGatewayDeployment()
 	if err != nil {
 		return false, err
 	}
-
-	if deploymentList == nil || len(deploymentList.Items) <= 0 {
-		// lets check for SaaS setup
-		listOptions.LabelSelector = getSaasGatewayLabels()
-		deploymentList, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
-		if err != nil {
-			return false, err
-		}
-
-		// here it is currently hard to distingush between not existing and embedded gateway;
-		// since we don't use embedded gateway in our current chaos setup I would not support it right now here
-		if deploymentList == nil || len(deploymentList.Items) <= 0 {
-			return false, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
-		}
-	}
-
-	deployment := deploymentList.Items[0]
 
 	if deployment.Status.UnavailableReplicas > 0 {
 		if Verbosity {
