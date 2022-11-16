@@ -47,7 +47,7 @@ func Test_ShouldApplyNetworkPatchOnDeployment(t *testing.T) {
 	k8Client := CreateFakeClient()
 	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
 	require.NoError(t, err)
-	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "gateway")
+	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "zeebe-gateway")
 
 	// when
 	err = k8Client.ApplyNetworkPatchOnGateway()

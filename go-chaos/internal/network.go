@@ -67,7 +67,7 @@ func (c K8Client) ApplyNetworkPatchOnGateway() error {
 				"spec":{
 					"containers":[
 						{
-							"name": "zeebe",
+							"name": "zeebe-gateway",
 							"securityContext":{
 								"capabilities":{
 									"add":["NET_ADMIN"]
