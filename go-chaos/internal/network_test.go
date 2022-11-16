@@ -26,6 +26,7 @@ import (
 func Test_ShouldApplyNetworkPatchOnStatefulSet(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 	k8Client.CreateStatefulSetWithLabelsAndName(t, &metav1.LabelSelector{}, "zeebe")
 
 	// when
