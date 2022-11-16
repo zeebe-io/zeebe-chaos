@@ -23,7 +23,7 @@ import (
 )
 
 func (c K8Client) DeletePvcOfBroker(podName string) error {
-	volume, err := getVolume(podName, c)
+	volume, err := c.GetVolume(podName)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (c K8Client) DeletePvcOfBroker(podName string) error {
 	return nil
 }
 
-func getVolume(podName string, c K8Client) (*v1.Volume, error) {
+func (c K8Client) GetVolume(podName string) (*v1.Volume, error) {
 	pod, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Get(context.TODO(), podName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
