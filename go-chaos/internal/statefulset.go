@@ -31,18 +31,19 @@ func (c K8Client) GetZeebeStatefulSet() (*v1.StatefulSet, error) {
 	ctx := context.TODO()
 
 	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
-	sfs, err := statefulSets.List(ctx, meta.ListOptions{LabelSelector: getSelfManagedZeebeStatefulSetLabels()})
-	if err != nil {
-		return nil, err
-	}
-	if len(sfs.Items) == 1 {
-		return &sfs.Items[0], nil
-	}
-	if len(sfs.Items) == 0 {
+	if c.SaaSEnv {
 		// On SaaS the StatefulSet is just named "zeebe" without any identifying labels
 		return statefulSets.Get(ctx, "zeebe", meta.GetOptions{})
+	} else {
+		sfs, err := statefulSets.List(ctx, meta.ListOptions{LabelSelector: getSelfManagedZeebeStatefulSetLabels()})
+		if err != nil {
+			return nil, err
+		}
+		if len(sfs.Items) == 1 {
+			return &sfs.Items[0], nil
+		}
+		return nil, errors.New("could not uniquely identify the stateful set for Zeebe")
 	}
-	return nil, errors.New("could not uniquely identify the stateful set for Zeebe")
 }
 
 // ScaleZeebeCluster Scales the StatefulSet for Zeebe. Waits until scaling is complete before returning the initial scale.
