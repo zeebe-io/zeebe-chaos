@@ -24,6 +24,7 @@ import (
 func init() {
 	rootCmd.AddCommand(connect)
 	connect.AddCommand(connectBrokers)
+	connect.AddCommand(connectGateway)
 }
 
 var connect = &cobra.Command{
@@ -65,6 +66,41 @@ var connectBrokers = &cobra.Command{
 				}
 			} else {
 				fmt.Printf("Connected %s again, removed unreachable routes.\n", pod)
+			}
+		}
+	},
+}
+
+var connectGateway = &cobra.Command{
+	Use:   "gateway",
+	Short: "Connect Zeebe Gateway",
+	Long:  `Connect all Zeebe Gateway again, after it has been disconnected.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		internal.Verbosity = Verbose
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		// No patch is need, since we expect that disconnect was executed before.
+		// If not all fine and the pods are already connected.
+
+		// We run connect on all nodes
+		brokerPods, err := k8Client.GetBrokerPods()
+		ensureNoError(err)
+
+		if len(brokerPods.Items) <= 0 {
+			panic(fmt.Sprintf("Expected to find broker(s) in current namespace %s, but found nothing\n", k8Client.GetCurrentNamespace()))
+		}
+
+		gatewayPod := getGatewayPod(k8Client)
+
+		for _, brokerPod := range brokerPods.Items {
+			err = internal.MakeIpReachable(k8Client, gatewayPod.Name, brokerPod.Status.PodIP)
+			if err != nil {
+				if Verbose {
+					fmt.Printf("Error on connection gateway: %s. Error: %s\n", gatewayPod.Name, err.Error())
+				}
+			} else {
+				fmt.Printf("Connected %s again with %s, removed unreachable routes.\n", gatewayPod.Name, brokerPod.Name)
 			}
 		}
 	},

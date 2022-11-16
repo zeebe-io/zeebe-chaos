@@ -134,3 +134,21 @@ func MakeIpReachableForPod(k8Client K8Client, podName string) error {
 
 	return nil
 }
+
+func MakeIpReachable(k8Client K8Client, podName string, ip string) error {
+	// We try to reduce the system output in order to not break the execution. There is a limit for the sout for exec,
+	// for more details see remotecommand.StreamOptions
+
+	err := k8Client.ExecuteCmdOnPod([]string{"sh", "-c", "command -v ip"}, podName)
+	if err != nil && strings.Contains(err.Error(), "exit code 127") {
+		return errors.New("Execution exited with exit code 127 (Command not found). It is likely that the broker was not disconnected or restarted in between.")
+	}
+
+	var buf bytes.Buffer
+	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", fmt.Sprintf("ip route del unreachable %s", ip)}, podName, &buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
