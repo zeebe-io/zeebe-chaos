@@ -123,6 +123,30 @@ func Test_GetNoBrokerPodNames(t *testing.T) {
 	require.Empty(t, names)
 }
 
+func Test_GetSelfManagedGatewayPod(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// gateway
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(t, selector, "gateway")
+
+	// broker
+	selector, err = metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")
+
+	// when
+	pods, err := k8Client.GetGatewayPods()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, pods)
+	require.NotEmpty(t, pods)
+	assert.Equal(t, "gateway", pods.Items[0].Name, "Expected to retrieve gateway")
+}
+
 func Test_GetSelfManagedGatewayPodNames(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
@@ -170,6 +194,44 @@ func Test_GetSaasGatewayPodNames(t *testing.T) {
 	require.NotNil(t, names)
 	require.NotEmpty(t, names)
 	assert.Equal(t, "gateway", names[0], "Expected to retrieve gateway")
+}
+
+func Test_GetSaaSGatewayPod(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+
+	// gateway
+	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(t, selector, "gateway")
+
+	// broker
+	selector, err = metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreatePodWithLabelsAndName(t, selector, "broker")
+
+	// when
+	pods, err := k8Client.GetGatewayPods()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, pods)
+	require.NotEmpty(t, pods)
+	assert.Equal(t, "gateway", pods.Items[0].Name, "Expected to retrieve gateway")
+}
+
+func Test_GetNoGatewayPods(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	pods, err := k8Client.GetGatewayPods()
+
+	// then
+	require.NoError(t, err)
+	require.NotNil(t, pods)
+	require.Empty(t, pods)
 }
 
 func Test_GetNoGatewayPodNames(t *testing.T) {
