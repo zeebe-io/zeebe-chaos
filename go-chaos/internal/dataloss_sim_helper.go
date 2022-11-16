@@ -49,6 +49,8 @@ func (c K8Client) ApplyInitContainerPatch() error {
 		return err
 	}
 
+	c.PauseReconciliation()
+
 	// Adds init container patch
 	patch := []byte(`{
   "spec": {
