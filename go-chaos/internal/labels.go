@@ -26,8 +26,8 @@ func getSelfManagedZeebeStatefulSetLabels() string {
 	return labels.Set(labelSelector.MatchLabels).String()
 }
 
-func getBrokerLabels(saasEnv bool) string {
-	if saasEnv {
+func (c K8Client) getBrokerLabels() string {
+	if c.SaaSEnv {
 		return getSaasBrokerLabels()
 	} else {
 		return getSelfManagedBrokerLabels()
@@ -67,8 +67,8 @@ func getSaasGatewayLabels() string {
 	return labels.Set(labelSelector.MatchLabels).String()
 }
 
-func getGatewayLabels(saasEnv bool) string {
-	if saasEnv {
+func (c K8Client) getGatewayLabels() string {
+	if c.SaaSEnv {
 		return getSaasGatewayLabels()
 	} else {
 		return getSelfManagedGatewayLabels()
