@@ -59,6 +59,7 @@ type ZbChaosVariables struct {
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
+	// the credentials are set via env var's
 	credsProvider, err := zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{})
 	if err != nil {
 		panic(err)
