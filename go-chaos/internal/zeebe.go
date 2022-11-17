@@ -169,6 +169,72 @@ func DeployModel(client zbc.Client, fileName string) (int64, error) {
 	return processDefinitionKey, nil
 }
 
+type models struct {
+	bpmnBytes    []byte
+	bpmnFileName string
+	dmnBytes     []byte
+	dmnFileName  string
+}
+
+func readModels(bpmnFileName string, dmnFileName string) (*models, error) {
+	bpmnBytes, err := bpmnContent.ReadFile(bpmnFileName)
+	if err != nil {
+		return nil, err
+	}
+
+	dmnBytes, err := bpmnContent.ReadFile(dmnFileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models{bpmnBytes: bpmnBytes, dmnBytes: dmnBytes, bpmnFileName: bpmnFileName, dmnFileName: dmnFileName}, nil
+}
+
+func deployModels(client zbc.Client, models *models) error {
+	_, err :=
+		client.NewDeployResourceCommand().AddResource(models.bpmnBytes, models.bpmnFileName).AddResource(models.dmnBytes, models.dmnFileName).Send(context.TODO())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeployDifferentVersions(client zbc.Client, versions int32) error {
+	firstModel, err := readModels("bpmn/multi-version/multiVersionModel.bpmn", "bpmn/multi-version/fancyDecision.dmn")
+	if err != nil {
+		return err
+	}
+
+	secondModel, err := readModels("bpmn/multi-version/multiVersionModel_v2.bpmn", "bpmn/multi-version/fancyDecision_v2.dmn")
+	if err != nil {
+		return err
+	}
+
+	if Verbosity {
+		fmt.Printf("Deploy %d versions of different type of models.\n", versions)
+	}
+
+	count := int32(0)
+	for count < versions {
+		err := deployModels(client, firstModel)
+		if err != nil {
+			return err
+		}
+
+		err = deployModels(client, secondModel)
+		if err != nil {
+			return err
+		}
+
+		count += 2
+		if Verbosity {
+			fmt.Printf("Deployed [%d/%d] versions.\n", count, versions)
+		}
+	}
+
+	return nil
+}
+
 // if file not exist we read our default BPMN process model and return the content
 func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
 	var bpmnBytes []byte
