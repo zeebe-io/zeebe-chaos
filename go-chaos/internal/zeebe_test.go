@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -327,3 +328,4 @@ func Test_ShouldReadGivenFile(t *testing.T) {
 	err = os.RemoveAll(fileName)
 	assert.NoError(t, err)
 }
+
