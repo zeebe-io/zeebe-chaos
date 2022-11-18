@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ExtractNodeId(t *testing.T) {
@@ -329,3 +329,16 @@ func Test_ShouldReadGivenFile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+
+func Test_ShouldDeployDefaultCountOfModels(t *testing.T) {
+	// given
+	client := CreateFakeZeebeClient()
+
+	// when
+	err := DeployDifferentVersions(client, 10)
+
+	// then
+	require.NoError(t, err)
+
+	assert.Equal(t, 10, client.GetDeploymentCount())
+}

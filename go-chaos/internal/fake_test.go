@@ -6,23 +6,32 @@ import (
 	"github.com/camunda/zeebe/clients/go/v8/pkg/commands"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"google.golang.org/grpc"
 )
 
 type FakeZeebeClient struct {
-	commands.DeployCommand
+	commands.DeployResourceCommand
 	fakeGatewayClient pb.GatewayClient
+
+	deployments map[string][]byte
 }
 
 type FakeGatewayClient struct {
 
 }
 
-func (f FakeZeebeClient) AddResource(definition []byte, name string) *commands.DeployCommand {
-	
-	return &f.DeployCommand
+func (f *FakeZeebeClient) AddResource(definition []byte, name string) *commands.DeployResourceCommand {
+
+	f.deployments[name] = definition
+	return &f.DeployResourceCommand
 }
+
+
+func (f *FakeZeebeClient) Send(ctx context.Context) (*pb.DeployResourceResponse, error) {
+	// simplified for now - need to be extended later (add keys etc.)
+	return &pb.DeployResourceResponse{}, nil
+}
+
 
 func (f FakeGatewayClient) ActivateJobs(ctx context.Context, in *pb.ActivateJobsRequest, opts ...grpc.CallOption) (pb.Gateway_ActivateJobsClient, error) {
 	panic("implement me")
@@ -85,11 +94,16 @@ func (f FakeZeebeClient) NewTopologyCommand() *commands.TopologyCommand {
 }
 
 func (f FakeZeebeClient) NewDeployProcessCommand() *commands.DeployCommand {
-	return &f.DeployCommand
+	panic("implement me")
+}
+
+type FakeDeployResourceCommand struct {
+	commands.DeployResourceCommand
 }
 
 func (f FakeZeebeClient) NewDeployResourceCommand() *commands.DeployResourceCommand {
-	panic("implement me")
+	// todo
+	return &f.DeployResourceCommand
 }
 
 func (f FakeZeebeClient) NewCreateInstanceCommand() commands.CreateInstanceCommandStep1 {
@@ -141,10 +155,14 @@ func (f FakeZeebeClient) Close() error {
 }
 
 
-func CreateFakeZeebeClient() zbc.Client {
+func CreateFakeZeebeClient() FakeZeebeClient {
 	return FakeZeebeClient{fakeGatewayClient: CreateGatewayClient()}
 }
 
 func CreateGatewayClient() pb.GatewayClient {
 	return FakeGatewayClient{}
+}
+
+func (f FakeZeebeClient) GetDeploymentCount() int {
+	return len(f.deployments)
 }
