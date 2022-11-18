@@ -66,7 +66,7 @@ func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
 	return names, nil
 }
 
-func (c K8Client) GetGatewayPodNames() ([]string, error) {
+func (c K8Client) GetGatewayPods() (*v1.PodList, error) {
 	listOptions := metav1.ListOptions{
 		LabelSelector: c.getGatewayLabels(),
 		// we check for running gateways, since terminated gateways can be lying around
@@ -74,6 +74,15 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	}
 
 	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
+func (c K8Client) GetGatewayPodNames() ([]string, error) {
+	list, err := c.GetGatewayPods()
 	if err != nil {
 		return nil, err
 	}
