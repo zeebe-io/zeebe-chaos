@@ -26,6 +26,14 @@ func getSelfManagedZeebeStatefulSetLabels() string {
 	return labels.Set(labelSelector.MatchLabels).String()
 }
 
+func (c K8Client) getBrokerLabels() string {
+	if c.SaaSEnv {
+		return getSaasBrokerLabels()
+	} else {
+		return getSelfManagedBrokerLabels()
+	}
+}
+
 func getSelfManagedBrokerLabels() string {
 	labelSelector := metav1.LabelSelector{
 		MatchLabels: map[string]string{"app.kubernetes.io/component": "zeebe-broker"},
@@ -57,4 +65,12 @@ func getSaasGatewayLabels() string {
 		MatchLabels: map[string]string{"app.kubernetes.io/app": "zeebe", "app.kubernetes.io/component": "standalone-gateway"},
 	}
 	return labels.Set(labelSelector.MatchLabels).String()
+}
+
+func (c K8Client) getGatewayLabels() string {
+	if c.SaaSEnv {
+		return getSaasGatewayLabels()
+	} else {
+		return getSelfManagedGatewayLabels()
+	}
 }

@@ -16,8 +16,9 @@ package internal
 
 import (
 	"fmt"
-	"k8s.io/client-go/dynamic"
 	"path/filepath"
+
+	"k8s.io/client-go/dynamic"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -33,6 +34,7 @@ type K8Client struct {
 	ClientConfig  clientcmd.ClientConfig
 	DynamicClient dynamic.Interface
 	Clientset     kubernetes.Interface
+	SaaSEnv       bool
 }
 
 // Returns the current namespace, defined in the kubeconfig
@@ -72,7 +74,19 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	if err != nil {
 		return K8Client{}, err
 	}
-	return K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}, nil
+
+	client := K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}
+	client.SaaSEnv = client.isSaaSEnvironment()
+
+	if Verbosity {
+		if client.SaaSEnv {
+			fmt.Println("Running experiment in SaaS environment.")
+		} else {
+			fmt.Println("Running experiment in self-managed environment.")
+		}
+	}
+
+	return client, nil
 }
 
 type KubernetesSettings struct {

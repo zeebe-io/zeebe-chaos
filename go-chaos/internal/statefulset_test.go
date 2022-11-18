@@ -41,6 +41,7 @@ func Test_ShouldReturnSelfManagedStatefulSet(t *testing.T) {
 func Test_ShouldReturnSaaSStatefulSet(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 	k8Client.CreateStatefulSetWithLabelsAndName(t, &metav1.LabelSelector{}, "zeebe")
 
 	// when
@@ -55,6 +56,20 @@ func Test_ShouldReturnSaaSStatefulSet(t *testing.T) {
 func Test_ShouldReturnErrorForNonExistingStatefulSet(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
+
+	// when
+	statefulset, err := k8Client.GetZeebeStatefulSet()
+
+	// then
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not uniquely identify the stateful set for Zeebe")
+	assert.Nil(t, statefulset)
+}
+
+func Test_ShouldReturnErrorForNonExistingStatefulSetInSaaS(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 
 	// when
 	statefulset, err := k8Client.GetZeebeStatefulSet()

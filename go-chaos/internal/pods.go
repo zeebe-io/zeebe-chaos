@@ -35,7 +35,7 @@ import (
 
 func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
 	listOptions := metav1.ListOptions{
-		LabelSelector: getSelfManagedBrokerLabels(),
+		LabelSelector: c.getBrokerLabels(),
 	}
 
 	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
@@ -43,13 +43,7 @@ func (c K8Client) GetBrokerPods() (*v1.PodList, error) {
 		return nil, err
 	}
 
-	if list != nil && len(list.Items) > 0 {
-		return list, err
-	}
-
-	// lets check for SaaS setup
-	listOptions.LabelSelector = getSaasBrokerLabels()
-	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	return list, err
 }
 
 func (c K8Client) GetBrokerPodNames() ([]string, error) {
@@ -74,7 +68,7 @@ func (c K8Client) extractPodNames(list *v1.PodList) ([]string, error) {
 
 func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	listOptions := metav1.ListOptions{
-		LabelSelector: getSelfManagedGatewayLabels(),
+		LabelSelector: c.getGatewayLabels(),
 		// we check for running gateways, since terminated gateways can be lying around
 		FieldSelector: "status.phase=Running",
 	}
@@ -85,17 +79,7 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	}
 
 	if list == nil || len(list.Items) == 0 {
-		// lets check for SaaS setup
-		listOptions.LabelSelector = getSaasGatewayLabels()
-		list, err = c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
-		if err != nil {
-			return nil, err
-		}
-
-		if list == nil || len(list.Items) == 0 {
-			// maybe we have an embedded gateway setup
-			return c.GetBrokerPodNames()
-		}
+		return c.GetBrokerPodNames()
 	}
 
 	return c.extractPodNames(list)

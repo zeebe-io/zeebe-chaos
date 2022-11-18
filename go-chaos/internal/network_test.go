@@ -26,6 +26,7 @@ import (
 func Test_ShouldApplyNetworkPatchOnStatefulSet(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 	k8Client.CreateStatefulSetWithLabelsAndName(t, &metav1.LabelSelector{}, "zeebe")
 
 	// when
@@ -44,7 +45,7 @@ func Test_ShouldApplyNetworkPatchOnStatefulSet(t *testing.T) {
 func Test_ShouldApplyNetworkPatchOnDeployment(t *testing.T) {
 	// given
 	k8Client := CreateFakeClient()
-	selector, err := metav1.ParseToLabelSelector(getSaasGatewayLabels())
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
 	require.NoError(t, err)
 	k8Client.CreateDeploymentWithLabelsAndName(t, selector, "gateway")
 

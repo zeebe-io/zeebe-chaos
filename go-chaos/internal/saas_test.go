@@ -14,15 +14,29 @@
 
 package internal
 
-import "github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
+import (
+	"testing"
 
-// defines whether the functions should print verbose output
-var Verbosity = false
+	"github.com/stretchr/testify/assert"
+)
 
-// defines if a custom kube config should be used instead of the default one found by k8s
-var KubeConfigPath string
+func Test_ShouldReturnTrueWhenCRDDeployed(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
 
-// sets the namespace to be used instead of the namespace from the current kube context
-var Namespace string
+	// when
+	isSaaSEnvironment := k8Client.isSaaSEnvironment()
 
-var ZeebeClientCredential zbc.CredentialsProvider
+	assert.True(t, isSaaSEnvironment)
+}
+
+func Test_ShouldReturnFalseWhenNoCRDDeployed(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	isSaaSEnvironment := k8Client.isSaaSEnvironment()
+
+	assert.False(t, isSaaSEnvironment)
+}
