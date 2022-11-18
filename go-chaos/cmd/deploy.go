@@ -64,7 +64,7 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 
 		if len(processModelPath) == 0 {
 			// deploy multi version
-			err := internal.DeployDifferentVersions(zbClient, int32(multipleVersions))
+			err := internal.DeployDifferentVersions(zbClient.NewDeployResourceCommand(), int32(multipleVersions))
 			if err != nil {
 				panic(err.Error())
 			}

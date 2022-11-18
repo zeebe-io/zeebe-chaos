@@ -190,16 +190,22 @@ func readModels(bpmnFileName string, dmnFileName string) (*models, error) {
 	return &models{bpmnBytes: bpmnBytes, dmnBytes: dmnBytes, bpmnFileName: bpmnFileName, dmnFileName: dmnFileName}, nil
 }
 
-func deployModels(client zbc.Client, models *models) error {
+func deployModels(deployer Deployer, models *models) error {
 	_, err :=
-		client.NewDeployResourceCommand().AddResource(models.bpmnBytes, models.bpmnFileName).AddResource(models.dmnBytes, models.dmnFileName).Send(context.TODO())
+		deployer.AddResource(models.bpmnBytes, models.bpmnFileName).AddResource(models.dmnBytes, models.dmnFileName).Send(context.TODO())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func DeployDifferentVersions(client zbc.Client, versions int32) error {
+type Deployer interface {
+	AddResource(definition []byte, name string) *Deployer
+	Send(ctx context.Context) (*pb.DeployResourceResponse, error)
+}
+
+
+func DeployDifferentVersions(deployer Deployer, versions int32) error {
 	firstModel, err := readModels("bpmn/multi-version/multiVersionModel.bpmn", "bpmn/multi-version/fancyDecision.dmn")
 	if err != nil {
 		return err
@@ -216,12 +222,12 @@ func DeployDifferentVersions(client zbc.Client, versions int32) error {
 
 	count := int32(0)
 	for count < versions {
-		err := deployModels(client, firstModel)
+		err := deployModels(deployer, firstModel)
 		if err != nil {
 			return err
 		}
 
-		err = deployModels(client, secondModel)
+		err = deployModels(deployer, secondModel)
 		if err != nil {
 			return err
 		}
