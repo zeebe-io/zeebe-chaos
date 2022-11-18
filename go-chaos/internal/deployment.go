@@ -36,7 +36,7 @@ func (c K8Client) getGatewayDeployment() (*v12.Deployment, error) {
 	// here it is currently hard to distingush between not existing and embedded gateway;
 	// since we don't use embedded gateway in our current chaos setup I would not support it right now here
 	if deploymentList == nil || len(deploymentList.Items) <= 0 {
-		return nil, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found!", c.GetCurrentNamespace()))
+		return nil, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found! The embedded gateway is not supported.", c.GetCurrentNamespace()))
 	}
 	return &deploymentList.Items[0], err
 }
