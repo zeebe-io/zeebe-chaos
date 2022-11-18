@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"os"
+
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
@@ -28,6 +29,7 @@ var (
 	role               string
 	nodeId             int
 	processModelPath   string
+	multipleVersions   int
 	variables          string
 	msgName            string
 	awaitResult        bool
