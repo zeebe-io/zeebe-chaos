@@ -15,6 +15,7 @@
 package internal
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -95,4 +96,20 @@ func Test_ShouldReturnSaaSGatewayDeployment(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assert.Equal(t, "gateway", deployment.Name)
+}
+
+func Test_ShouldDeployWorkerDeployment(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	err := k8Client.CreateWorkerDeployment()
+
+	// then
+	require.NoError(t, err)
+	deploymentList, err := k8Client.Clientset.AppsV1().Deployments(k8Client.GetCurrentNamespace()).List(context.TODO(), metav1.ListOptions{})
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, len(deploymentList.Items))
+	assert.Equal(t, "worker", deploymentList.Items[0].Name)
 }

@@ -32,6 +32,8 @@ func init() {
 		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
 
 	deployProcessModelCmd.MarkFlagsMutuallyExclusive("processModelPath", "multipleVersions")
+
+	deployCmd.AddCommand(deployWorkerCmd)
 }
 
 var deployCmd = &cobra.Command{
@@ -48,34 +50,42 @@ Can be used to deploy a specific process model or multiple version of a default 
 Defaults to the later, which is useful for experimenting with deployment distribution.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
+		ensureNoError(err)
 
 		port := 26500
 		closeFn := k8Client.MustGatewayPortForward(port, port)
 		defer closeFn()
 
 		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err.Error())
-		}
+		ensureNoError(err)
 		defer zbClient.Close()
 
 		if len(processModelPath) == 0 {
 			// deploy multi version
 			err := internal.DeployDifferentVersions(zbClient, int32(multipleVersions))
-			if err != nil {
-				panic(err.Error())
-			}
+			ensureNoError(err)
 			fmt.Printf("Deployed different process models of different types and versions to zeebe!\n")
 		} else {
 			processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
-			if err != nil {
-				panic(err.Error())
-			}
+			ensureNoError(err)
 
 			fmt.Printf("Deployed given process model %s, under key %d!\n", processModelPath, processDefinitionKey)
 		}
+	},
+}
+
+var deployWorkerCmd = &cobra.Command{
+	Use:   "worker",
+	Short: "Deploy a worker deployment to the Zeebe cluster",
+	Long: `Deploy a worker deployment to the Zeebe cluster. 
+The workers can be used as part of some chaos experiments to complete process instances etc.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		err = k8Client.CreateWorkerDeployment()
+		ensureNoError(err)
+
+		fmt.Printf("Worker successfully deployed to the current namespace: %s\n", k8Client.GetCurrentNamespace())
 	},
 }
