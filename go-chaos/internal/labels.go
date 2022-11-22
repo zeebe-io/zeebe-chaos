@@ -74,3 +74,10 @@ func (c K8Client) getGatewayLabels() string {
 		return getSelfManagedGatewayLabels()
 	}
 }
+
+func (c K8Client) getWorkerLabels() string {
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{"app": "worker"},
+	}
+	return labels.Set(labelSelector.MatchLabels).String()
+}
