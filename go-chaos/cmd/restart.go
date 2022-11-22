@@ -15,11 +15,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 func init() {
@@ -66,28 +64,6 @@ var restartWorkerCmd = &cobra.Command{
 	Short: "Restart a Zeebe worker",
 	Long:  `Restart a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		workerPods, err := k8Client.GetWorkerPods()
-		ensureNoError(err)
-
-		if workerPods == nil || len(workerPods.Items) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		if all {
-			for _, worker := range workerPods.Items {
-				err = k8Client.RestartPod(worker.Name)
-				ensureNoError(err)
-				fmt.Printf("Restart %s\n", worker.Name)
-			}
-		} else {
-			workerPod := workerPods.Items[0]
-			err = k8Client.RestartPod(workerPod.Name)
-			ensureNoError(err)
-
-			fmt.Printf("Restart %s\n", workerPod.Name)
-		}
+		restartWorker(all, "Restarted", nil)
 	},
 }

@@ -116,28 +116,36 @@ var terminateWorkerCmd = &cobra.Command{
 	Short: "Terminates a Zeebe worker",
 	Long:  `Terminates a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		workerPods, err := k8Client.GetWorkerPods()
-		ensureNoError(err)
-
-		if workerPods == nil || len(workerPods.Items) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		if all {
-			for _, worker := range workerPods.Items {
-				err = k8Client.TerminatePod(worker.Name)
-				ensureNoError(err)
-				fmt.Printf("Terminated %s\n", worker.Name)
-			}
-		} else {
-			workerPod := workerPods.Items[0]
-			err = k8Client.TerminatePod(workerPod.Name)
-			ensureNoError(err)
-
-			fmt.Printf("Terminated %s\n", workerPod.Name)
-		}
+		gracePeriodSec := int64(0)
+		restartWorker(all, "Terminated", &gracePeriodSec)
 	},
+}
+
+// Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
+// GracePeriod (in second) can be negative, which would mean use default.
+// The actionName specifies whether it was restarted or terminated to log the right thing.
+func restartWorker(all bool, actionName string, gracePeriod *int64) {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	workerPods, err := k8Client.GetWorkerPods()
+	ensureNoError(err)
+
+	if workerPods == nil || len(workerPods.Items) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+	}
+
+	if all {
+		for _, worker := range workerPods.Items {
+			err = k8Client.RestartPodWithGracePeriod(worker.Name, gracePeriod)
+			ensureNoError(err)
+			fmt.Printf("%s %s\n", actionName, worker.Name)
+		}
+	} else {
+		workerPod := workerPods.Items[0]
+		err = k8Client.RestartPodWithGracePeriod(workerPod.Name, gracePeriod)
+		ensureNoError(err)
+
+		fmt.Printf("%s %s\n", actionName, workerPod.Name)
+	}
 }
