@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -34,6 +35,9 @@ func init() {
 	if err := restartCmd.MarkFlagRequired("partitionId"); err != nil {
 		panic(err)
 	}
+
+	restartCmd.AddCommand(restartWorkerCmd)
+	restartWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be restarted")
 }
 
 var restartCmd = &cobra.Command{
@@ -67,5 +71,36 @@ var restartCmd = &cobra.Command{
 
 		fmt.Printf("\nDeleted %s", broker)
 		fmt.Println()
+	},
+}
+
+var restartWorkerCmd = &cobra.Command{
+	Use:   "worker",
+	Short: "Restart a Zeebe worker",
+	Long:  `Restart a Zeebe worker.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		workerPods, err := k8Client.GetWorkerPods()
+		ensureNoError(err)
+
+		if workerPods == nil || len(workerPods.Items) <= 0 {
+			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+		}
+
+		if all {
+			for _, worker := range workerPods.Items {
+				err = k8Client.RestartPod(worker.Name)
+				ensureNoError(err)
+				fmt.Printf("Restart %s\n", worker.Name)
+			}
+		} else {
+			workerPod := workerPods.Items[0]
+			err = k8Client.RestartPod(workerPod.Name)
+			ensureNoError(err)
+
+			fmt.Printf("Restart %s\n", workerPod.Name)
+		}
 	},
 }
