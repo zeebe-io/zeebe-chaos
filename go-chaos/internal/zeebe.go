@@ -22,6 +22,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/camunda/zeebe/clients/go/v8/pkg/commands"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"google.golang.org/grpc"
@@ -255,6 +256,67 @@ func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
 	}
 
 	return bpmnBytes, fileName, nil
+}
+
+type ProcessInstanceCreationOptions struct {
+	Version          int32
+	BpmnProcessId    string
+	ProcessModelPath string
+	Variables        string
+	AwaitResult      bool
+}
+
+func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {
+	var processInstanceCreator ProcessInstanceCreator
+	if options.Version > 0 {
+		if Verbosity {
+			fmt.Printf("Create process instance with BPMN process ID %s and version %d [variables: '%s', awaitResult: %t]\n",
+				options.BpmnProcessId, options.Version, options.Variables, options.AwaitResult)
+		}
+
+		processInstanceCreator = func() (int64, error) {
+			commandStep3 := zbClient.NewCreateInstanceCommand().BPMNProcessId(options.BpmnProcessId).Version(int32(options.Version))
+			return createInstanceWithCommand(commandStep3, options)
+		}
+	} else {
+		processDefinitionKey, err := DeployModel(zbClient, options.ProcessModelPath)
+		if err != nil {
+			return nil, err
+		}
+
+		if Verbosity {
+			fmt.Printf("Create process instance with defition key %d [variables: '%s', awaitResult: %t]\n", processDefinitionKey, options.Variables, options.AwaitResult)
+		}
+
+		processInstanceCreator = func() (int64, error) {
+			commandStep3 := zbClient.NewCreateInstanceCommand().ProcessDefinitionKey(processDefinitionKey)
+
+			return createInstanceWithCommand(commandStep3, options)
+		}
+	}
+	return processInstanceCreator, nil
+}
+
+func createInstanceWithCommand(commandStep3 commands.CreateInstanceCommandStep3, options ProcessInstanceCreationOptions) (int64, error) {
+	if len(options.Variables) != 0 {
+		_, err := commandStep3.VariablesFromString(options.Variables)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if options.AwaitResult {
+		instanceWithResultResponse, err := commandStep3.WithResult().Send(context.TODO())
+		if err != nil {
+			return 0, err
+		}
+		return instanceWithResultResponse.ProcessInstanceKey, nil
+	}
+	instanceResponse, err := commandStep3.Send(context.TODO())
+	if err != nil {
+		return 0, err
+	}
+	return instanceResponse.ProcessInstanceKey, nil
 }
 
 type ProcessInstanceCreator func() (int64, error)
