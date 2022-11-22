@@ -85,28 +85,30 @@ var terminateGatewayCmd = &cobra.Command{
 	Short: "Terminates a Zeebe gateway",
 	Long:  `Terminates a Zeebe gateway.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		gatewayPodNames, err := k8Client.GetGatewayPodNames()
-		if err != nil {
-			panic(err)
-		}
-
-		if len(gatewayPodNames) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		gatewayPod := gatewayPodNames[0]
-		err = k8Client.TerminatePod(gatewayPod)
-		if err != nil {
-			panic(err)
-		}
-
+		gracePeriodSec := int64(0)
+		gatewayPod := restartGateway(&gracePeriodSec)
 		fmt.Printf("Terminated %s\n", gatewayPod)
 	},
+}
+
+// Restart a gateway pod. The pod is the first from a list of existing pods.
+// GracePeriod (in second) can be negative, which would mean use default.
+// Returns the gateway which has been restarted
+func restartGateway(gracePeriod *int64) string {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	gatewayPodNames, err := k8Client.GetGatewayPodNames()
+	ensureNoError(err)
+
+	if len(gatewayPodNames) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+	}
+
+	gatewayPod := gatewayPodNames[0]
+	err = k8Client.RestartPodWithGracePeriod(gatewayPod, gracePeriod)
+	ensureNoError(err)
+	return gatewayPod
 }
 
 var terminateWorkerCmd = &cobra.Command{
