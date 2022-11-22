@@ -58,6 +58,27 @@ var terminateBrokerCmd = &cobra.Command{
 	},
 }
 
+var terminateGatewayCmd = &cobra.Command{
+	Use:   "gateway",
+	Short: "Terminates a Zeebe gateway",
+	Long:  `Terminates a Zeebe gateway.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		gracePeriodSec := int64(0)
+		gatewayPod := restartGateway(&gracePeriodSec)
+		fmt.Printf("Terminated %s\n", gatewayPod)
+	},
+}
+
+var terminateWorkerCmd = &cobra.Command{
+	Use:   "worker",
+	Short: "Terminates a Zeebe worker",
+	Long:  `Terminates a Zeebe worker.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		gracePeriodSec := int64(0)
+		restartWorker(all, "Terminated", &gracePeriodSec)
+	},
+}
+
 // Restart a broker pod. Pod is identified either by nodeId or by partitionId and role.
 // GracePeriod (in second) can be negative, which would mean use default.
 // Returns the broker which has been restarted
@@ -80,17 +101,6 @@ func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64)
 	return brokerPod.Name
 }
 
-var terminateGatewayCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "Terminates a Zeebe gateway",
-	Long:  `Terminates a Zeebe gateway.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gracePeriodSec := int64(0)
-		gatewayPod := restartGateway(&gracePeriodSec)
-		fmt.Printf("Terminated %s\n", gatewayPod)
-	},
-}
-
 // Restart a gateway pod. The pod is the first from a list of existing pods.
 // GracePeriod (in second) can be negative, which would mean use default.
 // Returns the gateway which has been restarted
@@ -109,16 +119,6 @@ func restartGateway(gracePeriod *int64) string {
 	err = k8Client.RestartPodWithGracePeriod(gatewayPod, gracePeriod)
 	ensureNoError(err)
 	return gatewayPod
-}
-
-var terminateWorkerCmd = &cobra.Command{
-	Use:   "worker",
-	Short: "Terminates a Zeebe worker",
-	Long:  `Terminates a Zeebe worker.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gracePeriodSec := int64(0)
-		restartWorker(all, "Terminated", &gracePeriodSec)
-	},
 }
 
 // Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
