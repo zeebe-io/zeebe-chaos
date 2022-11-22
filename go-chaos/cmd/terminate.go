@@ -29,10 +29,11 @@ var (
 func init() {
 	rootCmd.AddCommand(terminateCmd)
 
-	terminateCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
-	terminateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	terminateCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
-	terminateCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
+	terminateCmd.AddCommand(terminateBrokerCmd)
+	terminateBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
+	terminateBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	terminateBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	terminateBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
 
@@ -42,6 +43,12 @@ func init() {
 
 var terminateCmd = &cobra.Command{
 	Use:   "terminate",
+	Short: "Terminates a Zeebe node",
+	Long:  `Terminates a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
+}
+
+var terminateBrokerCmd = &cobra.Command{
+	Use:   "broker",
 	Short: "Terminates a Zeebe broker",
 	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
