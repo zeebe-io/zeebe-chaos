@@ -36,6 +36,7 @@ func init() {
 		panic(err)
 	}
 
+	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
 	restartWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be restarted")
 }
@@ -71,6 +72,35 @@ var restartCmd = &cobra.Command{
 
 		fmt.Printf("\nDeleted %s", broker)
 		fmt.Println()
+	},
+}
+
+var restartGatewayCmd = &cobra.Command{
+	Use:   "gateway",
+	Short: "Restarts a Zeebe gateway",
+	Long:  `Restarts a Zeebe gateway.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		if err != nil {
+			panic(err)
+		}
+
+		gatewayPodNames, err := k8Client.GetGatewayPodNames()
+		if err != nil {
+			panic(err)
+		}
+
+		if len(gatewayPodNames) <= 0 {
+			panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+		}
+
+		gatewayPod := gatewayPodNames[0]
+		err = k8Client.RestartPod(gatewayPod)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Restarted %s\n", gatewayPod)
 	},
 }
 
