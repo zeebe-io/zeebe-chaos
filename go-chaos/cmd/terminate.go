@@ -52,29 +52,32 @@ var terminateBrokerCmd = &cobra.Command{
 	Short: "Terminates a Zeebe broker",
 	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err.Error())
-		}
-		defer zbClient.Close()
-
-		brokerPod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
-		err = k8Client.TerminatePod(brokerPod.Name)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Printf("Terminated %s\n", brokerPod.Name)
+		gracePeriodSec := int64(0)
+		brokerName := restartBroker(nodeId, partitionId, role, &gracePeriodSec)
+		fmt.Printf("Terminated %s\n", brokerName)
 	},
+}
+
+// Restart a broker pod. Pod is identified either by nodeId or by partitionId and role.
+// GracePeriod (in second) can be negative, which would mean use default.
+// Returns the broker which has been restarted
+func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64) string {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	port := 26500
+	closeFn := k8Client.MustGatewayPortForward(port, port)
+	defer closeFn()
+
+	zbClient, err := internal.CreateZeebeClient(port)
+	ensureNoError(err)
+	defer zbClient.Close()
+
+	brokerPod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
+	err = k8Client.RestartPodWithGracePeriod(brokerPod.Name, gracePeriod)
+	ensureNoError(err)
+
+	return brokerPod.Name
 }
 
 var terminateGatewayCmd = &cobra.Command{
