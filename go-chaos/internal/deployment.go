@@ -15,13 +15,21 @@
 package internal
 
 import (
+	"bytes"
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 
 	v12 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
 )
+
+// k8Deployments holds our static k8 manifests, which are copied with the go:embed directive
+//
+//go:embed manifests/*
+var k8Deployments embed.FS
 
 func (c K8Client) getGatewayDeployment() (*v12.Deployment, error) {
 
@@ -39,4 +47,25 @@ func (c K8Client) getGatewayDeployment() (*v12.Deployment, error) {
 		return nil, errors.New(fmt.Sprintf("Expected to find standalone gateway deployment in namespace %s, but none found! The embedded gateway is not supported.", c.GetCurrentNamespace()))
 	}
 	return &deploymentList.Items[0], err
+}
+
+func (c K8Client) CreateWorkerDeployment() error {
+	workerBytes, err := k8Deployments.ReadFile("manifests/worker.yaml")
+	if err != nil {
+		return err
+	}
+
+	if Verbosity {
+		fmt.Printf("Deploy worker deployment to the current namespace: %s\n", c.GetCurrentNamespace())
+	}
+
+	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(workerBytes), 0)
+	deployment := &v12.Deployment{}
+	err = decoder.Decode(deployment)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), deployment, metav1.CreateOptions{})
+	return err
 }
