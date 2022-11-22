@@ -22,6 +22,7 @@ import (
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ExtractNodeId(t *testing.T) {
@@ -326,4 +327,55 @@ func Test_ShouldReadGivenFile(t *testing.T) {
 	assert.Equal(t, expectedBytes, fileBytes)
 	err = os.RemoveAll(fileName)
 	assert.NoError(t, err)
+}
+
+func Test_ShouldSetVersionAndProcessIdWhenUsingPICreator(t *testing.T) {
+	// given
+	options := ProcessInstanceCreationOptions{BpmnProcessId: "processId", Version: 10}
+	fakeClient := &FakeClient{}
+	creator, err := CreateProcessInstanceCreator(fakeClient, options)
+	require.NoError(t, err)
+
+	// when
+	processInstanceKey, err := creator()
+
+	// then
+	assert.Equal(t, int64(0xCAFE), processInstanceKey)
+	assert.Equal(t, int32(10), fakeClient.version)
+	assert.Equal(t, "processId", fakeClient.processId)
+}
+
+func Test_ShouldSetVariablesForVersionAndProcessIdWhenUsingPICreator(t *testing.T) {
+	// given
+	options := ProcessInstanceCreationOptions{BpmnProcessId: "processId", Version: 10, Variables: "{\"foo\":123}"}
+	fakeClient := &FakeClient{}
+	creator, err := CreateProcessInstanceCreator(fakeClient, options)
+	require.NoError(t, err)
+
+	// when
+	processInstanceKey, err := creator()
+
+	// then
+	assert.Equal(t, int64(0xCAFE), processInstanceKey)
+	assert.Equal(t, int32(10), fakeClient.version)
+	assert.Equal(t, "processId", fakeClient.processId)
+	assert.Equal(t, "{\"foo\":123}", fakeClient.vars)
+}
+
+func Test_ShouldAwaitResultForProcessInstanceWithVersionAndProcessIdWhenUsingPICreator(t *testing.T) {
+	// given
+	options := ProcessInstanceCreationOptions{BpmnProcessId: "processId", Version: 10, Variables: "{\"foo\":123}", AwaitResult: true}
+	fakeClient := &FakeClient{}
+	creator, err := CreateProcessInstanceCreator(fakeClient, options)
+	require.NoError(t, err)
+
+	// when
+	processInstanceKey, err := creator()
+
+	// then
+	assert.Equal(t, int64(0xCAFE), processInstanceKey)
+	assert.Equal(t, int32(10), fakeClient.version)
+	assert.Equal(t, "processId", fakeClient.processId)
+	assert.Equal(t, "{\"foo\":123}", fakeClient.vars)
+	assert.True(t, fakeClient.awaitResult)
 }
