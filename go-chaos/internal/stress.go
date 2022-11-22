@@ -43,7 +43,6 @@ func PutStressOnPod(k8Client K8Client, timeoutSec string, podName string, stress
 		stressCmd = append(stressCmd, "--io", "256")
 	}
 
-	// we use replace to not break the execution, since add will return an exit code > 0 if the route exist
 	err = k8Client.ExecuteCmdOnPod(stressCmd, podName)
 	if err != nil {
 		return err

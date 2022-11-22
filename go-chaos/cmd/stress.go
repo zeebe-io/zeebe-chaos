@@ -88,14 +88,6 @@ var stressGateway = &cobra.Command{
 		k8Client, err := internal.CreateK8Client()
 		ensureNoError(err)
 
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		ensureNoError(err)
-		defer zbClient.Close()
-
 		pod := getGatewayPod(k8Client)
 		fmt.Printf("Put stress on %s\n", pod.Name)
 
