@@ -22,6 +22,10 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
+var (
+	all bool
+)
+
 func init() {
 	rootCmd.AddCommand(terminateCmd)
 
@@ -31,6 +35,9 @@ func init() {
 	terminateCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
+
+	terminateCmd.AddCommand(terminateWorkerCmd)
+	terminateWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be terminated")
 }
 
 var terminateCmd = &cobra.Command{
@@ -89,5 +96,36 @@ var terminateGatewayCmd = &cobra.Command{
 		}
 
 		fmt.Printf("Terminated %s\n", gatewayPod)
+	},
+}
+
+var terminateWorkerCmd = &cobra.Command{
+	Use:   "worker",
+	Short: "Terminates a Zeebe worker",
+	Long:  `Terminates a Zeebe worker.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		workerPods, err := k8Client.GetWorkerPods()
+		ensureNoError(err)
+
+		if workerPods == nil || len(workerPods.Items) <= 0 {
+			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+		}
+
+		if all {
+			for _, worker := range workerPods.Items {
+				err = k8Client.TerminatePod(worker.Name)
+				ensureNoError(err)
+				fmt.Printf("Terminated %s\n", worker.Name)
+			}
+		} else {
+			workerPod := workerPods.Items[0]
+			err = k8Client.TerminatePod(workerPod.Name)
+			ensureNoError(err)
+
+			fmt.Printf("Terminated %s\n", workerPod.Name)
+		}
 	},
 }

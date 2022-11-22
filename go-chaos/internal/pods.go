@@ -94,6 +94,21 @@ func (c K8Client) GetGatewayPodNames() ([]string, error) {
 	return c.extractPodNames(list)
 }
 
+func (c K8Client) GetWorkerPods() (*v1.PodList, error) {
+	listOptions := metav1.ListOptions{
+		LabelSelector: c.getWorkerLabels(),
+		// we check for running workers, since terminated workers can be lying around
+		FieldSelector: "status.phase=Running",
+	}
+
+	list, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).List(context.TODO(), listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
 func (c K8Client) TerminatePod(podName string) error {
 	gracePeriodSec := int64(0)
 	options := metav1.DeleteOptions{GracePeriodSeconds: &gracePeriodSec}
