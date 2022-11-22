@@ -68,7 +68,7 @@ var restartBrokerCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("Deleted %s", broker)
+		fmt.Printf("Restarted %s", broker)
 		fmt.Println()
 	},
 }
