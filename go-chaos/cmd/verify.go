@@ -15,12 +15,9 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"time"
 
-	"github.com/camunda/zeebe/clients/go/v8/pkg/commands"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -82,60 +79,17 @@ A process model will be deployed and process instances are created until the req
 		ensureNoError(err)
 		defer zbClient.Close()
 
-		processInstanceCreator := createProcessInstanceCreator(zbClient)
+		processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
+			BpmnProcessId:    bpmnProcessId,
+			Version:          int32(version),
+			ProcessModelPath: processModelPath,
+			AwaitResult:      awaitResult,
+			Variables:        variables,
+		})
+		ensureNoError(err)
 		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), 30*time.Second)
 		ensureNoError(err)
 
 		fmt.Printf("The steady-state was successfully verified!\n")
 	},
-}
-
-func createProcessInstanceCreator(zbClient zbc.Client) internal.ProcessInstanceCreator {
-	var processInstanceCreator internal.ProcessInstanceCreator
-	if version > 0 {
-		if Verbose {
-			fmt.Printf("Create process instance with BPMN process ID %s and version %d [variables: '%s', awaitResult: %t]\n", bpmnProcessId, version, variables, awaitResult)
-		}
-
-		processInstanceCreator = func() (int64, error) {
-			commandStep3 := zbClient.NewCreateInstanceCommand().BPMNProcessId(bpmnProcessId).Version(int32(version))
-			return createInstanceWithCommand(commandStep3)
-		}
-	} else {
-		processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
-		ensureNoError(err)
-
-		if Verbose {
-			fmt.Printf("Create process instance with defition key %d [variables: '%s', awaitResult: %t]\n", processDefinitionKey, variables, awaitResult)
-		}
-
-		processInstanceCreator = func() (int64, error) {
-			commandStep3 := zbClient.NewCreateInstanceCommand().ProcessDefinitionKey(processDefinitionKey)
-
-			return createInstanceWithCommand(commandStep3)
-		}
-	}
-	return processInstanceCreator
-}
-
-func createInstanceWithCommand(commandStep3 commands.CreateInstanceCommandStep3) (int64, error) {
-	if len(variables) != 0 {
-		_, err := commandStep3.VariablesFromString(variables)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if awaitResult {
-		instanceWithResultResponse, err := commandStep3.WithResult().Send(context.TODO())
-		if err != nil {
-			return 0, err
-		}
-		return instanceWithResultResponse.ProcessInstanceKey, nil
-	}
-	instanceResponse, err := commandStep3.Send(context.TODO())
-	if err != nil {
-		return 0, err
-	}
-	return instanceResponse.ProcessInstanceKey, nil
 }
