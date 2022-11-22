@@ -27,6 +27,8 @@ func init() {
 	restartCmd.AddCommand(restartBrokerCmd)
 	restartBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
 	restartBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	restartBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
@@ -44,32 +46,8 @@ var restartBrokerCmd = &cobra.Command{
 	Short: "Restarts a Zeebe broker",
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err)
-		}
-		defer zbClient.Close()
-		broker, err := internal.GetBrokerPodNameForPartitionAndRole(k8Client, zbClient, partitionId, role)
-		if err != nil {
-			panic(err)
-		}
-
-		err = k8Client.RestartPod(broker)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Restarted %s", broker)
-		fmt.Println()
+		brokerPod := restartBroker(nodeId, partitionId, role, nil)
+		fmt.Printf("Restarted %s\n", brokerPod)
 	},
 }
 
