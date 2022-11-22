@@ -24,17 +24,9 @@ import (
 
 func init() {
 	rootCmd.AddCommand(restartCmd)
-
-	restartCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
-	restartCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-
-	if err := restartCmd.MarkFlagRequired("role"); err != nil {
-		panic(err)
-	}
-
-	if err := restartCmd.MarkFlagRequired("partitionId"); err != nil {
-		panic(err)
-	}
+	restartCmd.AddCommand(restartBrokerCmd)
+	restartBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
+	restartBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
@@ -43,6 +35,12 @@ func init() {
 
 var restartCmd = &cobra.Command{
 	Use:   "restart",
+	Short: "Restarts a Zeebe node",
+	Long:  `Restarts a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
+}
+
+var restartBrokerCmd = &cobra.Command{
+	Use:   "broker",
 	Short: "Restarts a Zeebe broker",
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -70,7 +68,7 @@ var restartCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("\nDeleted %s", broker)
+		fmt.Printf("Deleted %s", broker)
 		fmt.Println()
 	},
 }
