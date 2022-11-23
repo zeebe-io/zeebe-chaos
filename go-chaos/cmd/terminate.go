@@ -102,7 +102,7 @@ func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64)
 }
 
 // Restart a gateway pod. The pod is the first from a list of existing pods.
-// GracePeriod (in second) can be negative, which would mean use default.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
 // Returns the gateway which has been restarted
 func restartGateway(gracePeriod *int64) string {
 	k8Client, err := internal.CreateK8Client()
