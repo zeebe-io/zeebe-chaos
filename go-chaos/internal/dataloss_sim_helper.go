@@ -16,12 +16,12 @@ package internal
 
 import (
 	"context"
-	"fmt"
+	"strconv"
+
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"strconv"
 )
 
 const configMapName = "zeebe-control-pod-restart-flags"
@@ -39,13 +39,13 @@ func (c K8Client) ApplyInitContainerPatch() error {
 	// apply config map
 	err := createConfigMapForInitContainer(c)
 	if err != nil {
-		fmt.Printf("Failed to create config map %s", err)
+		InfoLogging("Failed to create config map %s", err)
 		return err
 	}
 
 	statefulSet, err := c.GetZeebeStatefulSet()
 	if err != nil {
-		fmt.Printf("Failed to get statefulset %s", err)
+		InfoLogging("Failed to get statefulset %s", err)
 		return err
 	}
 
@@ -99,11 +99,11 @@ func (c K8Client) ApplyInitContainerPatch() error {
 }`)
 	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
-		fmt.Printf("Failed to apply init container patch %s", err)
+		InfoLogging("Failed to apply init container patch %s", err)
 		return err
 	}
 	if Verbosity {
-		fmt.Printf("Applied init container patch to %s \n", statefulSet.Name)
+		InfoLogging("Applied init container patch to %s ", statefulSet.Name)
 	}
 	return err
 }
@@ -111,7 +111,7 @@ func (c K8Client) ApplyInitContainerPatch() error {
 func createConfigMapForInitContainer(c K8Client) error {
 	cm, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err == nil {
-		fmt.Printf("Config map %s already exists. Will not create again. \n", cm.Name)
+		InfoLogging("Config map %s already exists. Will not create again. ", cm.Name)
 		return nil
 	}
 
@@ -144,16 +144,16 @@ func createConfigMapForInitContainer(c K8Client) error {
 
 		_, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Create(context.TODO(), &cm, metav1.CreateOptions{})
 		if err != nil {
-			fmt.Printf("Failed to create configmap %s", err)
+			InfoLogging("Failed to create configmap %s", err)
 			return err
 		}
 		if Verbosity {
-			fmt.Printf("Created config map %s in namespace %s \n", cm.Name, c.GetCurrentNamespace())
+			InfoLogging("Created config map %s in namespace %s ", cm.Name, c.GetCurrentNamespace())
 		}
 		return nil
 	}
 
-	fmt.Printf("Failed to query configmap %s\n", err)
+	InfoLogging("Failed to query configmap %s", err)
 	return err
 }
 

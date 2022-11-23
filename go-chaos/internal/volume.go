@@ -17,7 +17,7 @@ package internal
 import (
 	"context"
 	"errors"
-	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,12 +33,12 @@ func (c K8Client) DeletePvcOfBroker(podName string) error {
 		return err
 	}
 
-	fmt.Printf("Deleting PV %s\n", pvc.Spec.VolumeName)
+	InfoLogging("Deleting PV %s", pvc.Spec.VolumeName)
 	err = c.Clientset.CoreV1().PersistentVolumes().Delete(context.TODO(), pvc.Spec.VolumeName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Deleting PVC %s in namespace %s \n", pvc.Name, c.GetCurrentNamespace())
+	InfoLogging("Deleting PVC %s in namespace %s ", pvc.Name, c.GetCurrentNamespace())
 	err = c.Clientset.CoreV1().PersistentVolumeClaims(c.GetCurrentNamespace()).Delete(context.TODO(), volume.PersistentVolumeClaim.ClaimName, metav1.DeleteOptions{})
 	if err != nil {
 		return err

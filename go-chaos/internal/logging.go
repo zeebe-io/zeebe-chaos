@@ -7,9 +7,9 @@ import (
 func VerbosityLogging(text string, a ...any) {
 	if Verbosity {
 		if JsonLogging {
-			JsonLogger.Debug().Msgf(text, a)
+			JsonLogger.Debug().Msgf(text, a...)
 		} else {
-			fmt.Printf(text, a)
+			fmt.Printf(text, a...)
 			fmt.Println()
 		}
 	}
@@ -17,10 +17,9 @@ func VerbosityLogging(text string, a ...any) {
 
 func InfoLogging(text string, a ...any) {
 	if JsonLogging {
-		JsonLogger.Debug().Msgf(text, a)
+		JsonLogger.Debug().Msgf(text, a...)
 	} else {
-		fmt.Printf(text, a)
+		fmt.Printf(text, a...)
 		fmt.Println()
 	}
 }
-

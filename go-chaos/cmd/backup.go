@@ -19,14 +19,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	apps "k8s.io/api/apps/v1"
-	core "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
@@ -350,7 +351,7 @@ func getBackupStatus(port int, backupId string) (*BackupStatus, error) {
 		return nil, err
 	}
 
-	fmt.Printf("Found backup %s with status: %s\n", backupId, backup.Status)
+	internal.InfoLogging("Found backup %s with status: %s", backupId, backup.Status)
 
 	return &backup, nil
 }

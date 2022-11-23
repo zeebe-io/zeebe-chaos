@@ -19,6 +19,7 @@ import (
 	"math"
 
 	"github.com/spf13/cobra"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 var (
@@ -36,7 +37,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version of zbchaos",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(VersionString())
+		internal.InfoLogging(VersionString())
 	},
 }
 

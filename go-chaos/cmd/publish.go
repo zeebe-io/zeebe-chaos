@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -51,14 +50,12 @@ var publishCmd = &cobra.Command{
 		correlationKey, err := internal.FindCorrelationKeyForPartition(partitionId, int(topology.PartitionsCount))
 		panicOnError(err)
 
-		if Verbose {
-			fmt.Printf("Send message '%s', with correaltion key '%s' (ASCII: %d) \n", msgName, correlationKey, int(correlationKey[0]))
-		}
+		internal.VerbosityLogging("Send message '%s', with correaltion key '%s' (ASCII: %d) ", msgName, correlationKey, int(correlationKey[0]))
 
 		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
-		fmt.Printf("Message was sent and returned key %d, which corresponds to partition: %d\n", messageResponse.Key, partitionIdFromKey)
+		internal.InfoLogging("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
 	},
 }
 

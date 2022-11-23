@@ -162,9 +162,7 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 	allRunning := true
 	for _, pod := range pods.Items {
 		if !pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
-			if Verbosity {
-				fmt.Printf("Pod %s is in phase %s, but not ready. Wait for some seconds.\n", pod.Name, pod.Status.Phase)
-			}
+			VerbosityLogging("Pod %s is in phase %s, but not ready. Wait for some seconds.", pod.Name, pod.Status.Phase)
 			allRunning = false
 			break
 		}
@@ -180,9 +178,7 @@ func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
 	}
 
 	if deployment.Status.UnavailableReplicas > 0 {
-		if Verbosity {
-			fmt.Printf("Gateway deployment not fully available. [Available replicas: %d/%d]\n", deployment.Status.AvailableReplicas, deployment.Status.Replicas)
-		}
+		VerbosityLogging("Gateway deployment not fully available. [Available replicas: %d/%d]", deployment.Status.AvailableReplicas, deployment.Status.Replicas)
 		return false, nil
 	}
 	return true, nil
@@ -222,16 +218,10 @@ func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) func() {
 	// Wait for an error or the tunnel to be ready
 	select {
 	case err = <-errChan:
-		if Verbosity {
-			fmt.Printf("\nError starting port forwarding tunnel: %s\n", err)
-		}
-
+		VerbosityLogging("\nError starting port forwarding tunnel: %s", err)
 		panic(err)
 	case <-portForwarder.Ready:
-		if Verbosity {
-			fmt.Println("Successfully created port forwarding tunnel")
-		}
-
+		VerbosityLogging("Successfully created port forwarding tunnel")
 		return func() {
 			portForwarder.Close()
 		}
@@ -248,9 +238,7 @@ func (c K8Client) createPortForwarder(localPort int, remotePort int, portForward
 
 	transport, upgrader, err := spdy.RoundTripperFor(config)
 	if err != nil {
-		if Verbosity {
-			fmt.Printf("Error creating http client: %s\n", err)
-		}
+		VerbosityLogging("Error creating http client: %s", err)
 		return nil, err
 	}
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", portForwardCreateURL)
@@ -261,9 +249,7 @@ func (c K8Client) createPortForwarder(localPort int, remotePort int, portForward
 	ports := []string{fmt.Sprintf("%d:%d", localPort, remotePort)}
 	portforwarder, err := portforward.New(dialer, ports, stopChan, readyChan, out, errOut)
 	if err != nil {
-		if Verbosity {
-			fmt.Printf("Error creating port forwarding tunnel: %s\n", err)
-		}
+		VerbosityLogging("Error creating port forwarding tunnel: %s", err)
 		return nil, err
 	}
 	return portforwarder, nil
@@ -289,9 +275,7 @@ func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
 }
 
 func (c K8Client) ExecuteCmdOnPodWriteIntoOutput(cmd []string, pod string, output io.Writer) error {
-	if Verbosity {
-		fmt.Printf("Execute %+q on pod %s\n", cmd, pod)
-	}
+	VerbosityLogging("Execute %+q on pod %s", cmd, pod)
 
 	req := c.Clientset.CoreV1().RESTClient().Post().Resource("pods").Name(pod).
 		Namespace(c.GetCurrentNamespace()).SubResource("exec")

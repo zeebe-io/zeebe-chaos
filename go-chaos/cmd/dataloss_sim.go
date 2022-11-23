@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -53,7 +52,7 @@ var prepareCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("Prepared cluster in namesapce %s\n", k8Client.GetCurrentNamespace())
+		internal.InfoLogging("Prepared cluster in namesapce %s", k8Client.GetCurrentNamespace())
 	},
 }
 
@@ -71,7 +70,7 @@ var datalossDelete = &cobra.Command{
 		pod, err := internal.GetBrokerPodForNodeId(k8Client, int32(nodeId))
 
 		if err != nil {
-			fmt.Printf("Failed to get pod with nodeId %d %s\n", nodeId, err)
+			internal.InfoLogging("Failed to get pod with nodeId %d %s", nodeId, err)
 			panic(err)
 		}
 
@@ -80,11 +79,11 @@ var datalossDelete = &cobra.Command{
 		internal.SetInitContainerBlockFlag(k8Client, nodeId, "true")
 		err = k8Client.RestartPod(pod.Name)
 		if err != nil {
-			fmt.Printf("Failed to restart pod %s\n", pod.Name)
+			internal.InfoLogging("Failed to restart pod %s", pod.Name)
 			panic(err)
 		}
 
-		fmt.Printf("Deleted pod %s in namespace %s\n", pod.Name, k8Client.GetCurrentNamespace())
+		internal.InfoLogging("Deleted pod %s in namespace %s", pod.Name, k8Client.GetCurrentNamespace())
 	},
 }
 
@@ -106,8 +105,8 @@ var datalossRecover = &cobra.Command{
 
 		err = k8Client.AwaitReadiness()
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			internal.InfoLogging("%s", err)
 		}
-		fmt.Printf("Restarted broker %d\n", nodeId)
+		internal.InfoLogging("Restarted broker %d", nodeId)
 	},
 }

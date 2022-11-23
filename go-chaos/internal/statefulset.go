@@ -17,7 +17,6 @@ package internal
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	v1 "k8s.io/api/apps/v1"
@@ -78,7 +77,7 @@ func (c K8Client) ScaleZeebeCluster(replicas int) (int, error) {
 			if err != nil {
 				return false, err
 			}
-			fmt.Printf("Waiting for %d replicas, currently at %d \n", replicas, scale.Status.Replicas)
+			InfoLogging("Waiting for %d replicas, currently at %d ", replicas, scale.Status.Replicas)
 			return scale.Status.Replicas == int32(replicas), nil
 		},
 	)

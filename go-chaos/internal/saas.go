@@ -39,9 +39,7 @@ func (c K8Client) ResumeReconciliation() error {
 // Based on https://github.com/camunda-cloud/zeebe-controller-k8s#turning-the-controller-off
 func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 	if !c.SaaSEnv {
-		if Verbosity {
-			fmt.Printf("Did not find zeebe cluster to pause reconciliation, ignoring. \n")
-		}
+		VerbosityLogging("Did not find zeebe cluster to pause reconciliation, ignoring. ")
 		return nil
 	}
 

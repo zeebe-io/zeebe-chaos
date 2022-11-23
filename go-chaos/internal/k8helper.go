@@ -15,7 +15,6 @@
 package internal
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"k8s.io/client-go/dynamic"
@@ -67,9 +66,7 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 
 	namespace, _, _ := clientConfig.Namespace()
 
-	if Verbosity {
-		fmt.Printf("Connecting to %s\n", namespace)
-	}
+	VerbosityLogging("Connecting to %s", namespace)
 	dynamicClient, err := dynamic.NewForConfig(k8ClientConfig)
 	if err != nil {
 		return K8Client{}, err
@@ -78,12 +75,10 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	client := K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}
 	client.SaaSEnv = client.isSaaSEnvironment()
 
-	if Verbosity {
-		if client.SaaSEnv {
-			fmt.Println("Running experiment in SaaS environment.")
-		} else {
-			fmt.Println("Running experiment in self-managed environment.")
-		}
+	if client.SaaSEnv {
+		VerbosityLogging("Running experiment in SaaS environment.")
+	} else {
+		VerbosityLogging("Running experiment in self-managed environment.")
 	}
 
 	return client, nil
