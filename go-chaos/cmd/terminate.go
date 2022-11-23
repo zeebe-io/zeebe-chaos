@@ -122,7 +122,7 @@ func restartGateway(gracePeriod *int64) string {
 }
 
 // Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
-// GracePeriod (in second) can be negative, which would mean use default.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
 // The actionName specifies whether it was restarted or terminated to log the right thing.
 func restartWorker(all bool, actionName string, gracePeriod *int64) {
 	k8Client, err := internal.CreateK8Client()
