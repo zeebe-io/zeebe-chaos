@@ -30,14 +30,14 @@ var (
 func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
-	verifyCmd.AddCommand(verifySteadyStateCmd)
+	verifyCmd.AddCommand(verifyInstanceCreation)
 
-	verifySteadyStateCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	verifySteadyStateCmd.Flags().StringVar(&processModelPath, "processModelPath", "", "Specify the path to a BPMN process model, which should be deployed and an instance should be created of.")
-	verifySteadyStateCmd.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
-	verifySteadyStateCmd.Flags().BoolVar(&awaitResult, "awaitResult", false, "Specify whether the completion of the created process instance should be awaited.")
-	verifySteadyStateCmd.Flags().IntVar(&version, "version", -1, "Specify the version for which the instance should be created.")
-	verifySteadyStateCmd.Flags().StringVar(&bpmnProcessId, "bpmnProcessId", "", "Specify the BPMN process ID for which the instance should be created.")
+	verifyInstanceCreation.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	verifyInstanceCreation.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
+	verifyInstanceCreation.Flags().BoolVar(&awaitResult, "awaitResult", false, "Specify whether the completion of the created process instance should be awaited.")
+
+	verifyInstanceCreation.Flags().StringVar(&bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
+	verifyInstanceCreation.Flags().IntVar(&version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
 }
 
 var verifyCmd = &cobra.Command{
@@ -62,11 +62,11 @@ var verifyReadinessCmd = &cobra.Command{
 	},
 }
 
-var verifySteadyStateCmd = &cobra.Command{
-	Use:   "steady-state",
-	Short: "Verify the steady state of the Zeebe system",
-	Long: `Verifies the steady state of the Zeebe system.
-A process model will be deployed and process instances are created until the required partition is reached.`,
+var verifyInstanceCreation = &cobra.Command{
+	Use:   "instance-creation",
+	Short: "Verify the instance creation",
+	Long: `Verifies that an instance from a specific process model can be created on a specific partition.
+Process instances are created until the required partition is reached.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		k8Client, err := internal.CreateK8Client()
 		ensureNoError(err)
@@ -80,11 +80,10 @@ A process model will be deployed and process instances are created until the req
 		defer zbClient.Close()
 
 		processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
-			BpmnProcessId:    bpmnProcessId,
-			Version:          int32(version),
-			ProcessModelPath: processModelPath,
-			AwaitResult:      awaitResult,
-			Variables:        variables,
+			BpmnProcessId: bpmnProcessId,
+			Version:       int32(version),
+			AwaitResult:   awaitResult,
+			Variables:     variables,
 		})
 		ensureNoError(err)
 		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), 30*time.Second)
