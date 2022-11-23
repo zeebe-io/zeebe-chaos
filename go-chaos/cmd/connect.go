@@ -61,9 +61,9 @@ var connectBrokers = &cobra.Command{
 		for _, pod := range podNames {
 			err = internal.MakeIpReachableForPod(k8Client, pod)
 			if err != nil {
-				internal.VerbosityLogging("Error on connection Broker: %s. Error: %s", pod, err.Error())
+				internal.LogVerbose("Error on connection Broker: %s. Error: %s", pod, err.Error())
 			} else {
-				internal.InfoLogging("Connected %s again, removed unreachable routes.", pod)
+				internal.LogInfo("Connected %s again, removed unreachable routes.", pod)
 			}
 		}
 	},
@@ -95,10 +95,10 @@ var connectGateway = &cobra.Command{
 			err = internal.MakeIpReachable(k8Client, gatewayPod.Name, brokerPod.Status.PodIP)
 			if err != nil {
 				if Verbose {
-					internal.VerbosityLogging("Error on connection gateway: %s. Error: %s", gatewayPod.Name, err.Error())
+					internal.LogVerbose("Error on connection gateway: %s. Error: %s", gatewayPod.Name, err.Error())
 				}
 			} else {
-				internal.InfoLogging("Connected %s again with %s, removed unreachable routes.", gatewayPod.Name, brokerPod.Name)
+				internal.LogInfo("Connected %s again with %s, removed unreachable routes.", gatewayPod.Name, brokerPod.Name)
 			}
 		}
 	},

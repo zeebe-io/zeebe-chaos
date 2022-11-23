@@ -39,13 +39,13 @@ func (c K8Client) ApplyInitContainerPatch() error {
 	// apply config map
 	err := createConfigMapForInitContainer(c)
 	if err != nil {
-		InfoLogging("Failed to create config map %s", err)
+		LogInfo("Failed to create config map %s", err)
 		return err
 	}
 
 	statefulSet, err := c.GetZeebeStatefulSet()
 	if err != nil {
-		InfoLogging("Failed to get statefulset %s", err)
+		LogInfo("Failed to get statefulset %s", err)
 		return err
 	}
 
@@ -99,11 +99,11 @@ func (c K8Client) ApplyInitContainerPatch() error {
 }`)
 	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
-		InfoLogging("Failed to apply init container patch %s", err)
+		LogInfo("Failed to apply init container patch %s", err)
 		return err
 	}
 	if Verbosity {
-		InfoLogging("Applied init container patch to %s ", statefulSet.Name)
+		LogInfo("Applied init container patch to %s ", statefulSet.Name)
 	}
 	return err
 }
@@ -111,7 +111,7 @@ func (c K8Client) ApplyInitContainerPatch() error {
 func createConfigMapForInitContainer(c K8Client) error {
 	cm, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Get(context.TODO(), configMapName, metav1.GetOptions{})
 	if err == nil {
-		InfoLogging("Config map %s already exists. Will not create again. ", cm.Name)
+		LogInfo("Config map %s already exists. Will not create again. ", cm.Name)
 		return nil
 	}
 
@@ -144,16 +144,16 @@ func createConfigMapForInitContainer(c K8Client) error {
 
 		_, err := c.Clientset.CoreV1().ConfigMaps(c.GetCurrentNamespace()).Create(context.TODO(), &cm, metav1.CreateOptions{})
 		if err != nil {
-			InfoLogging("Failed to create configmap %s", err)
+			LogInfo("Failed to create configmap %s", err)
 			return err
 		}
 		if Verbosity {
-			InfoLogging("Created config map %s in namespace %s ", cm.Name, c.GetCurrentNamespace())
+			LogInfo("Created config map %s in namespace %s ", cm.Name, c.GetCurrentNamespace())
 		}
 		return nil
 	}
 
-	InfoLogging("Failed to query configmap %s", err)
+	LogInfo("Failed to query configmap %s", err)
 	return err
 }
 

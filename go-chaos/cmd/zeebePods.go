@@ -39,7 +39,7 @@ var getZeebeBrokersCmd = &cobra.Command{
 		}
 
 		for _, item := range pods {
-			internal.InfoLogging("%s", item)
+			internal.LogInfo("%s", item)
 		}
 	},
 }

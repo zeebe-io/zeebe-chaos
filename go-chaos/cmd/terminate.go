@@ -54,7 +54,7 @@ var terminateBrokerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gracePeriodSec := int64(0)
 		brokerName := restartBroker(nodeId, partitionId, role, &gracePeriodSec)
-		internal.InfoLogging("Terminated %s", brokerName)
+		internal.LogInfo("Terminated %s", brokerName)
 	},
 }
 
@@ -65,7 +65,7 @@ var terminateGatewayCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gracePeriodSec := int64(0)
 		gatewayPod := restartGateway(&gracePeriodSec)
-		internal.InfoLogging("Terminated %s", gatewayPod)
+		internal.LogInfo("Terminated %s", gatewayPod)
 	},
 }
 
@@ -139,13 +139,13 @@ func restartWorker(all bool, actionName string, gracePeriod *int64) {
 		for _, worker := range workerPods.Items {
 			err = k8Client.RestartPodWithGracePeriod(worker.Name, gracePeriod)
 			ensureNoError(err)
-			internal.InfoLogging("%s %s", actionName, worker.Name)
+			internal.LogInfo("%s %s", actionName, worker.Name)
 		}
 	} else {
 		workerPod := workerPods.Items[0]
 		err = k8Client.RestartPodWithGracePeriod(workerPod.Name, gracePeriod)
 		ensureNoError(err)
 
-		internal.InfoLogging("%s %s", actionName, workerPod.Name)
+		internal.LogInfo("%s %s", actionName, workerPod.Name)
 	}
 }

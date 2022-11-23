@@ -44,7 +44,7 @@ var restartBrokerCmd = &cobra.Command{
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		brokerPod := restartBroker(nodeId, partitionId, role, nil)
-		internal.InfoLogging("Restarted %s", brokerPod)
+		internal.LogInfo("Restarted %s", brokerPod)
 	},
 }
 
@@ -54,7 +54,7 @@ var restartGatewayCmd = &cobra.Command{
 	Long:  `Restarts a Zeebe gateway.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		gatewayPod := restartGateway(nil)
-		internal.InfoLogging("Restarted %s", gatewayPod)
+		internal.LogInfo("Restarted %s", gatewayPod)
 	},
 }
 

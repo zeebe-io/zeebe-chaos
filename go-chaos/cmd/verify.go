@@ -57,7 +57,7 @@ var verifyReadinessCmd = &cobra.Command{
 		err = k8Client.AwaitReadiness()
 		ensureNoError(err)
 
-		internal.InfoLogging("All Zeebe nodes are running.")
+		internal.LogInfo("All Zeebe nodes are running.")
 	},
 }
 
@@ -88,6 +88,6 @@ Process instances are created until the required partition is reached.`,
 		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), 30*time.Second)
 		ensureNoError(err)
 
-		internal.InfoLogging("The steady-state was successfully verified!")
+		internal.LogInfo("The steady-state was successfully verified!")
 	},
 }

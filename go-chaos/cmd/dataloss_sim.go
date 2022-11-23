@@ -52,7 +52,7 @@ var prepareCmd = &cobra.Command{
 			panic(err)
 		}
 
-		internal.InfoLogging("Prepared cluster in namesapce %s", k8Client.GetCurrentNamespace())
+		internal.LogInfo("Prepared cluster in namesapce %s", k8Client.GetCurrentNamespace())
 	},
 }
 
@@ -70,7 +70,7 @@ var datalossDelete = &cobra.Command{
 		pod, err := internal.GetBrokerPodForNodeId(k8Client, int32(nodeId))
 
 		if err != nil {
-			internal.InfoLogging("Failed to get pod with nodeId %d %s", nodeId, err)
+			internal.LogInfo("Failed to get pod with nodeId %d %s", nodeId, err)
 			panic(err)
 		}
 
@@ -79,11 +79,11 @@ var datalossDelete = &cobra.Command{
 		internal.SetInitContainerBlockFlag(k8Client, nodeId, "true")
 		err = k8Client.RestartPod(pod.Name)
 		if err != nil {
-			internal.InfoLogging("Failed to restart pod %s", pod.Name)
+			internal.LogInfo("Failed to restart pod %s", pod.Name)
 			panic(err)
 		}
 
-		internal.InfoLogging("Deleted pod %s in namespace %s", pod.Name, k8Client.GetCurrentNamespace())
+		internal.LogInfo("Deleted pod %s in namespace %s", pod.Name, k8Client.GetCurrentNamespace())
 	},
 }
 
@@ -105,8 +105,8 @@ var datalossRecover = &cobra.Command{
 
 		err = k8Client.AwaitReadiness()
 		if err != nil {
-			internal.InfoLogging("%s", err)
+			internal.LogInfo("%s", err)
 		}
-		internal.InfoLogging("Restarted broker %d", nodeId)
+		internal.LogInfo("Restarted broker %d", nodeId)
 	},
 }

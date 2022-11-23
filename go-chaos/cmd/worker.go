@@ -110,7 +110,7 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 }
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
-	internal.InfoLogging("Running command with args: %v ", args)
+	internal.LogInfo("Running command with args: %v ", args)
 	rootCmd.SetArgs(args)
 	_, err := rootCmd.ExecuteContextC(ctx)
 	if err != nil {

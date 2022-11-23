@@ -69,7 +69,7 @@ var stressBroker = &cobra.Command{
 		defer zbClient.Close()
 
 		pod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
-		internal.InfoLogging("Put stress on %s", pod.Name)
+		internal.LogInfo("Put stress on %s", pod.Name)
 
 		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
 		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)
@@ -87,7 +87,7 @@ var stressGateway = &cobra.Command{
 		ensureNoError(err)
 
 		pod := getGatewayPod(k8Client)
-		internal.InfoLogging("Put stress on %s", pod.Name)
+		internal.LogInfo("Put stress on %s", pod.Name)
 
 		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
 		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)

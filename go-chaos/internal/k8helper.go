@@ -66,7 +66,7 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 
 	namespace, _, _ := clientConfig.Namespace()
 
-	VerbosityLogging("Connecting to %s", namespace)
+	LogVerbose("Connecting to %s", namespace)
 	dynamicClient, err := dynamic.NewForConfig(k8ClientConfig)
 	if err != nil {
 		return K8Client{}, err
@@ -76,9 +76,9 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	client.SaaSEnv = client.isSaaSEnvironment()
 
 	if client.SaaSEnv {
-		VerbosityLogging("Running experiment in SaaS environment.")
+		LogVerbose("Running experiment in SaaS environment.")
 	} else {
-		VerbosityLogging("Running experiment in self-managed environment.")
+		LogVerbose("Running experiment in self-managed environment.")
 	}
 
 	return client, nil

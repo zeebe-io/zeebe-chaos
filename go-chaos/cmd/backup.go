@@ -351,7 +351,7 @@ func getBackupStatus(port int, backupId string) (*BackupStatus, error) {
 		return nil, err
 	}
 
-	internal.InfoLogging("Found backup %s with status: %s", backupId, backup.Status)
+	internal.LogInfo("Found backup %s with status: %s", backupId, backup.Status)
 
 	return &backup, nil
 }

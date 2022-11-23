@@ -33,12 +33,12 @@ func (c K8Client) DeletePvcOfBroker(podName string) error {
 		return err
 	}
 
-	InfoLogging("Deleting PV %s", pvc.Spec.VolumeName)
+	LogInfo("Deleting PV %s", pvc.Spec.VolumeName)
 	err = c.Clientset.CoreV1().PersistentVolumes().Delete(context.TODO(), pvc.Spec.VolumeName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
-	InfoLogging("Deleting PVC %s in namespace %s ", pvc.Name, c.GetCurrentNamespace())
+	LogInfo("Deleting PVC %s in namespace %s ", pvc.Name, c.GetCurrentNamespace())
 	err = c.Clientset.CoreV1().PersistentVolumeClaims(c.GetCurrentNamespace()).Delete(context.TODO(), volume.PersistentVolumeClaim.ClaimName, metav1.DeleteOptions{})
 	if err != nil {
 		return err

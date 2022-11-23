@@ -84,7 +84,7 @@ var disconnectBrokers = &cobra.Command{
 		err = k8Client.ApplyNetworkPatch()
 		ensureNoError(err)
 
-		internal.VerbosityLogging("Patched statefulset")
+		internal.LogVerbose("Patched statefulset")
 
 		port := 26500
 		closeFn := k8Client.MustGatewayPortForward(port, port)
@@ -98,7 +98,7 @@ var disconnectBrokers = &cobra.Command{
 		broker2Pod := getBrokerPod(k8Client, zbClient, broker2NodeId, broker2PartitionId, broker2Role)
 
 		if broker1Pod.Name == broker2Pod.Name {
-			internal.InfoLogging("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
+			internal.LogInfo("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
 			return
 		}
 
@@ -112,11 +112,11 @@ func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId 
 	if brokerNodeId >= 0 {
 		brokerPod, err = internal.GetBrokerPodForNodeId(k8Client, int32(brokerNodeId))
 		ensureNoError(err)
-		internal.VerbosityLogging("Found Broker %s with node id %d.", brokerPod.Name, brokerNodeId)
+		internal.LogVerbose("Found Broker %s with node id %d.", brokerPod.Name, brokerNodeId)
 	} else {
 		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
 		ensureNoError(err)
-		internal.VerbosityLogging("Found Broker %s as %s for partition %d.", brokerPod.Name, role, brokerPartitionId)
+		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, role, brokerPartitionId)
 	}
 
 	return brokerPod
@@ -148,12 +148,12 @@ var disconnectGateway = &cobra.Command{
 		err = k8Client.ApplyNetworkPatch()
 		ensureNoError(err)
 
-		internal.VerbosityLogging("Patched statefulset")
+		internal.LogVerbose("Patched statefulset")
 
 		err = k8Client.ApplyNetworkPatchOnGateway()
 		ensureNoError(err)
 
-		internal.VerbosityLogging("Patched deployment")
+		internal.LogVerbose("Patched deployment")
 
 		err = k8Client.AwaitReadiness()
 		ensureNoError(err)
@@ -185,11 +185,11 @@ var disconnectGateway = &cobra.Command{
 func disconnectPods(k8Client internal.K8Client, firstPod *v1.Pod, secondPod *v1.Pod) {
 	err := internal.MakeIpUnreachableForPod(k8Client, secondPod.Status.PodIP, firstPod.Name)
 	ensureNoError(err)
-	internal.InfoLogging("Disconnect %s from %s", firstPod.Name, secondPod.Name)
+	internal.LogInfo("Disconnect %s from %s", firstPod.Name, secondPod.Name)
 
 	if !oneDirection {
 		err = internal.MakeIpUnreachableForPod(k8Client, firstPod.Status.PodIP, secondPod.Name)
 		ensureNoError(err)
-		internal.InfoLogging("Disconnect %s from %s", secondPod.Name, firstPod.Name)
+		internal.LogInfo("Disconnect %s from %s", secondPod.Name, firstPod.Name)
 	}
 }

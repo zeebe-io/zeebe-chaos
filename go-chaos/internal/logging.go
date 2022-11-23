@@ -18,7 +18,7 @@ import (
 	"fmt"
 )
 
-func VerbosityLogging(text string, a ...any) {
+func LogVerbose(text string, a ...any) {
 	if Verbosity {
 		if JsonLogging {
 			JsonLogger.Debug().Msgf(text, a...)
@@ -29,7 +29,7 @@ func VerbosityLogging(text string, a ...any) {
 	}
 }
 
-func InfoLogging(text string, a ...any) {
+func LogInfo(text string, a ...any) {
 	if JsonLogging {
 		JsonLogger.Debug().Msgf(text, a...)
 	} else {

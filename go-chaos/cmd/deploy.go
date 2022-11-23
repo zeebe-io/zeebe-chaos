@@ -62,12 +62,12 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 			// deploy multi version
 			err := internal.DeployDifferentVersions(zbClient, int32(multipleVersions))
 			ensureNoError(err)
-			internal.InfoLogging("Deployed different process models of different types and versions to zeebe!")
+			internal.LogInfo("Deployed different process models of different types and versions to zeebe!")
 		} else {
 			processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
 			ensureNoError(err)
 
-			internal.InfoLogging("Deployed given process model %s, under key %d!", processModelPath, processDefinitionKey)
+			internal.LogInfo("Deployed given process model %s, under key %d!", processModelPath, processDefinitionKey)
 		}
 	},
 }
@@ -84,6 +84,6 @@ The workers can be used as part of some chaos experiments to complete process in
 		err = k8Client.CreateWorkerDeployment()
 		ensureNoError(err)
 
-		internal.InfoLogging("Worker successfully deployed to the current namespace: %s", k8Client.GetCurrentNamespace())
+		internal.LogInfo("Worker successfully deployed to the current namespace: %s", k8Client.GetCurrentNamespace())
 	},
 }

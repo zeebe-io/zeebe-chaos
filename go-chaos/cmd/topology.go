@@ -56,7 +56,7 @@ var topologyCmd = &cobra.Command{
 
 		builder := strings.Builder{}
 		writeTopologyToOutput(&builder, response)
-		internal.InfoLogging(builder.String())
+		internal.LogInfo(builder.String())
 	},
 }
 

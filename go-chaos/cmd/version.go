@@ -37,7 +37,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version of zbchaos",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.InfoLogging(VersionString())
+		internal.LogInfo(VersionString())
 	},
 }
 

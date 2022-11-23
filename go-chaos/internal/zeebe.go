@@ -153,7 +153,7 @@ func DeployModel(client zbc.Client, fileName string) (int64, error) {
 		return 0, err
 	}
 
-	VerbosityLogging("Deploy file %s (size: %d bytes).", fileName, len(bpmnBytes))
+	LogVerbose("Deploy file %s (size: %d bytes).", fileName, len(bpmnBytes))
 
 	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
 	if err != nil {
@@ -161,7 +161,7 @@ func DeployModel(client zbc.Client, fileName string) (int64, error) {
 	}
 
 	processDefinitionKey := response.Processes[0].ProcessDefinitionKey
-	VerbosityLogging("Deployed process model %s successful with key %d.", fileName, processDefinitionKey)
+	LogVerbose("Deployed process model %s successful with key %d.", fileName, processDefinitionKey)
 	return processDefinitionKey, nil
 }
 
@@ -206,7 +206,7 @@ func DeployDifferentVersions(client zbc.Client, versions int32) error {
 		return err
 	}
 
-	VerbosityLogging("Deploy %d versions of different type of models.", versions)
+	LogVerbose("Deploy %d versions of different type of models.", versions)
 
 	count := int32(0)
 	for count < versions {
@@ -221,7 +221,7 @@ func DeployDifferentVersions(client zbc.Client, versions int32) error {
 		}
 
 		count += 2
-		VerbosityLogging("Deployed [%d/%d] versions.", count, versions)
+		LogVerbose("Deployed [%d/%d] versions.", count, versions)
 	}
 
 	return nil
@@ -258,7 +258,7 @@ type ProcessInstanceCreationOptions struct {
 
 func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {
 	var processInstanceCreator ProcessInstanceCreator
-	VerbosityLogging("Create process instance with BPMN process ID %s and version %d [variables: '%s', awaitResult: %t]",
+	LogVerbose("Create process instance with BPMN process ID %s and version %d [variables: '%s', awaitResult: %t]",
 		options.BpmnProcessId, options.Version, options.Variables, options.AwaitResult)
 
 	processInstanceCreator = func() (int64, error) {
@@ -301,12 +301,12 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 			processInstanceKey, err := piCreator()
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
-				InfoLogging("Encountered an error during process instance creation. Error: %s", err.Error())
+				LogInfo("Encountered an error during process instance creation. Error: %s", err.Error())
 				break
 			}
 			partitionId = ExtractPartitionIdFromKey(processInstanceKey)
 
-			VerbosityLogging("Created process instance with key %d on partition %d, required partition %d.", processInstanceKey, partitionId, requiredPartition)
+			LogVerbose("Created process instance with key %d on partition %d, required partition %d.", processInstanceKey, partitionId, requiredPartition)
 
 			if partitionId == requiredPartition {
 				return nil

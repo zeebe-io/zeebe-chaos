@@ -50,12 +50,12 @@ var publishCmd = &cobra.Command{
 		correlationKey, err := internal.FindCorrelationKeyForPartition(partitionId, int(topology.PartitionsCount))
 		panicOnError(err)
 
-		internal.VerbosityLogging("Send message '%s', with correaltion key '%s' (ASCII: %d) ", msgName, correlationKey, int(correlationKey[0]))
+		internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", msgName, correlationKey, int(correlationKey[0]))
 
 		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
-		internal.InfoLogging("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
+		internal.LogInfo("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
 	},
 }
 

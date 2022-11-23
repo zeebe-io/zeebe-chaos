@@ -77,7 +77,7 @@ func (c K8Client) ScaleZeebeCluster(replicas int) (int, error) {
 			if err != nil {
 				return false, err
 			}
-			InfoLogging("Waiting for %d replicas, currently at %d ", replicas, scale.Status.Replicas)
+			LogInfo("Waiting for %d replicas, currently at %d ", replicas, scale.Status.Replicas)
 			return scale.Status.Replicas == int32(replicas), nil
 		},
 	)
