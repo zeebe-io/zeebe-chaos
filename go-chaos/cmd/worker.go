@@ -16,13 +16,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 const jobType = "zbchaos"
@@ -110,7 +110,7 @@ func handleZbChaosJob(client worker.JobClient, job entities.Job) {
 }
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
-	fmt.Printf("Running command with args: %v \n", args)
+	internal.LogInfo("Running command with args: %v ", args)
 	rootCmd.SetArgs(args)
 	_, err := rootCmd.ExecuteContextC(ctx)
 	if err != nil {

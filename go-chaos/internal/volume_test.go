@@ -16,10 +16,11 @@ package internal
 
 import (
 	"context"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func Test_GetVolume(t *testing.T) {

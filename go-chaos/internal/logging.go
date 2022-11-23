@@ -12,35 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package internal
 
 import (
 	"fmt"
-	"math"
-
-	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
-	Version = "development"
-	Commit  = "HEAD"
-)
-
-func VersionString() string {
-	commit := Commit[0:int(math.Min(8, float64(len(Commit))))]
-	return fmt.Sprintf("zbchaos %s (commit: %s)", Version, commit)
+func LogVerbose(text string, a ...any) {
+	if Verbosity {
+		if JsonLogging {
+			JsonLogger.Debug().Msgf(text, a...)
+		} else {
+			fmt.Printf(text, a...)
+			fmt.Println()
+		}
+	}
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version of zbchaos",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		internal.LogInfo(VersionString())
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
+func LogInfo(text string, a ...any) {
+	if JsonLogging {
+		JsonLogger.Debug().Msgf(text, a...)
+	} else {
+		fmt.Printf(text, a...)
+		fmt.Println()
+	}
 }

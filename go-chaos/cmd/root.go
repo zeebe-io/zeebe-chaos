@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
+	"github.com/rs/zerolog/log"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
@@ -47,6 +48,7 @@ var Namespace string
 var ClientId string
 var ClientSecret string
 var Audience string
+var JsonLogging bool
 
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
@@ -55,6 +57,10 @@ var rootCmd = &cobra.Command{
     Perfect to inject some chaos into your brokers and gateways.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		internal.Verbosity = Verbose
+		internal.JsonLogging = JsonLogging
+		if JsonLogging {
+			internal.JsonLogger = log.With().Str("cli", "zbchaos").Logger()
+		}
 		internal.Namespace = Namespace
 		internal.KubeConfigPath = KubeConfigPath
 		if ClientId != "" && ClientSecret != "" {
@@ -69,6 +75,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
 	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
 	rootCmd.PersistentFlags().StringVarP(&ClientId, "clientId", "c", "", "connect using the given clientId")

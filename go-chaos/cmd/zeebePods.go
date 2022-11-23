@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -41,7 +39,7 @@ var getZeebeBrokersCmd = &cobra.Command{
 		}
 
 		for _, item := range pods {
-			fmt.Printf("%s\n", item)
+			internal.LogInfo("%s", item)
 		}
 	},
 }

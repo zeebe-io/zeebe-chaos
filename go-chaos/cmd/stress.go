@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
@@ -71,7 +69,7 @@ var stressBroker = &cobra.Command{
 		defer zbClient.Close()
 
 		pod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
-		fmt.Printf("Put stress on %s\n", pod.Name)
+		internal.LogInfo("Put stress on %s", pod.Name)
 
 		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
 		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)
@@ -89,7 +87,7 @@ var stressGateway = &cobra.Command{
 		ensureNoError(err)
 
 		pod := getGatewayPod(k8Client)
-		fmt.Printf("Put stress on %s\n", pod.Name)
+		internal.LogInfo("Put stress on %s", pod.Name)
 
 		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
 		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)

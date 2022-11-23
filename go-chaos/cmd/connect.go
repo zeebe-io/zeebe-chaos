@@ -55,17 +55,15 @@ var connectBrokers = &cobra.Command{
 		}
 
 		if len(podNames) <= 0 {
-			panic(fmt.Sprintf("Expected to find brokers in current namespace %s, but found nothing\n", k8Client.GetCurrentNamespace()))
+			panic(fmt.Sprintf("Expected to find brokers in current namespace %s, but found nothing", k8Client.GetCurrentNamespace()))
 		}
 
 		for _, pod := range podNames {
 			err = internal.MakeIpReachableForPod(k8Client, pod)
 			if err != nil {
-				if Verbose {
-					fmt.Printf("Error on connection Broker: %s. Error: %s\n", pod, err.Error())
-				}
+				internal.LogVerbose("Error on connection Broker: %s. Error: %s", pod, err.Error())
 			} else {
-				fmt.Printf("Connected %s again, removed unreachable routes.\n", pod)
+				internal.LogInfo("Connected %s again, removed unreachable routes.", pod)
 			}
 		}
 	},
@@ -88,7 +86,7 @@ var connectGateway = &cobra.Command{
 		ensureNoError(err)
 
 		if len(brokerPods.Items) <= 0 {
-			panic(fmt.Sprintf("Expected to find broker(s) in current namespace %s, but found nothing\n", k8Client.GetCurrentNamespace()))
+			panic(fmt.Sprintf("Expected to find broker(s) in current namespace %s, but found nothing", k8Client.GetCurrentNamespace()))
 		}
 
 		gatewayPod := getGatewayPod(k8Client)
@@ -97,10 +95,10 @@ var connectGateway = &cobra.Command{
 			err = internal.MakeIpReachable(k8Client, gatewayPod.Name, brokerPod.Status.PodIP)
 			if err != nil {
 				if Verbose {
-					fmt.Printf("Error on connection gateway: %s. Error: %s\n", gatewayPod.Name, err.Error())
+					internal.LogVerbose("Error on connection gateway: %s. Error: %s", gatewayPod.Name, err.Error())
 				}
 			} else {
-				fmt.Printf("Connected %s again with %s, removed unreachable routes.\n", gatewayPod.Name, brokerPod.Name)
+				internal.LogInfo("Connected %s again with %s, removed unreachable routes.", gatewayPod.Name, brokerPod.Name)
 			}
 		}
 	},

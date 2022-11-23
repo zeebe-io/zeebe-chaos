@@ -55,9 +55,7 @@ func (c K8Client) CreateWorkerDeployment() error {
 		return err
 	}
 
-	if Verbosity {
-		fmt.Printf("Deploy worker deployment to the current namespace: %s\n", c.GetCurrentNamespace())
-	}
+	LogVerbose("Deploy worker deployment to the current namespace: %s", c.GetCurrentNamespace())
 
 	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(workerBytes), 0)
 	deployment := &v12.Deployment{}

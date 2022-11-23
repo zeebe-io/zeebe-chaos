@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
@@ -54,7 +54,9 @@ var topologyCmd = &cobra.Command{
 			panic(err)
 		}
 
-		writeTopologyToOutput(os.Stdout, response)
+		builder := strings.Builder{}
+		writeTopologyToOutput(&builder, response)
+		internal.LogInfo(builder.String())
 	},
 }
 
