@@ -115,6 +115,11 @@ func (c K8Client) TerminatePod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
 }
 
+func (c K8Client) RestartPodWithGracePeriod(podName string, gracePeriodSec *int64) error {
+	options := metav1.DeleteOptions{GracePeriodSeconds: gracePeriodSec}
+	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, options)
+}
+
 func (c K8Client) AwaitReadiness() error {
 	retries := 0
 	maxRetries := 300 // 5 * 60s

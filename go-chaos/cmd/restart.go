@@ -15,11 +15,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 func init() {
@@ -27,6 +25,8 @@ func init() {
 	restartCmd.AddCommand(restartBrokerCmd)
 	restartBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
 	restartBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
+	restartBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
@@ -44,32 +44,8 @@ var restartBrokerCmd = &cobra.Command{
 	Short: "Restarts a Zeebe broker",
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err)
-		}
-		defer zbClient.Close()
-		broker, err := internal.GetBrokerPodNameForPartitionAndRole(k8Client, zbClient, partitionId, role)
-		if err != nil {
-			panic(err)
-		}
-
-		err = k8Client.RestartPod(broker)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Restarted %s", broker)
-		fmt.Println()
+		brokerPod := restartBroker(nodeId, partitionId, role, nil)
+		fmt.Printf("Restarted %s\n", brokerPod)
 	},
 }
 
@@ -78,26 +54,7 @@ var restartGatewayCmd = &cobra.Command{
 	Short: "Restarts a Zeebe gateway",
 	Long:  `Restarts a Zeebe gateway.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		gatewayPodNames, err := k8Client.GetGatewayPodNames()
-		if err != nil {
-			panic(err)
-		}
-
-		if len(gatewayPodNames) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		gatewayPod := gatewayPodNames[0]
-		err = k8Client.RestartPod(gatewayPod)
-		if err != nil {
-			panic(err)
-		}
-
+		gatewayPod := restartGateway(nil)
 		fmt.Printf("Restarted %s\n", gatewayPod)
 	},
 }
@@ -107,28 +64,6 @@ var restartWorkerCmd = &cobra.Command{
 	Short: "Restart a Zeebe worker",
 	Long:  `Restart a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		workerPods, err := k8Client.GetWorkerPods()
-		ensureNoError(err)
-
-		if workerPods == nil || len(workerPods.Items) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		if all {
-			for _, worker := range workerPods.Items {
-				err = k8Client.RestartPod(worker.Name)
-				ensureNoError(err)
-				fmt.Printf("Restart %s\n", worker.Name)
-			}
-		} else {
-			workerPod := workerPods.Items[0]
-			err = k8Client.RestartPod(workerPod.Name)
-			ensureNoError(err)
-
-			fmt.Printf("Restart %s\n", workerPod.Name)
-		}
+		restartWorker(all, "Restarted", nil)
 	},
 }

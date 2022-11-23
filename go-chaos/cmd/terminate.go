@@ -52,28 +52,9 @@ var terminateBrokerCmd = &cobra.Command{
 	Short: "Terminates a Zeebe broker",
 	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err.Error())
-		}
-		defer zbClient.Close()
-
-		brokerPod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
-		err = k8Client.TerminatePod(brokerPod.Name)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		fmt.Printf("Terminated %s\n", brokerPod.Name)
+		gracePeriodSec := int64(0)
+		brokerName := restartBroker(nodeId, partitionId, role, &gracePeriodSec)
+		fmt.Printf("Terminated %s\n", brokerName)
 	},
 }
 
@@ -82,26 +63,8 @@ var terminateGatewayCmd = &cobra.Command{
 	Short: "Terminates a Zeebe gateway",
 	Long:  `Terminates a Zeebe gateway.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		gatewayPodNames, err := k8Client.GetGatewayPodNames()
-		if err != nil {
-			panic(err)
-		}
-
-		if len(gatewayPodNames) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		gatewayPod := gatewayPodNames[0]
-		err = k8Client.TerminatePod(gatewayPod)
-		if err != nil {
-			panic(err)
-		}
-
+		gracePeriodSec := int64(0)
+		gatewayPod := restartGateway(&gracePeriodSec)
 		fmt.Printf("Terminated %s\n", gatewayPod)
 	},
 }
@@ -111,28 +74,78 @@ var terminateWorkerCmd = &cobra.Command{
 	Short: "Terminates a Zeebe worker",
 	Long:  `Terminates a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		workerPods, err := k8Client.GetWorkerPods()
-		ensureNoError(err)
-
-		if workerPods == nil || len(workerPods.Items) <= 0 {
-			panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
-		}
-
-		if all {
-			for _, worker := range workerPods.Items {
-				err = k8Client.TerminatePod(worker.Name)
-				ensureNoError(err)
-				fmt.Printf("Terminated %s\n", worker.Name)
-			}
-		} else {
-			workerPod := workerPods.Items[0]
-			err = k8Client.TerminatePod(workerPod.Name)
-			ensureNoError(err)
-
-			fmt.Printf("Terminated %s\n", workerPod.Name)
-		}
+		gracePeriodSec := int64(0)
+		restartWorker(all, "Terminated", &gracePeriodSec)
 	},
+}
+
+// Restart a broker pod. Pod is identified either by nodeId or by partitionId and role.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
+// Returns the broker which has been restarted
+func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64) string {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	port := 26500
+	closeFn := k8Client.MustGatewayPortForward(port, port)
+	defer closeFn()
+
+	zbClient, err := internal.CreateZeebeClient(port)
+	ensureNoError(err)
+	defer zbClient.Close()
+
+	brokerPod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
+	err = k8Client.RestartPodWithGracePeriod(brokerPod.Name, gracePeriod)
+	ensureNoError(err)
+
+	return brokerPod.Name
+}
+
+// Restart a gateway pod. The pod is the first from a list of existing pods.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
+// Returns the gateway which has been restarted
+func restartGateway(gracePeriod *int64) string {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	gatewayPodNames, err := k8Client.GetGatewayPodNames()
+	ensureNoError(err)
+
+	if len(gatewayPodNames) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find Zeebe gateway in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+	}
+
+	gatewayPod := gatewayPodNames[0]
+	err = k8Client.RestartPodWithGracePeriod(gatewayPod, gracePeriod)
+	ensureNoError(err)
+	return gatewayPod
+}
+
+// Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
+// The actionName specifies whether it was restarted or terminated to log the right thing.
+func restartWorker(all bool, actionName string, gracePeriod *int64) {
+	k8Client, err := internal.CreateK8Client()
+	ensureNoError(err)
+
+	workerPods, err := k8Client.GetWorkerPods()
+	ensureNoError(err)
+
+	if workerPods == nil || len(workerPods.Items) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find workers in namespace %s, but none found.", k8Client.GetCurrentNamespace())))
+	}
+
+	if all {
+		for _, worker := range workerPods.Items {
+			err = k8Client.RestartPodWithGracePeriod(worker.Name, gracePeriod)
+			ensureNoError(err)
+			fmt.Printf("%s %s\n", actionName, worker.Name)
+		}
+	} else {
+		workerPod := workerPods.Items[0]
+		err = k8Client.RestartPodWithGracePeriod(workerPod.Name, gracePeriod)
+		ensureNoError(err)
+
+		fmt.Printf("%s %s\n", actionName, workerPod.Name)
+	}
 }
