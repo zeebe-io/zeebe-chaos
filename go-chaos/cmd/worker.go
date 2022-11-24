@@ -16,13 +16,11 @@ package cmd
 
 import (
 	"context"
-	"time"
 
-	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
 )
 
 const jobType = "zbchaos"
@@ -36,26 +34,6 @@ var workerCommand = &cobra.Command{
 	Short: "Starts a worker for zbchaos jobs",
 	Long:  "Starts a worker for zbchaos jobs that executes zbchaos commands",
 	Run:   start_worker,
-}
-
-type ChaosProvider struct {
-	Path      string
-	Arguments []string
-	Timeout   int64
-}
-
-type AuthenticationProvider struct {
-	Audience         string
-	AuthorizationUrl string
-	ClientId         string
-	ClientSecret     string
-	ContactPoint     string
-}
-
-type ZbChaosVariables struct {
-	ClusterId             *string
-	Provider              ChaosProvider
-	AuthenticationDetails AuthenticationProvider
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
@@ -74,39 +52,9 @@ func start_worker(cmd *cobra.Command, args []string) {
 	}
 
 	// Allow only one job at a time, otherwise job handling might interfere (e.g. override global vars)
-	jobWorker := client.NewJobWorker().JobType(jobType).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
+	worker.CommandRunner = runZbChaosCommand
+	jobWorker := client.NewJobWorker().JobType(jobType).Handler(worker.HandleZbChaosJob).MaxJobsActive(1).Open()
 	jobWorker.AwaitClose()
-}
-
-func handleZbChaosJob(client worker.JobClient, job entities.Job) {
-	ctx := context.Background()
-
-	jobVariables := ZbChaosVariables{
-		Provider: ChaosProvider{
-			Timeout: 15 * 60, // 15 minute default Timeout
-		},
-	}
-	err := job.GetVariablesAs(&jobVariables)
-	if err != nil {
-		// Can't parse variables, no sense in retrying
-		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
-		return
-	}
-
-	timeout := time.Duration(jobVariables.Provider.Timeout) * time.Second
-	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
-	defer cancelCommand()
-
-	clusterAccessArgs := append([]string{""}, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
-	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
-
-	err = runZbChaosCommand(commandArgs, commandCtx)
-	if err != nil {
-		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
-		return
-	}
-
-	_, _ = client.NewCompleteJobCommand().JobKey(job.Key).Send(ctx)
 }
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
