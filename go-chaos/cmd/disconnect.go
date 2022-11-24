@@ -68,8 +68,8 @@ var disconnectBrokers = &cobra.Command{
 	Use:   "brokers",
 	Short: "Disconnect Zeebe Brokers",
 	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return backend.DisconnectBroker(backend.DisconnectBrokerCfg{
+	Run: func(cmd *cobra.Command, args []string) {
+		err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
 			Broker1Cfg: backend.Broker{
 				NodeId:      broker1NodeId,
 				PartitionId: broker1PartitionId,
@@ -82,6 +82,7 @@ var disconnectBrokers = &cobra.Command{
 			},
 			OneDirection: oneDirection,
 		})
+		ensureNoError(err)
 	},
 }
 
