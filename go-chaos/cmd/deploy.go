@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
@@ -32,6 +33,7 @@ func init() {
 	deployProcessModelCmd.MarkFlagsMutuallyExclusive("processModelPath", "multipleVersions")
 
 	deployCmd.AddCommand(deployWorkerCmd)
+	deployCmd.AddCommand(deployChaosModels)
 }
 
 var deployCmd = &cobra.Command{
@@ -85,5 +87,25 @@ The workers can be used as part of some chaos experiments to complete process in
 		ensureNoError(err)
 
 		internal.LogInfo("Worker successfully deployed to the current namespace: %s", k8Client.GetCurrentNamespace())
+	},
+}
+
+var deployChaosModels = &cobra.Command{
+	Use:   "chaos",
+	Short: "Deploy all chaos BPMN models to the Zeebe cluster",
+	Long: `Deploy all chaos BPMN models to the to the Zeebe cluster. 
+The process models allow to execute chaos experiments.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		zbClient, closeFn, err := backend.ConnectToZeebeCluster(k8Client)
+		ensureNoError(err)
+		defer closeFn()
+
+		err = internal.DeployChaosModels(zbClient)
+		ensureNoError(err)
+
+		internal.LogInfo("Deployed successfully process models to run chaos experiments")
 	},
 }

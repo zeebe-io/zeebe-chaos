@@ -153,6 +153,10 @@ func DeployModel(client zbc.Client, fileName string) (int64, error) {
 		return 0, err
 	}
 
+	return DeployModelBytes(client, fileName, bpmnBytes)
+}
+
+func DeployModelBytes(client zbc.Client, fileName string, bpmnBytes []byte) (int64, error) {
 	LogVerbose("Deploy file %s (size: %d bytes).", fileName, len(bpmnBytes))
 
 	response, err := client.NewDeployProcessCommand().AddResource(bpmnBytes, fileName).Send(context.TODO())
@@ -224,6 +228,28 @@ func DeployDifferentVersions(client zbc.Client, versions int32) error {
 		LogVerbose("Deployed [%d/%d] versions.", count, versions)
 	}
 
+	return nil
+}
+
+func DeployChaosModels(client zbc.Client) error {
+	dirEntries, err := bpmnContent.ReadDir("bpmn/chaos")
+	if err != nil {
+		return err
+	}
+
+	for _, dirEntry := range dirEntries {
+		path := fmt.Sprintf("bpmn/chaos/%s", dirEntry.Name())
+
+		bpmnBytes, err := bpmnContent.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		_, err = DeployModelBytes(client, path, bpmnBytes)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
