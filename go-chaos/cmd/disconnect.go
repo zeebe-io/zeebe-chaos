@@ -15,13 +15,8 @@
 package cmd
 
 import (
-	"errors"
-	"fmt"
-
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
-	v1 "k8s.io/api/core/v1"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
 var (
@@ -74,63 +69,21 @@ var disconnectBrokers = &cobra.Command{
 	Short: "Disconnect Zeebe Brokers",
 	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
+		err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
+			Broker1Cfg: backend.Broker{
+				NodeId:      broker1NodeId,
+				PartitionId: broker1PartitionId,
+				Role:        broker1Role,
+			},
+			Broker2Cfg: backend.Broker{
+				NodeId:      broker2NodeId,
+				PartitionId: broker2PartitionId,
+				Role:        broker2Role,
+			},
+			OneDirection: oneDirection,
+		})
 		ensureNoError(err)
-
-		err = k8Client.PauseReconciliation()
-		ensureNoError(err)
-
-		err = k8Client.ApplyNetworkPatch()
-		ensureNoError(err)
-
-		internal.LogVerbose("Patched statefulset")
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		ensureNoError(err)
-		defer zbClient.Close()
-
-		broker1Pod := getBrokerPod(k8Client, zbClient, broker1NodeId, broker1PartitionId, broker1Role)
-		broker2Pod := getBrokerPod(k8Client, zbClient, broker2NodeId, broker2PartitionId, broker2Role)
-
-		if broker1Pod.Name == broker2Pod.Name {
-			internal.LogInfo("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
-			return
-		}
-
-		disconnectPods(k8Client, broker1Pod, broker2Pod)
 	},
-}
-
-func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId int, brokerPartitionId int, brokerRole string) *v1.Pod {
-	var brokerPod *v1.Pod
-	var err error
-	if brokerNodeId >= 0 {
-		brokerPod, err = internal.GetBrokerPodForNodeId(k8Client, int32(brokerNodeId))
-		ensureNoError(err)
-		internal.LogVerbose("Found Broker %s with node id %d.", brokerPod.Name, brokerNodeId)
-	} else {
-		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
-		ensureNoError(err)
-		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, role, brokerPartitionId)
-	}
-
-	return brokerPod
-}
-
-func getGatewayPod(k8Client internal.K8Client) *v1.Pod {
-	pods, err := k8Client.GetGatewayPods()
-	ensureNoError(err)
-
-	if pods != nil && len(pods.Items) > 0 {
-		return &pods.Items[0]
-	}
-
-	panic(errors.New(fmt.Sprintf("Expected to find standalone gateway, but found nothing.")))
 }
 
 var disconnectGateway = &cobra.Command{
@@ -138,58 +91,15 @@ var disconnectGateway = &cobra.Command{
 	Short: "Disconnect Zeebe Gateway",
 	Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
+		err := backend.DisconnectGateway(backend.DisconnectGatewayCfg{
+			OneDirection:    oneDirection,
+			DisconnectToAll: disconnectToAll,
+			BrokerCfg: backend.Broker{
+				Role:        role,
+				PartitionId: partitionId,
+				NodeId:      nodeId,
+			},
+		})
 		ensureNoError(err)
-
-		err = k8Client.PauseReconciliation()
-		ensureNoError(err)
-
-		err = k8Client.ApplyNetworkPatch()
-		ensureNoError(err)
-
-		internal.LogVerbose("Patched statefulset")
-
-		err = k8Client.ApplyNetworkPatchOnGateway()
-		ensureNoError(err)
-
-		internal.LogVerbose("Patched deployment")
-
-		err = k8Client.AwaitReadiness()
-		ensureNoError(err)
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		ensureNoError(err)
-		defer zbClient.Close()
-
-		gatewayPod := getGatewayPod(k8Client)
-
-		if disconnectToAll {
-			pods, err := k8Client.GetBrokerPods()
-			ensureNoError(err)
-
-			for _, brokerPod := range pods.Items {
-				disconnectPods(k8Client, gatewayPod, &brokerPod)
-			}
-		} else {
-			broker2Pod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
-			disconnectPods(k8Client, gatewayPod, broker2Pod)
-		}
 	},
-}
-
-func disconnectPods(k8Client internal.K8Client, firstPod *v1.Pod, secondPod *v1.Pod) {
-	err := internal.MakeIpUnreachableForPod(k8Client, secondPod.Status.PodIP, firstPod.Name)
-	ensureNoError(err)
-	internal.LogInfo("Disconnect %s from %s", firstPod.Name, secondPod.Name)
-
-	if !oneDirection {
-		err = internal.MakeIpUnreachableForPod(k8Client, firstPod.Status.PodIP, secondPod.Name)
-		ensureNoError(err)
-		internal.LogInfo("Disconnect %s from %s", secondPod.Name, firstPod.Name)
-	}
 }

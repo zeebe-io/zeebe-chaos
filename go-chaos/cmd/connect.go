@@ -15,10 +15,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
 func init() {
@@ -38,34 +36,8 @@ var connectBrokers = &cobra.Command{
 	Short: "Connect Zeebe Brokers",
 	Long:  `Connect all Zeebe Brokers again, after they have been disconnected.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		// No patch is need, since we expect that disconnect was executed before.
-		// If not all fine and the pods are already connected.
-
-		// We run connect on all nodes, since roles can have been changed in between so it is easier to run the commands on all nodes.
-
-		podNames, err := k8Client.GetBrokerPodNames()
-		if err != nil {
-			panic(err.Error())
-		}
-
-		if len(podNames) <= 0 {
-			panic(fmt.Sprintf("Expected to find brokers in current namespace %s, but found nothing", k8Client.GetCurrentNamespace()))
-		}
-
-		for _, pod := range podNames {
-			err = internal.MakeIpReachableForPod(k8Client, pod)
-			if err != nil {
-				internal.LogVerbose("Error on connection Broker: %s. Error: %s", pod, err.Error())
-			} else {
-				internal.LogInfo("Connected %s again, removed unreachable routes.", pod)
-			}
-		}
+		err := backend.ConnectBrokers()
+		ensureNoError(err)
 	},
 }
 
@@ -74,32 +46,7 @@ var connectGateway = &cobra.Command{
 	Short: "Connect Zeebe Gateway",
 	Long:  `Connect all Zeebe Gateway again, after it has been disconnected.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
+		err := backend.ConnectGateway()
 		ensureNoError(err)
-
-		// No patch is need, since we expect that disconnect was executed before.
-		// If not all fine and the pods are already connected.
-
-		// We run connect on all nodes
-		brokerPods, err := k8Client.GetBrokerPods()
-		ensureNoError(err)
-
-		if len(brokerPods.Items) <= 0 {
-			panic(fmt.Sprintf("Expected to find broker(s) in current namespace %s, but found nothing", k8Client.GetCurrentNamespace()))
-		}
-
-		gatewayPod := getGatewayPod(k8Client)
-
-		for _, brokerPod := range brokerPods.Items {
-			err = internal.MakeIpReachable(k8Client, gatewayPod.Name, brokerPod.Status.PodIP)
-			if err != nil {
-				if Verbose {
-					internal.LogVerbose("Error on connection gateway: %s. Error: %s", gatewayPod.Name, err.Error())
-				}
-			} else {
-				internal.LogInfo("Connected %s again with %s, removed unreachable routes.", gatewayPod.Name, brokerPod.Name)
-			}
-		}
 	},
 }

@@ -6,9 +6,7 @@ WORKDIR /app
 COPY --link go.mod go.sum .
 RUN go mod download
 
-COPY --link cmd/ ./cmd
-COPY --link internal ./internal
-COPY --link main.go ./
+COPY --link . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o zbchaos main.go
 
 FROM scratch
