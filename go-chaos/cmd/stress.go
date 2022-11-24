@@ -15,8 +15,13 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
+
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
+	v1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -93,4 +98,31 @@ var stressGateway = &cobra.Command{
 		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)
 		ensureNoError(err)
 	},
+}
+
+func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId int, brokerPartitionId int, brokerRole string) *v1.Pod {
+	var brokerPod *v1.Pod
+	var err error
+	if brokerNodeId >= 0 {
+		brokerPod, err = internal.GetBrokerPodForNodeId(k8Client, int32(brokerNodeId))
+		ensureNoError(err)
+		internal.LogVerbose("Found Broker %s with node id %d.", brokerPod.Name, brokerNodeId)
+	} else {
+		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
+		ensureNoError(err)
+		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, role, brokerPartitionId)
+	}
+
+	return brokerPod
+}
+
+func getGatewayPod(k8Client internal.K8Client) *v1.Pod {
+	pods, err := k8Client.GetGatewayPods()
+	ensureNoError(err)
+
+	if pods != nil && len(pods.Items) > 0 {
+		return &pods.Items[0]
+	}
+
+	panic(errors.New(fmt.Sprintf("Expected to find standalone gateway, but found nothing.")))
 }

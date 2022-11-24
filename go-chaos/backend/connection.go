@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 	v1 "k8s.io/api/core/v1"
 )
@@ -35,7 +36,7 @@ func ConnectBrokers() error {
 
 	podNames, err := k8Client.GetBrokerPodNames()
 	if err != nil {
-	  return err
+		return err
 	}
 
 	if len(podNames) <= 0 {
@@ -53,7 +54,6 @@ func ConnectBrokers() error {
 	}
 	return nil
 }
-
 
 func ConnectGateway() error {
 	k8Client, err := internal.CreateK8Client()
@@ -91,6 +91,147 @@ func ConnectGateway() error {
 	return nil
 }
 
+type Broker struct {
+	NodeId      int
+	PartitionId int
+	Role        string
+}
+
+type DisconnectBrokerCfg struct {
+	Broker1Cfg   Broker
+	Broker2Cfg   Broker
+	OneDirection bool
+}
+
+func DisconnectBroker(disconnectBrokerCfg DisconnectBrokerCfg) error {
+	k8Client, err := prepareBrokerDisconnect()
+
+	zbClient, closeFn, err := ConnectToZeebeCluster(k8Client)
+	if err != nil {
+		return err
+	}
+	defer closeFn()
+
+	broker1 := disconnectBrokerCfg.Broker1Cfg
+	broker1Pod, err := getBrokerPod(k8Client, zbClient, broker1.NodeId, broker1.PartitionId, broker1.Role)
+	if err != nil {
+		return err
+	}
+
+	broker2 := disconnectBrokerCfg.Broker2Cfg
+	broker2Pod, err := getBrokerPod(k8Client, zbClient, broker2.NodeId, broker2.PartitionId, broker2.Role)
+	if err != nil {
+		return err
+	}
+
+	if broker1Pod.Name == broker2Pod.Name {
+		internal.LogInfo("Expected to disconnect two DIFFERENT brokers %s and %s, but they are the same. Will do nothing.", broker1Pod.Name, broker2Pod.Name)
+		return nil
+	}
+
+	return disconnectPods(k8Client, broker1Pod, broker2Pod, disconnectBrokerCfg.OneDirection)
+}
+
+func ConnectToZeebeCluster(k8Client internal.K8Client) (zbc.Client, func(), error) {
+	port := 26500
+	closeFn := k8Client.MustGatewayPortForward(port, port)
+
+	zbClient, err := internal.CreateZeebeClient(port)
+	if err != nil {
+		return nil, closeFn, err
+	}
+	return zbClient, func() {
+		zbClient.Close()
+		closeFn()
+	}, nil
+}
+
+type DisconnectGatewayCfg struct {
+	DisconnectToAll bool
+	OneDirection    bool
+	BrokerCfg       Broker
+}
+
+func DisconnectGateway(disconnectGatewayCfg DisconnectGatewayCfg) error {
+	k8Client, zbClient, closeFn, err := prepareGatewayDisconnect()
+	if err != nil {
+		return err
+	}
+	defer closeFn()
+
+	gatewayPod, err := getGatewayPod(k8Client)
+
+	if disconnectGatewayCfg.DisconnectToAll {
+		pods, err := k8Client.GetBrokerPods()
+		if err != nil {
+			return err
+		}
+
+		for _, brokerPod := range pods.Items {
+			err := disconnectPods(k8Client, gatewayPod, &brokerPod, disconnectGatewayCfg.OneDirection)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		brokerCfg := disconnectGatewayCfg.BrokerCfg
+		broker2Pod, err := getBrokerPod(k8Client, zbClient, brokerCfg.NodeId, brokerCfg.PartitionId, brokerCfg.Role)
+		if err != nil {
+			return err
+		}
+		err = disconnectPods(k8Client, gatewayPod, broker2Pod, disconnectGatewayCfg.OneDirection)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func prepareGatewayDisconnect() (internal.K8Client, zbc.Client, func(), error) {
+	k8Client, err := prepareBrokerDisconnect()
+	if err != nil {
+		return k8Client, nil, nil, err
+	}
+
+	err = k8Client.ApplyNetworkPatchOnGateway()
+	if err != nil {
+		return internal.K8Client{}, nil, nil, err
+	}
+
+	internal.LogVerbose("Patched deployment")
+
+	err = k8Client.AwaitReadiness()
+	if err != nil {
+		return internal.K8Client{}, nil, nil, err
+	}
+
+	zbClient, closeFn, err := ConnectToZeebeCluster(k8Client)
+	if err != nil {
+		return internal.K8Client{}, nil, nil, err
+	}
+
+	return k8Client, zbClient, closeFn, nil
+}
+
+func prepareBrokerDisconnect() (internal.K8Client, error) {
+	k8Client, err := internal.CreateK8Client()
+	if err != nil {
+		return internal.K8Client{}, err
+	}
+
+	err = k8Client.PauseReconciliation()
+	if err != nil {
+		return internal.K8Client{}, err
+	}
+
+	err = k8Client.ApplyNetworkPatch()
+	if err != nil {
+		return internal.K8Client{}, err
+	}
+
+	internal.LogVerbose("Patched statefulset")
+	return k8Client, nil
+}
 
 func getGatewayPod(k8Client internal.K8Client) (*v1.Pod, error) {
 	pods, err := k8Client.GetGatewayPods()
@@ -104,4 +245,36 @@ func getGatewayPod(k8Client internal.K8Client) (*v1.Pod, error) {
 
 	errorMsg := fmt.Sprintf("Expected to find standalone gateway, but found nothing.")
 	return nil, errors.New(errorMsg)
+}
+
+func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId int, brokerPartitionId int, brokerRole string) (*v1.Pod, error) {
+	var brokerPod *v1.Pod
+	var err error
+	if brokerNodeId >= 0 {
+		brokerPod, err = internal.GetBrokerPodForNodeId(k8Client, int32(brokerNodeId))
+		internal.LogVerbose("Found Broker %s with node id %d.", brokerPod.Name, brokerNodeId)
+	} else {
+		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
+		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, brokerRole, brokerPartitionId)
+	}
+
+	return brokerPod, err
+}
+
+func disconnectPods(k8Client internal.K8Client, firstPod *v1.Pod, secondPod *v1.Pod, oneDirection bool) error {
+	err := internal.MakeIpUnreachableForPod(k8Client, secondPod.Status.PodIP, firstPod.Name)
+	if err != nil {
+		return err
+	}
+
+	internal.LogInfo("Disconnect %s from %s", firstPod.Name, secondPod.Name)
+
+	if !oneDirection {
+		err = internal.MakeIpUnreachableForPod(k8Client, firstPod.Status.PodIP, secondPod.Name)
+		if err != nil {
+			return err
+		}
+		internal.LogInfo("Disconnect %s from %s", secondPod.Name, firstPod.Name)
+	}
+	return nil
 }
