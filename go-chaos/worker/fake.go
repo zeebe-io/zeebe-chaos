@@ -30,6 +30,7 @@ type FakeJobClient struct {
 	ErrorMsg   string
 	Failed     bool
 	Succeeded  bool
+	Variables  interface{}
 }
 
 type FakeCompleteClient struct {
@@ -51,6 +52,11 @@ func (f *FakeCompleteClient) JobKey(key int64) commands.CompleteJobCommandStep2 
 
 func (f *FakeCompleteClient) Send(ctx context.Context) (*pb.CompleteJobResponse, error) {
 	return &pb.CompleteJobResponse{}, nil
+}
+
+func (f *FakeCompleteClient) VariablesFromObject(v interface{}) (commands.DispatchCompleteJobCommand, error) {
+	f.JobClient.Variables = v
+	return f, nil
 }
 
 // Fake FAIL Client
@@ -75,6 +81,11 @@ func (f *FakeFailClient) JobKey(key int64) commands.FailJobCommandStep2 {
 
 func (f *FakeFailClient) Retries(retries int32) commands.FailJobCommandStep3 {
 	f.JobClient.RetriesVal = int(retries)
+	return f
+}
+
+func (f *FakeFailClient) ErrorMessage(errorMsg string) commands.FailJobCommandStep3 {
+	f.JobClient.ErrorMsg = errorMsg
 	return f
 }
 

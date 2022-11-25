@@ -24,6 +24,7 @@ import (
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	chaos_experiments "github.com/zeebe-io/zeebe-chaos/go-chaos/internal/chaos-experiments"
 )
 
 func Test_ShouldFailToHandleJobWithoutPayload(t *testing.T) {
@@ -40,6 +41,24 @@ func Test_ShouldFailToHandleJobWithoutPayload(t *testing.T) {
 
 	// when
 	HandleZbChaosJob(fakeJobClient, job, commandRunner)
+
+	// then
+	assert.True(t, fakeJobClient.Failed)
+	assert.Equal(t, 123, fakeJobClient.Key)
+	assert.Equal(t, 0, fakeJobClient.RetriesVal)
+}
+
+func Test_ShouldFailToHandleReadExperimentsJobWithoutPayload(t *testing.T) {
+	// given
+	fakeJobClient := &FakeJobClient{}
+	job := entities.Job{
+		&pb.ActivatedJob{
+			Key: 123,
+		},
+	}
+
+	// when
+	HandleReadExperiments(fakeJobClient, job)
 
 	// then
 	assert.True(t, fakeJobClient.Failed)
@@ -74,6 +93,46 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	var expectedArgs = []string{
 		"--namespace", "clusterId-zeebe", "--clientId", "clientId", "--clientSecret", "clientSecret", "--audience", "audience", "disconnect", "gateway", "--all"}
 	assert.Equal(t, expectedArgs, appliedArgs)
+}
+
+func Test_ShouldSendExperimentsForClusterPlan(t *testing.T) {
+	// given
+	fakeJobClient := &FakeJobClient{}
+	job := entities.Job{
+		&pb.ActivatedJob{
+			Key:       123,
+			Variables: "{\"clusterPlan\":\"Production - S\"}",
+		},
+	}
+
+	// when
+	HandleReadExperiments(fakeJobClient, job)
+
+	// then
+	assert.True(t, fakeJobClient.Succeeded)
+	assert.Equal(t, 123, fakeJobClient.Key)
+	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan("Production - S")
+	require.NoError(t, err)
+	assert.Equal(t, experiments, fakeJobClient.Variables)
+}
+
+func Test_ShouldFailWhenNoClusterPlanForReadExperimentsJob(t *testing.T) {
+	// given
+	fakeJobClient := &FakeJobClient{}
+	job := entities.Job{
+		&pb.ActivatedJob{
+			Key:       123,
+			Variables: "{\"clusterPlan\":\"noop\"}",
+		},
+	}
+
+	// when
+	HandleReadExperiments(fakeJobClient, job)
+
+	// then
+	assert.True(t, fakeJobClient.Failed)
+	assert.Equal(t, 123, fakeJobClient.Key)
+	assert.Equal(t, "open camunda-cloud/noop: file does not exist", fakeJobClient.ErrorMsg)
 }
 
 func Test_ShouldFailJobWhenHandleFails(t *testing.T) {

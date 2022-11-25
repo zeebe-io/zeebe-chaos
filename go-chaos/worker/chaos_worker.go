@@ -20,6 +20,7 @@ import (
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
+	chaos_experiments "github.com/zeebe-io/zeebe-chaos/go-chaos/internal/chaos-experiments"
 )
 
 type CommandRunner func([]string, context.Context) error
@@ -39,6 +40,7 @@ type AuthenticationProvider struct {
 }
 
 type ZbChaosVariables struct {
+	ClusterPlan           *string
 	ClusterId             *string
 	Provider              ChaosProvider
 	AuthenticationDetails AuthenticationProvider
@@ -73,4 +75,34 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	}
 
 	_, _ = client.NewCompleteJobCommand().JobKey(job.Key).Send(ctx)
+}
+
+func HandleReadExperiments(client worker.JobClient, job entities.Job) {
+	ctx := context.Background()
+
+	jobVariables := ZbChaosVariables{
+		Provider: ChaosProvider{
+			Timeout: 15 * 60, // 15 minute default Timeout
+		},
+	}
+	err := job.GetVariablesAs(&jobVariables)
+	if err != nil {
+		// Can't parse variables, no sense in retrying
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
+		return
+	}
+
+	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan(*jobVariables.ClusterPlan)
+	if err != nil {
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
+		return
+	}
+
+	command, err := client.NewCompleteJobCommand().JobKey(job.Key).VariablesFromObject(experiments)
+	if err != nil {
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
+		return
+	}
+
+	_, _ = command.Send(ctx)
 }
