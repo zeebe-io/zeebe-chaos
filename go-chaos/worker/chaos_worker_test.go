@@ -29,6 +29,9 @@ import (
 func Test_ShouldFailToHandleJobWithoutPayload(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
+	commandRunner := func(args []string, ctx context.Context) error {
+		return nil // success
+	}
 	job := entities.Job{
 		&pb.ActivatedJob{
 			Key: 123,
@@ -36,7 +39,7 @@ func Test_ShouldFailToHandleJobWithoutPayload(t *testing.T) {
 	}
 
 	// when
-	HandleZbChaosJob(fakeJobClient, job)
+	HandleZbChaosJob(fakeJobClient, job, commandRunner)
 
 	// then
 	assert.True(t, fakeJobClient.Failed)
@@ -49,7 +52,7 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	fakeJobClient := &FakeJobClient{}
 	jsonString, err := createVariablesAsJson()
 	var appliedArgs []string
-	CommandRunner = func(args []string, ctx context.Context) error {
+	commandRunner := func(args []string, ctx context.Context) error {
 		appliedArgs = args
 		return nil // success
 	}
@@ -63,7 +66,7 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	}
 
 	// when
-	HandleZbChaosJob(fakeJobClient, job)
+	HandleZbChaosJob(fakeJobClient, job, commandRunner)
 
 	// then
 	assert.True(t, fakeJobClient.Succeeded)
@@ -78,7 +81,7 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	fakeJobClient := &FakeJobClient{}
 	jsonString, err := createVariablesAsJson()
 	var appliedArgs []string
-	CommandRunner = func(args []string, ctx context.Context) error {
+	commandRunner := func(args []string, ctx context.Context) error {
 		appliedArgs = args
 		return errors.New("failed")
 	}
@@ -93,7 +96,7 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	}
 
 	// when
-	HandleZbChaosJob(fakeJobClient, job)
+	HandleZbChaosJob(fakeJobClient, job, commandRunner)
 
 	// then
 	assert.True(t, fakeJobClient.Failed)

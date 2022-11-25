@@ -17,10 +17,12 @@ package cmd
 import (
 	"context"
 
+	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
+	zbworker "github.com/camunda/zeebe/clients/go/v8/pkg/worker"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
+	worker "github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
 )
 
 const jobType = "zbchaos"
@@ -52,9 +54,12 @@ func start_worker(cmd *cobra.Command, args []string) {
 	}
 
 	// Allow only one job at a time, otherwise job handling might interfere (e.g. override global vars)
-	worker.CommandRunner = runZbChaosCommand
-	jobWorker := client.NewJobWorker().JobType(jobType).Handler(worker.HandleZbChaosJob).MaxJobsActive(1).Open()
+	jobWorker := client.NewJobWorker().JobType(jobType).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
 	jobWorker.AwaitClose()
+}
+
+func handleZbChaosJob(client zbworker.JobClient, job entities.Job) {
+	worker.HandleZbChaosJob(client, job, runZbChaosCommand)
 }
 
 func runZbChaosCommand(args []string, ctx context.Context) error {

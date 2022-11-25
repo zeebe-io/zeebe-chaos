@@ -22,7 +22,7 @@ import (
 	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
 )
 
-var CommandRunner func([]string, context.Context) error
+type CommandRunner func([]string, context.Context) error
 
 type ChaosProvider struct {
 	Path      string
@@ -44,7 +44,7 @@ type ZbChaosVariables struct {
 	AuthenticationDetails AuthenticationProvider
 }
 
-func HandleZbChaosJob(client worker.JobClient, job entities.Job) {
+func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner CommandRunner) {
 	ctx := context.Background()
 
 	jobVariables := ZbChaosVariables{
@@ -66,7 +66,7 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job) {
 	clusterAccessArgs := append([]string{}, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
 
-	err = CommandRunner(commandArgs, commandCtx)
+	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
 		return
