@@ -25,7 +25,8 @@ import (
 	worker "github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
 )
 
-const jobType = "zbchaos"
+const jobTypeZbChaos = "zbchaos"
+const jobTypeReadExperiments = "readExperiments"
 
 func init() {
 	rootCmd.AddCommand(workerCommand)
@@ -54,7 +55,8 @@ func start_worker(cmd *cobra.Command, args []string) {
 	}
 
 	// Allow only one job at a time, otherwise job handling might interfere (e.g. override global vars)
-	jobWorker := client.NewJobWorker().JobType(jobType).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
+	jobWorker := client.NewJobWorker().JobType(jobTypeZbChaos).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
+	client.NewJobWorker().JobType(jobTypeReadExperiments).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
 	jobWorker.AwaitClose()
 }
 
