@@ -17,6 +17,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
+	"time"
 )
 
 func init() {
@@ -103,10 +104,20 @@ var datalossRecover = &cobra.Command{
 			panic(err)
 		}
 
-		err = k8Client.AwaitReadiness()
+		pod, err := internal.GetBrokerPodForNodeId(k8Client, int32(nodeId))
+
+		if err != nil {
+			internal.LogInfo("Failed to get pod with nodeId %d %s", nodeId, err)
+			panic(err)
+		}
+
+		// The pod is restarting after dataloss, so it takes longer to be ready
+		err = k8Client.AwaitPodReadiness(pod.Name, 10*time.Minute)
+
 		if err != nil {
 			internal.LogInfo("%s", err)
+			panic(err)
 		}
-		internal.LogInfo("Restarted broker %d", nodeId)
+		internal.LogInfo("Broker %d is recovered", nodeId)
 	},
 }
