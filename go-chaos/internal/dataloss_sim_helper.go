@@ -73,7 +73,7 @@ func (c K8Client) ApplyInitContainerPatch() error {
               "-c"
             ],
             "args": [
-              "while true; do block=$(cat /etc/config/block_${K8S_NAME##*-}); if [ $block == \"false\" ]; then break; fi; echo "Startup is blocked."; sleep 10; done"
+              "while true; do block=$(cat /etc/config/block_${K8S_NAME##*-}); if [ $block == \"false\" ]; then break; fi; echo \"Startup is blocked.\"; sleep 10; done"
             ],
             "env": [
               {

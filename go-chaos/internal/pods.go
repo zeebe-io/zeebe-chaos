@@ -184,6 +184,29 @@ func (c K8Client) checkIfGatewaysAreRunning() (bool, error) {
 	return true, nil
 }
 
+func (c K8Client) AwaitPodReadiness(podName string, timeout time.Duration) error {
+	timedOut := time.After(timeout)
+	ticker := time.Tick(1 * time.Second)
+
+	// Keep checking until we're timed out
+	for {
+		select {
+		case <-timedOut:
+			return errors.New(fmt.Sprintf("Pod %s is not ready with in given timeout %v", podName, timeout))
+		case <-ticker:
+			// check status of pod on every tick (1 second)
+			pod, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Get(context.TODO(), podName, metav1.GetOptions{})
+			if err != nil {
+				LogVerbose("Failed to get pod %s. Will retry", pod.Name)
+			} else if pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
+				return nil
+			} else {
+				LogVerbose("Pod %s is in phase %s, but not ready. Wait for some seconds", pod.Name, pod.Status.Phase)
+			}
+		}
+	}
+}
+
 func (c K8Client) RestartPod(podName string) error {
 	return c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Delete(context.TODO(), podName, metav1.DeleteOptions{})
 }
