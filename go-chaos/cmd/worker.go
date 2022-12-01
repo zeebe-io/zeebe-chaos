@@ -56,7 +56,7 @@ func start_worker(cmd *cobra.Command, args []string) {
 
 	// Allow only one job at a time, otherwise job handling might interfere (e.g. override global vars)
 	jobWorker := client.NewJobWorker().JobType(jobTypeZbChaos).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
-	client.NewJobWorker().JobType(jobTypeReadExperiments).Handler(handleZbChaosJob).MaxJobsActive(1).Open()
+	client.NewJobWorker().JobType(jobTypeReadExperiments).Handler(worker.HandleReadExperiments).MaxJobsActive(1).Open()
 	jobWorker.AwaitClose()
 }
 
