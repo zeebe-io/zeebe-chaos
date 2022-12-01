@@ -17,4 +17,4 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/zbchaos /usr/local/bin/
 
 ENTRYPOINT ["zbchaos"]
-CMD ["worker"]
+CMD ["worker", "--jsonLogging", "--verbose"]
