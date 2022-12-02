@@ -15,7 +15,7 @@ var chaosContent embed.FS
 const experimentFileName = "experiment.json"
 
 type Experiments struct {
-	Experiments []map[string]interface{}
+	Experiments []map[string]interface{} `json:"experiments"`
 }
 
 func ReadExperimentsForClusterPlan(clusterPlan string) (Experiments, error) {
