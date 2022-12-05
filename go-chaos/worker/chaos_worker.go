@@ -98,7 +98,7 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 
 	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan(*jobVariables.ClusterPlan)
 	if err != nil {
-		internal.LogInfo("Can't read experiments for given cluster plan %s, no sense in retrying will fail job. Error: %s", jobVariables.ClusterPlan, err.Error())
+		internal.LogInfo("Can't read experiments for given cluster plan %s, no sense in retrying will fail job. Error: %s", *jobVariables.ClusterPlan, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
 		return
 	}
