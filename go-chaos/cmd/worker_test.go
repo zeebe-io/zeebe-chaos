@@ -46,5 +46,4 @@ func Test_ShouldRunCommand(t *testing.T) {
 	outStr := string(out)
 	assert.Contains(t, outStr, "Running command with args: [version] ")
 	assert.Contains(t, outStr, "zbchaos development (commit: HEAD)")
-
 }
