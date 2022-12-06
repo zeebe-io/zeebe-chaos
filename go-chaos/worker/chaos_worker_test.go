@@ -34,7 +34,7 @@ func Test_ShouldFailToHandleJobWithoutPayload(t *testing.T) {
 		return nil // success
 	}
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Key: 123,
 		},
 	}
@@ -52,7 +52,7 @@ func Test_ShouldFailToHandleReadExperimentsJobWithoutPayload(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Key: 123,
 		},
 	}
@@ -78,7 +78,7 @@ func Test_ShouldHandleCommand(t *testing.T) {
 
 	require.NoError(t, err)
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Key:       123,
 			Variables: jsonString,
 		},
@@ -99,7 +99,7 @@ func Test_ShouldSendExperimentsForClusterPlan(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Key:       123,
 			Variables: "{\"clusterPlan\":\"Production - S\"}",
 		},
@@ -120,7 +120,7 @@ func Test_ShouldFailWhenNoClusterPlanForReadExperimentsJob(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Key:       123,
 			Variables: "{\"clusterPlan\":\"noop\"}",
 		},
@@ -147,7 +147,7 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 
 	require.NoError(t, err)
 	job := entities.Job{
-		&pb.ActivatedJob{
+		ActivatedJob: &pb.ActivatedJob{
 			Retries:   3,
 			Key:       123,
 			Variables: jsonString,

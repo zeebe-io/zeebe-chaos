@@ -16,10 +16,12 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/worker"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 	chaos_experiments "github.com/zeebe-io/zeebe-chaos/go-chaos/internal/chaos-experiments"
 )
 
@@ -48,6 +50,7 @@ type ZbChaosVariables struct {
 
 func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner CommandRunner) {
 	ctx := context.Background()
+	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
 
 	jobVariables := ZbChaosVariables{
 		Provider: ChaosProvider{
@@ -56,7 +59,7 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	}
 	err := job.GetVariablesAs(&jobVariables)
 	if err != nil {
-		// Can't parse variables, no sense in retrying
+		internal.LogInfo("Can't parse variables %s, no sense in retrying will fail job. Error: %s", job.Variables, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
 		return
 	}
@@ -79,6 +82,7 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 
 func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 	ctx := context.Background()
+	internal.LogInfo("Handle read experiments job [key: %d]", job.Key)
 
 	jobVariables := ZbChaosVariables{
 		Provider: ChaosProvider{
@@ -87,13 +91,14 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 	}
 	err := job.GetVariablesAs(&jobVariables)
 	if err != nil {
-		// Can't parse variables, no sense in retrying
+		internal.LogInfo("Can't parse variables %s, no sense in retrying will fail job. Error: %s", job.Variables, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
 		return
 	}
 
 	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan(*jobVariables.ClusterPlan)
 	if err != nil {
+		internal.LogInfo("Can't read experiments for given cluster plan %s, no sense in retrying will fail job. Error: %s", *jobVariables.ClusterPlan, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
 		return
 	}
@@ -103,6 +108,9 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
 		return
 	}
+
+	experimentsJson, _ := json.Marshal(&experiments) // we can ignore the error, the marshalling would have failed already before
+	internal.LogInfo("Read experiments successful, complete job with: %s.", string(experimentsJson))
 
 	_, _ = command.Send(ctx)
 }

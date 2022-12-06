@@ -1,0 +1,42 @@
+{
+    "version": "0.1.0",
+    "title": "This is a fake experiment",
+    "description": "This fake experiment is just to test the integration with Zeebe and zbchaos workers",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "Show version",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["version"],
+                    "timeout": 900
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Show again the version",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["version"],
+                "timeout": 900
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ],
+    "rollbacks": []
+}

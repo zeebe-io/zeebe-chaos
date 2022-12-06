@@ -54,6 +54,10 @@ func start_worker(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	OpenWorkers(client)
+}
+
+func OpenWorkers(client zbc.Client) {
 	internal.LogVerbose("Open workers: [%s, %s].", jobTypeZbChaos, jobTypeReadExperiments)
 
 	// Allow only one job at a time, otherwise job handling might interfere (e.g. override global vars)
