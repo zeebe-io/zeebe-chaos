@@ -48,6 +48,7 @@ func Test_ShouldBeAbleToDeployChaosModels(t *testing.T) {
 func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 	// given
 	internal.Verbosity = true
+	cmd.Verbose = true
 	ctx := context.Background()
 	container := CreateEZEContainer(t, ctx)
 	defer container.StopLogProducer()

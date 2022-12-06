@@ -40,7 +40,7 @@ func init() {
 	disconnectBrokers.Flags().IntVar(&broker2NodeId, "broker2NodeId", -1, "Specify the nodeId of the second Broker")
 	// general
 	disconnectBrokers.Flags().BoolVar(&oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
-	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId", "one-direction")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId")
 
 	// disconnect gateway
 	disconnect.AddCommand(disconnectGateway)

@@ -115,15 +115,21 @@ func MakeIpReachableForPod(k8Client K8Client, podName string) error {
 	// we use replace to not break the execution, since add will return an exit code > 0 if the route exist
 	err := k8Client.ExecuteCmdOnPod([]string{"sh", "-c", "command -v ip"}, podName)
 
-	if err != nil && strings.Contains(err.Error(), "exit code 127") {
-		return errors.New("Execution exited with exit code 127 (Command not found). It is likely that the broker was not disconnected or restarted in between.")
+	if err != nil {
+		if strings.Contains(err.Error(), "exit code 127") {
+			return errors.New("Execution exited with exit code 127 (Command not found). It is likely that the broker was not disconnected or restarted in between.")
+		}
+		return err
 	}
 
 	var buf bytes.Buffer
 	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", "ip route | grep -m 1 unreachable"}, podName, &buf)
 
-	if err != nil && strings.Contains(err.Error(), "exit code 1") {
-		return errors.New("Execution exited with exit code 1 (ip route not found). It is likely that the broker was not disconnected or restarted in between.")
+	if err != nil {
+		if strings.Contains(err.Error(), "exit code 1") {
+			return errors.New("Execution exited with exit code 1 (ip route not found). It is likely that the broker was not disconnected or restarted in between.")
+		}
+		return err
 	}
 
 	err = k8Client.ExecuteCmdOnPodWriteIntoOutput([]string{"sh", "-c", fmt.Sprintf("ip route del %s", strings.TrimSpace(buf.String()))}, podName, &buf)

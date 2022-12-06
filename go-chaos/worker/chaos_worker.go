@@ -68,7 +68,10 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
 
-	clusterAccessArgs := append([]string{}, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
+	var clusterAccessArgs []string
+	if *jobVariables.ClusterId != "" {
+		clusterAccessArgs = append(clusterAccessArgs, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
+	} // else we run local against our k8 context
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
 
 	err = commandRunner(commandArgs, commandCtx)
