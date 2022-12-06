@@ -24,13 +24,12 @@ func init() {
 	rootCmd.AddCommand(deployCmd)
 
 	deployCmd.AddCommand(deployProcessModelCmd)
-
 	deployProcessModelCmd.Flags().StringVar(&processModelPath, "processModelPath", "",
-		"Specify the path to a BPMN process model, which should be deployed.")
-	deployProcessModelCmd.Flags().IntVar(&multipleVersions, "multipleVersions", 10,
-		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
+		"Specify the path to a BPMN process model, which should be deployed. Defaults to a benchmark process model with one task (included in zbchaos).")
 
-	deployProcessModelCmd.MarkFlagsMutuallyExclusive("processModelPath", "multipleVersions")
+	deployCmd.AddCommand(deployMultiVersionProcessModelCmd)
+	deployMultiVersionProcessModelCmd.Flags().IntVar(&versionCount, "versionCount", 10,
+		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
 
 	deployCmd.AddCommand(deployWorkerCmd)
 	deployCmd.AddCommand(deployChaosModels)
@@ -60,17 +59,33 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 		ensureNoError(err)
 		defer zbClient.Close()
 
-		if len(processModelPath) == 0 {
-			// deploy multi version
-			err := internal.DeployDifferentVersions(zbClient, int32(multipleVersions))
-			ensureNoError(err)
-			internal.LogInfo("Deployed different process models of different types and versions to zeebe!")
-		} else {
-			processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
-			ensureNoError(err)
+		processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
+		ensureNoError(err)
 
-			internal.LogInfo("Deployed given process model %s, under key %d!", processModelPath, processDefinitionKey)
-		}
+		internal.LogInfo("Deployed given process model %s, under key %d!", processModelPath, processDefinitionKey)
+	},
+}
+
+var deployMultiVersionProcessModelCmd = &cobra.Command{
+	Use:   "multi-version",
+	Short: "Deploy multiple versions to Zeebe",
+	Long: `Deploy multiple versions of process and dmn models to Zeebe.
+Useful for experimenting with deployment distribution.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		k8Client, err := internal.CreateK8Client()
+		ensureNoError(err)
+
+		port := 26500
+		closeFn := k8Client.MustGatewayPortForward(port, port)
+		defer closeFn()
+
+		zbClient, err := internal.CreateZeebeClient(port)
+		ensureNoError(err)
+		defer zbClient.Close()
+
+		err = internal.DeployDifferentVersions(zbClient, int32(versionCount))
+		ensureNoError(err)
+		internal.LogInfo("Deployed different process models of different types and versions to zeebe!")
 	},
 }
 

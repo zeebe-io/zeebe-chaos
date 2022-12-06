@@ -39,7 +39,7 @@
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["deploy", "process", "--multipleVersions", "10"],
+                "arguments": ["deploy", "multi-version", "--versionCount", "10"],
                 "timeout": 900
             }
         },

@@ -30,7 +30,7 @@ var (
 	role               string
 	nodeId             int
 	processModelPath   string
-	multipleVersions   int
+	versionCount       int
 	variables          string
 	msgName            string
 	awaitResult        bool
