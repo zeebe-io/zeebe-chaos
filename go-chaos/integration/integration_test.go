@@ -110,5 +110,5 @@ type Printer struct {
 }
 
 func (p *Printer) Accept(l testcontainers.Log) {
-	fmt.Println(string(l.Content))
+	fmt.Print(string(l.Content))
 }
