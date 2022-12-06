@@ -15,7 +15,8 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-readiness.sh",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
                     "timeout": 900
                 }
             }
@@ -24,31 +25,12 @@
     "method": [
         {
             "type": "action",
-            "name": "Enable net_admin capabilities",
-            "provider": {
-                "type": "process",
-                "path": "apply_net_admin.sh"
-            },
-            "pauses": {
-                "after": 180
-            }
-        },
-        {
-            "name": "All pods should be ready",
-            "type": "probe",
-            "tolerance": 0,
-            "provider": {
-                "type": "process",
-                "path": "verify-readiness.sh",
-                "timeout": 900
-            }
-        },
-        {
-            "type": "action",
             "name": "Create network partition between leaders",
             "provider": {
                 "type": "process",
-                "path": "disconnect-leaders-one-way.sh"
+                "path": "zbchaos",
+                "arguments": ["disconnect", "brokers", "--broker1PartitionId", "1", "--broker2PartitionId", "3", "--one-direction"],
+                "timeout": 900
             }
         },
         {
@@ -56,16 +38,19 @@
             "name": "Deploy different deployment versions.",
             "provider": {
                 "type": "process",
-                "path": "deploy-different-versions.sh",
-                "arguments": ["Follower", "3"]
+                "path": "zbchaos",
+                "arguments": ["deploy", "process", "--multipleVersions", "10"],
+                "timeout": 900
             }
         },
         {
             "type": "action",
-            "name": "Delete network partition",
+            "name": "Connect leaders again",
             "provider": {
                 "type": "process",
-                "path": "connect-leaders.sh"
+                "path": "zbchaos",
+                "arguments": ["connect", "brokers"],
+                "timeout": 900
             }
         },
         {
@@ -74,8 +59,8 @@
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "start-instance-on-partition-with-version.sh",
-                "arguments": ["1", "10"],
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--bpmnProcessId", "multiVersion", "--version", "10", "--partitionId", "1"],
                 "timeout": 900
             }
         },
@@ -85,8 +70,8 @@
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "start-instance-on-partition-with-version.sh",
-                "arguments": ["2", "10"],
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--bpmnProcessId", "multiVersion", "--version", "10", "--partitionId", "2"],
                 "timeout": 900
             }
         },
@@ -96,8 +81,8 @@
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "start-instance-on-partition-with-version.sh",
-                "arguments": ["3", "10"],
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--bpmnProcessId", "multiVersion", "--version", "10", "--partitionId", "3"],
                 "timeout": 900
             }
         }
