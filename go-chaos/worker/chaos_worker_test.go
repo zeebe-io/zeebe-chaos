@@ -116,26 +116,6 @@ func Test_ShouldSendExperimentsForClusterPlan(t *testing.T) {
 	assert.Equal(t, experiments, fakeJobClient.Variables)
 }
 
-func Test_ShouldFailJobForNonExistingClusterPlan(t *testing.T) {
-	// given
-	fakeJobClient := &FakeJobClient{}
-	job := entities.Job{
-		ActivatedJob: &pb.ActivatedJob{
-			Key:       123,
-			Variables: "{\"clusterPlan\":\"Non - S\"}",
-		},
-	}
-
-	// when
-	HandleReadExperiments(fakeJobClient, job)
-
-	// then
-	assert.True(t, fakeJobClient.Failed)
-	assert.Equal(t, 123, fakeJobClient.Key)
-	assert.Equal(t, 0, fakeJobClient.RetriesVal)
-	assert.Contains(t, fakeJobClient.ErrorMsg, "does not exist")
-}
-
 func Test_ShouldFailWhenNoClusterPlanForReadExperimentsJob(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
