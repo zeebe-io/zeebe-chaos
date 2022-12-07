@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -50,7 +49,6 @@ var ClientId string
 var ClientSecret string
 var Audience string
 var JsonLogging bool
-var LoggingContext string
 
 var rootCmd = &cobra.Command{
 	Use:   "zbchaos",
@@ -61,13 +59,7 @@ var rootCmd = &cobra.Command{
 		internal.Verbosity = Verbose
 		internal.JsonLogging = JsonLogging
 		if JsonLogging {
-			if LoggingContext != "" {
-				// should be json
-				ctxObj := make(map[string]interface{})
-				err := json.Unmarshal([]byte(LoggingContext), &ctxObj)
-				ensureNoError(err)
-				internal.JsonLogger = log.With().Fields(ctxObj).Logger()
-			}
+			internal.JsonLogger = log.With().Logger()
 		}
 		internal.Namespace = Namespace
 		internal.KubeConfigPath = KubeConfigPath
@@ -84,7 +76,6 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
-	rootCmd.PersistentFlags().StringVar(&LoggingContext, "loggingContext", "", "the (optional) context which can be set for json logging, should be a json object")
 	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
 	rootCmd.PersistentFlags().StringVarP(&ClientId, "clientId", "c", "", "connect using the given clientId")
