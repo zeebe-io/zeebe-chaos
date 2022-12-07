@@ -32,9 +32,6 @@
                 "path": "zbchaos",
                 "arguments": ["version"],
                 "timeout": 900
-            },
-            "pauses": {
-                "after": 5
             }
         }
     ],
