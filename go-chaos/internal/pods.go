@@ -161,8 +161,8 @@ func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
 
 	allRunning := true
 	for _, pod := range pods.Items {
-		if !pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
-			LogVerbose("Pod %s is in phase %s, but not ready. Wait for some seconds.", pod.Name, pod.Status.Phase)
+		if pod.Status.Phase != v1.PodRunning || !pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
+			LogVerbose("Pod %s is in phase %s, and not ready. Wait for some seconds.", pod.Name, pod.Status.Phase)
 			allRunning = false
 			break
 		}
@@ -198,7 +198,7 @@ func (c K8Client) AwaitPodReadiness(podName string, timeout time.Duration) error
 			pod, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Get(context.TODO(), podName, metav1.GetOptions{})
 			if err != nil {
 				LogVerbose("Failed to get pod %s. Will retry", pod.Name)
-			} else if pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
+			} else if pod.Status.Phase == v1.PodRunning && pod.Status.ContainerStatuses[0].Ready { // assuming there is only one container
 				return nil
 			} else {
 				LogVerbose("Pod %s is in phase %s, but not ready. Wait for some seconds", pod.Name, pod.Status.Phase)
