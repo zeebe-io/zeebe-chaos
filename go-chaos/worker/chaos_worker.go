@@ -103,10 +103,13 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 
 func createLoggingContext(jobVariables ZbChaosVariables, job entities.Job) map[string]interface{} {
 	loggingCtx := make(map[string]interface{})
-	loggingCtx["clusterId"] = *jobVariables.ClusterId
-	loggingCtx["jobKey"] = fmt.Sprintf("%d", job.Key)
-	loggingCtx["processInstanceKey"] = fmt.Sprintf("%d", job.ProcessInstanceKey)
-	loggingCtx["title"] = *jobVariables.Title
+	loggingCtx["logging.googleapis.com/labels"] = map[string]string{
+		"clusterId":          *jobVariables.ClusterId,
+		"jobKey":             fmt.Sprintf("%d", job.Key),
+		"processInstanceKey": fmt.Sprintf("%d", job.ProcessInstanceKey),
+		"title":              *jobVariables.Title,
+	}
+	loggingCtx["logging.googleapis.com/operation"] = map[string]string{"id": fmt.Sprintf("%d", job.Key)}
 	return loggingCtx
 }
 
