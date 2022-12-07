@@ -77,6 +77,9 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	// we set here the current log context, this only works if we handle on job per time (which we currently have configured)
 	// TODO make it more thread local
 	internal.LoggingContext = loggingCtx
+	defer func() {
+		internal.LoggingContext = nil
+	}() // reset the context
 	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
 
 	timeout := time.Duration(jobVariables.Provider.Timeout) * time.Second
