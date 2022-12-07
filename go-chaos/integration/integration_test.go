@@ -49,6 +49,7 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 	// given
 	internal.Verbosity = true
 	cmd.Verbose = true
+	cmd.JsonLogging = true
 	ctx := context.Background()
 	container := CreateEZEContainer(t, ctx)
 	defer container.StopLogProducer()

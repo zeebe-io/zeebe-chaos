@@ -17,6 +17,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
@@ -28,9 +29,12 @@ import (
 type CommandRunner func([]string, context.Context) error
 
 type ChaosProvider struct {
-	Path      string
+	// the path will always be zbchaos
+	Path string
+	// the arguments for zbchaos, like sub-commands and parameters
 	Arguments []string
-	Timeout   int64
+	// the timeout for the command
+	Timeout int64
 }
 
 type AuthenticationProvider struct {
@@ -42,15 +46,20 @@ type AuthenticationProvider struct {
 }
 
 type ZbChaosVariables struct {
-	ClusterPlan           *string
-	ClusterId             *string
-	Provider              ChaosProvider
+	// title of the current chaos experiment
+	Title *string
+	// the current cluster plan we run against the chaos experiment
+	ClusterPlan *string
+	// the target cluster for our chaos experiment
+	ClusterId *string
+	// the chaos provider, which contain details to the chaos experiment
+	Provider ChaosProvider
+	// the authentication details for our target cluster
 	AuthenticationDetails AuthenticationProvider
 }
 
 func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner CommandRunner) {
 	ctx := context.Background()
-	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
 
 	jobVariables := ZbChaosVariables{
 		Provider: ChaosProvider{
@@ -63,6 +72,15 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
 		return
 	}
+
+	loggingCtx := createLoggingContext(jobVariables, job)
+	// we set here the current log context, this only works if we handle on job per time (which we currently have configured)
+	// TODO make it more thread local
+	internal.LoggingContext = loggingCtx
+	defer func() {
+		internal.LoggingContext = nil
+	}() // reset the context
+	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
 
 	timeout := time.Duration(jobVariables.Provider.Timeout) * time.Second
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
@@ -85,6 +103,18 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	if err != nil {
 		internal.LogInfo("Error on completing the job [key: %d]. Error: %s", job.Key, err.Error())
 	}
+}
+
+func createLoggingContext(jobVariables ZbChaosVariables, job entities.Job) map[string]interface{} {
+	loggingCtx := make(map[string]interface{})
+	loggingCtx["logging.googleapis.com/labels"] = map[string]string{
+		"clusterId":          *jobVariables.ClusterId,
+		"jobKey":             fmt.Sprintf("%d", job.Key),
+		"processInstanceKey": fmt.Sprintf("%d", job.ProcessInstanceKey),
+		"title":              *jobVariables.Title,
+	}
+	loggingCtx["logging.googleapis.com/operation"] = map[string]string{"id": fmt.Sprintf("%d", job.Key)}
+	return loggingCtx
 }
 
 func HandleReadExperiments(client worker.JobClient, job entities.Job) {

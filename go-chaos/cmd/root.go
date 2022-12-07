@@ -59,7 +59,7 @@ var rootCmd = &cobra.Command{
 		internal.Verbosity = Verbose
 		internal.JsonLogging = JsonLogging
 		if JsonLogging {
-			internal.JsonLogger = log.With().Str("cli", "zbchaos").Logger()
+			internal.JsonLogger = log.With().Logger()
 		}
 		internal.Namespace = Namespace
 		internal.KubeConfigPath = KubeConfigPath
