@@ -15,7 +15,19 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-readiness.sh",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Can deploy process model",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["deploy", "process"],
                     "timeout": 900
                 }
             },
@@ -25,8 +37,8 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-steady-state.sh",
-                    "arguments": "1",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
                     "timeout": 900
                 }
             }
@@ -38,8 +50,8 @@
             "name": "Terminate leader of partition 1 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition.sh",
-                "arguments": [ "Leader", "1" ]
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
             }
         }
     ],
