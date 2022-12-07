@@ -60,7 +60,6 @@ type ZbChaosVariables struct {
 
 func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner CommandRunner) {
 	ctx := context.Background()
-	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
 
 	jobVariables := ZbChaosVariables{
 		Provider: ChaosProvider{
@@ -74,6 +73,12 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 		return
 	}
 
+	loggingCtx := createLoggingContext(jobVariables, job)
+	// we set here the current log context, this only works if we handle on job per time (which we currently have configured)
+	// TODO make it more thread local
+	internal.LoggingContext = loggingCtx
+	internal.LogInfo("Handle zbchaos job [key: %d]", job.Key)
+
 	timeout := time.Duration(jobVariables.Provider.Timeout) * time.Second
 	commandCtx, cancelCommand := context.WithTimeout(ctx, timeout)
 	defer cancelCommand()
@@ -84,15 +89,6 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	} // else we run local against our k8 context
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
 
-	loggingCtx := createLoggingContext(jobVariables, job)
-	jsonBytes, err := json.Marshal(loggingCtx)
-	if err != nil {
-		internal.LogInfo("Error on marshalling logging context %v. Error: %s", loggingCtx, err.Error())
-		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).Send(ctx)
-		return
-	}
-	commandArgs = append(commandArgs, "--loggingContext", string(jsonBytes))
-
 	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
@@ -102,8 +98,8 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	_, _ = client.NewCompleteJobCommand().JobKey(job.Key).Send(ctx)
 }
 
-func createLoggingContext(jobVariables ZbChaosVariables, job entities.Job) map[string]string {
-	loggingCtx := make(map[string]string)
+func createLoggingContext(jobVariables ZbChaosVariables, job entities.Job) map[string]interface{} {
+	loggingCtx := make(map[string]interface{})
 	loggingCtx["clusterId"] = *jobVariables.ClusterId
 	loggingCtx["jobKey"] = fmt.Sprintf("%d", job.Key)
 	loggingCtx["processInstanceKey"] = fmt.Sprintf("%d", job.ProcessInstanceKey)
