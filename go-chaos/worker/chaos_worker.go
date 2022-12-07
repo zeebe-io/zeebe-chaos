@@ -76,11 +76,15 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 
 	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
+		internal.LogInfo("Error on running command. [key: %d, args: %s]. Error: %s", job.Key, commandArgs, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
 		return
 	}
 
-	_, _ = client.NewCompleteJobCommand().JobKey(job.Key).Send(ctx)
+	_, err = client.NewCompleteJobCommand().JobKey(job.Key).Send(ctx)
+	if err != nil {
+		internal.LogInfo("Error on completing the job [key: %d]. Error: %s", job.Key, err.Error())
+	}
 }
 
 func HandleReadExperiments(client worker.JobClient, job entities.Job) {

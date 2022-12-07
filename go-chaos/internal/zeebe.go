@@ -284,10 +284,9 @@ type ProcessInstanceCreationOptions struct {
 
 func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {
 	var processInstanceCreator ProcessInstanceCreator
-	LogVerbose("Create process instance with BPMN process ID %s and version %d [variables: '%s', awaitResult: %t]",
-		options.BpmnProcessId, options.Version, options.Variables, options.AwaitResult)
-
 	processInstanceCreator = func() (int64, error) {
+		LogVerbose("Send create process instance command, with BPMN process ID '%s' and version '%d' (-1 means latest) [variables: '%s', awaitResult: %t]",
+			options.BpmnProcessId, options.Version, options.Variables, options.AwaitResult)
 		commandStep3 := zbClient.NewCreateInstanceCommand().BPMNProcessId(options.BpmnProcessId).Version(options.Version)
 		if len(options.Variables) != 0 {
 			_, err := commandStep3.VariablesFromString(options.Variables)
