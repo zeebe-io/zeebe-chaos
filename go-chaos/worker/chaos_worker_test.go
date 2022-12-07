@@ -79,8 +79,9 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	require.NoError(t, err)
 	job := entities.Job{
 		ActivatedJob: &pb.ActivatedJob{
-			Key:       123,
-			Variables: jsonString,
+			Key:                123,
+			ProcessInstanceKey: 456,
+			Variables:          jsonString,
 		},
 	}
 
@@ -91,7 +92,49 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	assert.True(t, fakeJobClient.Succeeded)
 	assert.Equal(t, 123, fakeJobClient.Key)
 	var expectedArgs = []string{
-		"--namespace", "clusterId-zeebe", "--clientId", "clientId", "--clientSecret", "clientSecret", "--audience", "audience", "disconnect", "gateway", "--all"}
+		"--namespace", "clusterId-zeebe",
+		"--clientId", "clientId",
+		"--clientSecret", "clientSecret",
+		"--audience", "audience",
+		"disconnect", "gateway",
+		"--all",
+		"--loggingContext", "{\"clusterId\":\"clusterId\",\"jobKey\":\"123\",\"processInstanceKey\":\"456\",\"title\":\"Fake experiment\"}"}
+	assert.Equal(t, expectedArgs, appliedArgs)
+}
+
+func Test_ShouldHandleCommandForSelfManagedWhenNoClusterId(t *testing.T) {
+	// given
+	fakeJobClient := &FakeJobClient{}
+	variables := createZbChaosVariables()
+	variables.ClusterId = new(string)
+
+	jsonBytes, err := json.Marshal(variables)
+	var appliedArgs []string
+	commandRunner := func(args []string, ctx context.Context) error {
+		appliedArgs = args
+		return nil // success
+	}
+
+	require.NoError(t, err)
+	jsonString := string(jsonBytes)
+	job := entities.Job{
+		ActivatedJob: &pb.ActivatedJob{
+			Key:                123,
+			ProcessInstanceKey: 456,
+			Variables:          jsonString,
+		},
+	}
+
+	// when
+	HandleZbChaosJob(fakeJobClient, job, commandRunner)
+
+	// then
+	assert.True(t, fakeJobClient.Succeeded)
+	assert.Equal(t, 123, fakeJobClient.Key)
+	var expectedArgs = []string{
+		"disconnect", "gateway",
+		"--all",
+		"--loggingContext", "{\"clusterId\":\"\",\"jobKey\":\"123\",\"processInstanceKey\":\"456\",\"title\":\"Fake experiment\"}"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -148,9 +191,10 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	require.NoError(t, err)
 	job := entities.Job{
 		ActivatedJob: &pb.ActivatedJob{
-			Retries:   3,
-			Key:       123,
-			Variables: jsonString,
+			Retries:            3,
+			Key:                123,
+			ProcessInstanceKey: 456,
+			Variables:          jsonString,
 		},
 	}
 
@@ -162,13 +206,29 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	assert.Equal(t, 123, fakeJobClient.Key)
 	assert.Equal(t, 2, fakeJobClient.RetriesVal)
 	var expectedArgs = []string{
-		"--namespace", "clusterId-zeebe", "--clientId", "clientId", "--clientSecret", "clientSecret", "--audience", "audience", "disconnect", "gateway", "--all"}
+		"--namespace", "clusterId-zeebe",
+		"--clientId", "clientId",
+		"--clientSecret", "clientSecret",
+		"--audience", "audience",
+		"disconnect", "gateway",
+		"--all",
+		"--loggingContext", "{\"clusterId\":\"clusterId\",\"jobKey\":\"123\",\"processInstanceKey\":\"456\",\"title\":\"Fake experiment\"}"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
 func createVariablesAsJson() (string, error) {
+	variables := createZbChaosVariables()
+
+	marshal, err := json.Marshal(variables)
+	return string(marshal), err
+
+}
+
+func createZbChaosVariables() ZbChaosVariables {
 	clusterId := "clusterId"
+	title := "Fake experiment"
 	variables := ZbChaosVariables{
+		Title:     &title,
 		ClusterId: &clusterId,
 		Provider: ChaosProvider{
 			Path:      "zbchaos",
@@ -181,8 +241,5 @@ func createVariablesAsJson() (string, error) {
 			ContactPoint: "contactPoint",
 		},
 	}
-
-	marshal, err := json.Marshal(variables)
-	return string(marshal), err
-
+	return variables
 }
