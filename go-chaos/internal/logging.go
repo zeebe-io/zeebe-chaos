@@ -18,10 +18,16 @@ import (
 	"fmt"
 )
 
+var LoggingContext map[string]interface{}
+
 func LogVerbose(text string, a ...any) {
 	if Verbosity {
 		if JsonLogging {
-			JsonLogger.Debug().Msgf(text, a...)
+			debug := JsonLogger.Debug()
+			if LoggingContext != nil {
+				debug = debug.Fields(LoggingContext)
+			}
+			debug.Msgf(text, a...)
 		} else {
 			fmt.Printf(text, a...)
 			fmt.Println()
@@ -31,7 +37,11 @@ func LogVerbose(text string, a ...any) {
 
 func LogInfo(text string, a ...any) {
 	if JsonLogging {
-		JsonLogger.Debug().Msgf(text, a...)
+		info := JsonLogger.Info()
+		if LoggingContext != nil {
+			info.Fields(LoggingContext)
+		}
+		info.Msgf(text, a...)
 	} else {
 		fmt.Printf(text, a...)
 		fmt.Println()
