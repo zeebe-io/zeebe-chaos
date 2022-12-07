@@ -1,0 +1,145 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe dataloss experiment",
+    "description": "Zeebe should be able to handle data loss of one broker at a time.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": [
+                        "verify", "readiness"
+                    ],
+                    "timeout": 900
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Deploy process",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["deploy", "process"]
+            },
+            "timeout": 900
+        },
+        {
+            "type": "action",
+            "name": "Delete data of broker 0 and restart the pod",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["dataloss", "delete", "--nodeId=0"]
+            },
+            "pauses": {
+                "after": 60
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Broker 0 can recover after data loss",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"]
+            },
+            "timeout": 900
+        },
+        {
+            "type": "action",
+            "name": "Delete data of broker 1 and restart the pod",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["dataloss", "delete", "--nodeId=1"]
+            },
+            "pauses": {
+                "after": 60
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Broker 1 can recover after data loss",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"]
+            },
+            "timeout": 900
+        },
+        {
+            "type": "action",
+            "name": "Delete data of broker 2 and restart the pod",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["dataloss", "delete", "--nodeId=2"]
+            },
+            "pauses": {
+                "after": 60
+            }
+        },
+        {
+            "type": "probe",
+            "name": "Broker 2 can recover after data loss",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"]
+            },
+            "timeout": 900
+        },
+        {
+            "name": "There is no data loss. Should be able to create process instances on partition 1",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": [
+                    "verify", "instance-creation", "--partitionId=1"
+                ],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "There is no data loss. Should be able to create process instances on partition 2",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": [
+                    "verify", "instance-creation", "--partitionId=2"
+                ],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "There is no data loss. Should be able to create process instances on partition 3",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": [
+                    "verify", "instance-creation", "--partitionId=3"
+                ],
+                "timeout": 900
+            }
+        }
+    ],
+    "rollbacks": []
+}
