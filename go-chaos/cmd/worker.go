@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 	worker "github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
+	"google.golang.org/grpc"
 )
 
 const jobTypeZbChaos = "zbchaos"
@@ -63,8 +64,10 @@ func start_worker(cmd *cobra.Command, args []string) {
 	}
 
 	client, err := zbc.NewClient(&zbc.ClientConfig{
-		GatewayAddress:      os.Getenv(ENV_ADDRESS),
-		CredentialsProvider: credsProvider,
+		GatewayAddress:         os.Getenv(ENV_ADDRESS),
+		CredentialsProvider:    credsProvider,
+		DialOpts:               []grpc.DialOption{},
+		UsePlaintextConnection: false,
 	})
 
 	if err != nil {
