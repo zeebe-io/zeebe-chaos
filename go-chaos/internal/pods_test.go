@@ -283,7 +283,7 @@ func Test_ShouldReturnTrueWhenBrokersAreReady(t *testing.T) {
 	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
 
 	// when
-	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
+	err = k8Client.AwaitReadinessWithTimeout(100*time.Millisecond, 1*time.Millisecond)
 
 	// then
 	require.NoError(t, err)
@@ -304,7 +304,7 @@ func Test_ShouldReturnErrorWhenAtleastOneBrokerIsNotReady(t *testing.T) {
 	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
 
 	// when
-	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
+	err = k8Client.AwaitReadinessWithTimeout(100*time.Millisecond, 1*time.Second)
 
 	// then
 	require.Error(t, err)
@@ -325,7 +325,7 @@ func Test_ShouldReturnErrorWhenAtleastOneBrokerIsNotRunning(t *testing.T) {
 	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
 
 	// when
-	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
+	err = k8Client.AwaitReadinessWithTimeout(100*time.Millisecond, 1*time.Second)
 
 	// then
 	require.Error(t, err)

@@ -79,15 +79,6 @@ func (c K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.Labe
 	require.NoError(t, err)
 }
 
-func (c K8Client) CreateReadyPodWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
-	_, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
-		Spec:       v1.PodSpec{},
-	}, metav1.CreateOptions{})
-
-	require.NoError(t, err)
-}
-
 func (c K8Client) CreateBrokerPodsWithStatus(t *testing.T, selector *metav1.LabelSelector, podName string, podPhase v1.PodPhase, readyStatus bool) {
 	_, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
