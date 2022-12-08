@@ -79,11 +79,40 @@ func (c K8Client) CreatePodWithLabelsAndName(t *testing.T, selector *metav1.Labe
 	require.NoError(t, err)
 }
 
+func (c K8Client) CreateReadyPodWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, podName string) {
+	_, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
+		Spec:       v1.PodSpec{},
+	}, metav1.CreateOptions{})
+
+	require.NoError(t, err)
+}
+
+func (c K8Client) CreateBrokerPodsWithStatus(t *testing.T, selector *metav1.LabelSelector, podName string, podPhase v1.PodPhase, readyStatus bool) {
+	_, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Create(context.TODO(), &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: podName},
+		Spec:       v1.PodSpec{},
+		Status: v1.PodStatus{
+			Phase: podPhase,
+			ContainerStatuses: []v1.ContainerStatus{
+				{
+					Ready: readyStatus,
+				},
+			},
+		},
+	}, metav1.CreateOptions{})
+
+	require.NoError(t, err)
+}
+
 func (c K8Client) CreateDeploymentWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, name string) {
 	_, err := c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), &v12.Deployment{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: name},
 		Spec:       v12.DeploymentSpec{},
-		Status:     v12.DeploymentStatus{},
+		Status: v12.DeploymentStatus{
+			UnavailableReplicas: 0,
+			AvailableReplicas:   1,
+		},
 	}, metav1.CreateOptions{})
 
 	require.NoError(t, err)
