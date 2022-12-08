@@ -20,19 +20,36 @@ spec:
           name: zbchaos-worker
           resources:
             limits:
-              cpu: 1000m
-              memory: 512Mi
+              cpu: 4
+              memory: 1Gi
             requests:
-              cpu: 150m
-              memory: 128Mi
+              cpu: 2
+              memory: 500Mi
           volumeMounts:
             - mountPath: /.kube
               name: kubeconfig
+          env:
+            # We use here different names for the environment variables on purpose.
+            # If we use the normal ZEEBE_ environment variables we would run
+            # into conflicts when using multiple zeebe clients, the env vars will always overwrite
+            # direct values
+            - name: CHAOS_AUTOMATION_CLUSTER_AUTHORIZATION_SERVER_URL
+              value: "https://login.cloud.ultrawombat.com/oauth/token"
+            - name: CHAOS_AUTOMATION_CLUSTER_CLIENT_ID
+              value: "S7GNoVCE6J-8L~OdFiI59kWM19P.wvKo"
+            - name: CHAOS_AUTOMATION_CLUSTER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: testbench-secrets
+                  key: clientSecret
+            - name: CHAOS_AUTOMATION_CLUSTER_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: testbench-secrets
+                  key: contactPoint
           envFrom:
             - secretRef:
                 name: zeebe-backup-store-s3
-            - secretRef:
-                name: zbchaos-worker-client-config
       volumes:
         - name: kubeconfig
           secret:
