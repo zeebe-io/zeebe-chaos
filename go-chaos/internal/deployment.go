@@ -20,6 +20,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"strings"
 
 	v12 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -64,6 +65,28 @@ func (c K8Client) CreateWorkerDeployment() error {
 		return err
 	}
 
+	if !c.SaaSEnv {
+		// We are in self-managed environment
+		// We have to update the service url such that our workers can connect
+		// We expect that the used helm release name is == to the namespace name
+
+		// JAVA_OPTIONS
+		envVar := deployment.Spec.Template.Spec.Containers[0].Env[0]
+		envVar.Value = strings.Replace(envVar.Value, "zeebe-service:26500", fmt.Sprintf("%s-zeebe-gateway:26500", c.GetCurrentNamespace()), 1)
+		deployment.Spec.Template.Spec.Containers[0].Env[0] = envVar
+	}
+
 	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), deployment, metav1.CreateOptions{})
+
+	if err != nil {
+		if err.Error() == "deployments.apps \"worker\" already exists" {
+			LogInfo("Workers have already deployed, update deployment.")
+			_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Update(context.TODO(), deployment, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
 	return err
 }
