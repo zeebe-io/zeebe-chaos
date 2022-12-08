@@ -15,7 +15,8 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-readiness.sh",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
                     "timeout": 900
                 }
             }
@@ -23,13 +24,23 @@
     },
     "method": [
         {
+            "name": "Deploy process model with catch event",
+            "type": "action",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["deploy", "process", "--processModelPath", "bpmn/msg-catch.bpmn"]
+            }
+        },
+        {
             "type": "action",
             "name": "Publish message to partition one",
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "publish-message.sh",
-                "timeout": 900
+                "path": "zbchaos",
+                "arguments": ["publish", "--partitionId", "1"]
             }
         },
         {
@@ -37,19 +48,33 @@
             "name": "Terminate leader of partition 1 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition.sh",
-                "arguments": [ "Leader", "1" ]
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
             }
         },
         {
-                "name": "Should be able to create a process and await the message correlation",
-                "type": "probe",
-                "tolerance": 0,
-                "provider": {
-                    "type": "process",
-                    "path": "await-message-correlation.sh",
-                    "timeout": 900
-                }
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "Should be able to create a process instance and await the message correlation",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation",
+                    "--awaitResult",
+                    "--bpmnProcessId", "oneReceiveMsgEvent",
+                    "--variables", "{\"key\": \"0\"}"]
+            }
         }
     ],
     "rollbacks": []
