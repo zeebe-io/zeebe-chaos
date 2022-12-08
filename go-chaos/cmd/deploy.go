@@ -25,7 +25,7 @@ func init() {
 
 	deployCmd.AddCommand(deployProcessModelCmd)
 	deployProcessModelCmd.Flags().StringVar(&processModelPath, "processModelPath", "",
-		"Specify the path to a BPMN process model, which should be deployed. Defaults to a benchmark process model with one task (included in zbchaos).")
+		"Specify the path to a BPMN process model, which should be deployed. Defaults to a benchmark process model with one task (included in zbchaos). If the path starts with 'bpmn/' zbchaos will look for a referenced model bundled within the cli, like: 'bpmn/one_task.bpmn'.")
 
 	deployCmd.AddCommand(deployMultiVersionProcessModelCmd)
 	deployMultiVersionProcessModelCmd.Flags().IntVar(&versionCount, "versionCount", 10,
