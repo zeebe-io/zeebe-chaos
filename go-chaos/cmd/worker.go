@@ -71,6 +71,8 @@ func start_worker(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 
+	internal.LogVerbose("Connect to: %s.", os.Getenv(ENV_ADDRESS))
+
 	OpenWorkers(client)
 }
 
