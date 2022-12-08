@@ -15,18 +15,30 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-readiness.sh",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
                     "timeout": 900
                 }
             },
             {
-                "name": "Should be able to create process instances on partition one",
+                "name": "Can deploy process model",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-steady-state.sh",
-                    "arguments": "1",
+                    "path": "zbchaos",
+                    "arguments": ["deploy", "process"],
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create process instances on partition 1",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
                     "timeout": 900
                 }
             }
@@ -35,12 +47,11 @@
     "method": [
         {
             "type": "action",
-            "name": "Terminate leader of partition one",
+            "name": "Terminate leader of partition 1 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition.sh",
-                "arguments": ["Leader", "1"],
-                "status": "0"
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
             }
         },
         {
@@ -49,29 +60,29 @@
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "verify-readiness.sh",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
                 "timeout": 900
             }
         },
         {
-            "name": "Should be able to create process instances on partition one",
+            "name": "Should be able to create process instances on partition 1",
             "type": "probe",
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "verify-steady-state.sh",
-                "arguments": "1",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
                 "timeout": 900
             }
         },
         {
             "type": "action",
-            "name": "Terminate leader of partition one",
+            "name": "Terminate leader of partition 1 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition.sh",
-                "arguments": ["Leader", "1"],
-                "status": "0"
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
             }
         },
         {
@@ -80,29 +91,29 @@
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "verify-readiness.sh",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
                 "timeout": 900
             }
         },
         {
-            "name": "Should be able to create process instances on partition one",
+            "name": "Should be able to create process instances on partition 1",
             "type": "probe",
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "verify-steady-state.sh",
-                "arguments": "1",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
                 "timeout": 900
             }
         },
         {
             "type": "action",
-            "name": "Terminate leader of partition one",
+            "name": "Terminate leader of partition 1 non-gracefully",
             "provider": {
                 "type": "process",
-                "path": "terminate-partition.sh",
-                "arguments": ["Leader", "1"],
-                "status": "0"
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
             }
         }
     ],
