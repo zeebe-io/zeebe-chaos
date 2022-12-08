@@ -15,6 +15,7 @@
 package internal
 
 import (
+	v1 "k8s.io/api/core/v1"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -264,4 +265,25 @@ func Test_GetEmbeddedGateway(t *testing.T) {
 	require.NotNil(t, names)
 	require.NotEmpty(t, names)
 	assert.Equal(t, "broker", names[0], "Expected to retrieve broker")
+}
+
+func Test_ShouldReturnTrueWhenBrokersAreReady(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// broker
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker1", v1.PodRunning, true)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker2", v1.PodRunning, true)
+
+	gatewaySelector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
+
+	// when
+	err = k8Client.AwaitReadiness()
+
+	// then
+	require.NoError(t, err)
 }
