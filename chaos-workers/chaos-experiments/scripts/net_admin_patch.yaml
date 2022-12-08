@@ -1,9 +1,0 @@
-spec:
-  template:
-    spec:
-      containers:
-        - name: "zeebe"
-          securityContext:
-            capabilities:
-              add:
-                - "NET_ADMIN"
