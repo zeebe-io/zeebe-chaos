@@ -15,18 +15,30 @@
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "verify-readiness.sh",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
                     "timeout": 900
                 }
             },
             {
-                "name": "Should be able to create a process and await the result",
+                "name": "Can deploy process model",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
-                    "path": "await-processes-with-result.sh",
-                    "arguments": "1",
+                    "path": "zbchaos",
+                    "arguments": ["deploy", "process"],
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create process instances on partition 1",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
                     "timeout": 900
                 }
             }
@@ -34,16 +46,53 @@
     },
     "method": [
         {
-            "type": "action",
-            "name": "Restart worker pod",
+            "name": "Deploy Workers",
+            "type": "probe",
             "tolerance": 0,
             "provider": {
                 "type": "process",
-                "path": "terminate-workers.sh",
+                "path": "zbchaos",
+                "arguments": ["deploy", "worker"],
                 "timeout": 900
             },
             "pauses": {
                 "after": 5
+            }
+        },
+        {
+            "name": "Should be able to create a process and await the result",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1", "--awaitResult"],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "Restart Workers",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["restart", "worker"],
+                "timeout": 900
+            },
+            "pauses": {
+                "after": 5
+            }
+        },
+        {
+            "name": "Should be able to create a process and await the result",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1", "--awaitResult"],
+                "timeout": 900
             }
         }
     ],
