@@ -109,7 +109,7 @@
                 "type": "process",
                 "path": "zbchaos",
                 "arguments": [
-                    "verify", "instance-creation", "--partitionId=1"
+                    "verify", "instance-creation", "--partitionId=1", "--timeoutInSec=300"
                 ],
                 "timeout": 900
             }
@@ -122,7 +122,7 @@
                 "type": "process",
                 "path": "zbchaos",
                 "arguments": [
-                    "verify", "instance-creation", "--partitionId=2"
+                    "verify", "instance-creation", "--partitionId=2", "--timeoutInSec=300"
                 ],
                 "timeout": 900
             }
@@ -135,7 +135,7 @@
                 "type": "process",
                 "path": "zbchaos",
                 "arguments": [
-                    "verify", "instance-creation", "--partitionId=3"
+                    "verify", "instance-creation", "--partitionId=3", "--timeoutInSec=300"
                 ],
                 "timeout": 900
             }
