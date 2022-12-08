@@ -16,6 +16,8 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
 	zbworker "github.com/camunda/zeebe/clients/go/v8/pkg/worker"
@@ -27,6 +29,11 @@ import (
 
 const jobTypeZbChaos = "zbchaos"
 const jobTypeReadExperiments = "readExperiments"
+
+const ENV_AUTHORIZATION_SERVER_URL = "CHAOS_AUTOMATION_CLUSTER_AUTHORIZATION_SERVER_URL"
+const ENV_CLIENT_ID = "CHAOS_AUTOMATION_CLUSTER_CLIENT_ID"
+const ENV_CLIENT_SECRET = "CHAOS_AUTOMATION_CLUSTER_CLIENT_SECRET"
+const ENV_ADDRESS = "CHAOS_AUTOMATION_CLUSTER_ADDRESS"
 
 func init() {
 	rootCmd.AddCommand(workerCommand)
@@ -40,13 +47,23 @@ var workerCommand = &cobra.Command{
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
-	// the credentials are set via env var's
-	credsProvider, err := zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{})
+	// The credentials are set via env var's.
+	// We use here different names for the environment variables on purpose.
+	// If we use the normal ZEEBE_ environment variables we would run
+	// into conflicts when using multiple zeebe clients, the env vars will always overwrite
+	// direct values
+	credsProvider, err := zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
+		Audience:               strings.TrimSuffix(os.Getenv(ENV_ADDRESS), ":443"),
+		AuthorizationServerURL: os.Getenv(ENV_AUTHORIZATION_SERVER_URL),
+		ClientID:               os.Getenv(ENV_CLIENT_ID),
+		ClientSecret:           os.Getenv(ENV_CLIENT_SECRET),
+	})
 	if err != nil {
 		panic(err)
 	}
 
 	client, err := zbc.NewClient(&zbc.ClientConfig{
+		GatewayAddress:      os.Getenv(ENV_ADDRESS),
 		CredentialsProvider: credsProvider,
 	})
 
