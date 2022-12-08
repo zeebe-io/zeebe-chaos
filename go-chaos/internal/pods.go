@@ -121,12 +121,12 @@ func (c K8Client) RestartPodWithGracePeriod(podName string, gracePeriodSec *int6
 }
 
 func (c K8Client) AwaitReadiness() error {
-	return c.AwaitReadinessWithTimeout(5 * time.Minute)
+	return c.AwaitReadinessWithTimeout(5*time.Minute, 1*time.Second)
 }
 
-func (c K8Client) AwaitReadinessWithTimeout(timeout time.Duration) error {
+func (c K8Client) AwaitReadinessWithTimeout(timeout time.Duration, tickTime time.Duration) error {
 	timedOut := time.After(timeout)
-	ticker := time.Tick(1 * time.Second)
+	ticker := time.Tick(tickTime)
 
 	// Keep checking until we're timed out
 	for {
