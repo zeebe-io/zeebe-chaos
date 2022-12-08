@@ -121,32 +121,33 @@ func (c K8Client) RestartPodWithGracePeriod(podName string, gracePeriodSec *int6
 }
 
 func (c K8Client) AwaitReadiness() error {
-	retries := 0
-	maxRetries := 300 // 5 * 60s
+	return c.AwaitReadinessWithTimeout(5 * time.Minute)
+}
+
+func (c K8Client) AwaitReadinessWithTimeout(timeout time.Duration) error {
+	timedOut := time.After(timeout)
+	ticker := time.Tick(1 * time.Second)
+
+	// Keep checking until we're timed out
 	for {
-		if retries >= maxRetries {
-			return errors.New("Awaited readiness of pods in namespace %s, but timed out after 30s")
-		}
-		if retries > 0 {
-			time.Sleep(1 * time.Second)
-		}
+		select {
+		case <-timedOut:
+			return errors.New(fmt.Sprintf("Awaited readiness of pods in namespace %v, but timed out after %v", c.GetCurrentNamespace(), timeout))
+		case <-ticker:
+			brokersAreRunning, err := c.checkIfBrokersAreRunning()
+			if err != nil {
+				LogVerbose("Failed to check broker status. Will retry. %v", err)
+			}
+			gatewaysAreRunning, err := c.checkIfGatewaysAreRunning()
+			if err != nil {
+				LogVerbose("Failed to check gateway status. Will retry. %v", err)
+			}
 
-		brokersAreRunning, err := c.checkIfBrokersAreRunning()
-		if err != nil {
-			return err
+			if brokersAreRunning && gatewaysAreRunning {
+				return nil
+			}
 		}
-
-		gatewaysAreRunning, err := c.checkIfGatewaysAreRunning()
-		if err != nil {
-			return err
-		}
-
-		if brokersAreRunning && gatewaysAreRunning {
-			break
-		}
-		retries++
 	}
-	return nil
 }
 
 func (c K8Client) checkIfBrokersAreRunning() (bool, error) {
