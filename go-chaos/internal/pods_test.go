@@ -17,6 +17,7 @@ package internal
 import (
 	v1 "k8s.io/api/core/v1"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -282,8 +283,50 @@ func Test_ShouldReturnTrueWhenBrokersAreReady(t *testing.T) {
 	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
 
 	// when
-	err = k8Client.AwaitReadiness()
+	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
 
 	// then
 	require.NoError(t, err)
+}
+
+func Test_ShouldReturnErrorWhenAtleastOneBrokerIsNotReady(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// broker
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker1", v1.PodRunning, true)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker2", v1.PodRunning, false)
+
+	gatewaySelector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
+
+	// when
+	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
+
+	// then
+	require.Error(t, err)
+}
+
+func Test_ShouldReturnErrorWhenAtleastOneBrokerIsNotRunning(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// broker
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedBrokerLabels())
+	require.NoError(t, err)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker1", v1.PodRunning, true)
+	k8Client.CreateBrokerPodsWithStatus(t, selector, "broker2", v1.PodPending, true)
+
+	gatewaySelector, err := metav1.ParseToLabelSelector(getSelfManagedGatewayLabels())
+	require.NoError(t, err)
+	k8Client.CreateDeploymentWithLabelsAndName(t, gatewaySelector, "gateway")
+
+	// when
+	err = k8Client.AwaitReadinessWithTimeout(2 * time.Second)
+
+	// then
+	require.Error(t, err)
 }
