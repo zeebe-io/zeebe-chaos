@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
@@ -260,7 +261,11 @@ func readBPMNFileOrDefault(fileName string) ([]byte, string, error) {
 
 	if len(fileName) == 0 {
 		fileName = "bpmn/one_task.bpmn"
-
+		bpmnBytes, err = bpmnContent.ReadFile(fileName)
+		if err != nil {
+			return nil, "", err
+		}
+	} else if strings.Contains(fileName, "bpmn/") {
 		bpmnBytes, err = bpmnContent.ReadFile(fileName)
 		if err != nil {
 			return nil, "", err
