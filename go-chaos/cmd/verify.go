@@ -24,6 +24,7 @@ import (
 var (
 	version       int
 	bpmnProcessId string
+	timeoutInSec  int
 )
 
 func init() {
@@ -34,6 +35,7 @@ func init() {
 	verifyInstanceCreation.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 	verifyInstanceCreation.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
 	verifyInstanceCreation.Flags().BoolVar(&awaitResult, "awaitResult", false, "Specify whether the completion of the created process instance should be awaited.")
+	verifyInstanceCreation.Flags().IntVar(&timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
 
 	verifyInstanceCreation.Flags().StringVar(&bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
 	verifyInstanceCreation.Flags().IntVar(&version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
@@ -85,7 +87,7 @@ Process instances are created until the required partition is reached.`,
 			Variables:     variables,
 		})
 		ensureNoError(err)
-		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), 30*time.Second)
+		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), time.Duration(timeoutInSec)*time.Second)
 		ensureNoError(err)
 
 		internal.LogInfo("The steady-state was successfully verified!")
