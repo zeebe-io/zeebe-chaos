@@ -31,19 +31,6 @@ import (
 
 func CreateZeebeClient(port int) (zbc.Client, error) {
 	endpoint := fmt.Sprintf("localhost:%d", port)
-	if ZeebeClientCredential != nil {
-		client, err := zbc.NewClient(&zbc.ClientConfig{
-			GatewayAddress:         endpoint,
-			DialOpts:               []grpc.DialOption{},
-			UsePlaintextConnection: false,
-			CredentialsProvider:    ZeebeClientCredential,
-		})
-		if err != nil {
-			return nil, err
-		}
-		return client, nil
-	}
-
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         endpoint,
 		DialOpts:               []grpc.DialOption{},
