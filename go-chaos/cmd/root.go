@@ -87,6 +87,7 @@ func NewCmd() *cobra.Command {
     Perfect to inject some chaos into your brokers and gateways.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			internal.Verbosity = Verbose
+			internal.LogVerbose("Flags: %v", flags)
 			internal.JsonLogging = JsonLogging
 			if JsonLogging {
 				internal.JsonLogger = log.With().Logger()
