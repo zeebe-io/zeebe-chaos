@@ -93,11 +93,10 @@ func Test_ShouldHandleCommand(t *testing.T) {
 	assert.Equal(t, 123, fakeJobClient.Key)
 	var expectedArgs = []string{
 		"--namespace", "clusterId-zeebe",
-		"--clientId", "clientId",
-		"--clientSecret", "clientSecret",
-		"--audience", "audience",
 		"disconnect", "gateway",
-		"--all"}
+		"--all",
+		"--verbose",
+		"--jsonLogging"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -132,7 +131,9 @@ func Test_ShouldHandleCommandForSelfManagedWhenNoClusterId(t *testing.T) {
 	assert.Equal(t, 123, fakeJobClient.Key)
 	var expectedArgs = []string{
 		"disconnect", "gateway",
-		"--all"}
+		"--all",
+		"--verbose",
+		"--jsonLogging"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -205,11 +206,10 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	assert.Equal(t, 2, fakeJobClient.RetriesVal)
 	var expectedArgs = []string{
 		"--namespace", "clusterId-zeebe",
-		"--clientId", "clientId",
-		"--clientSecret", "clientSecret",
-		"--audience", "audience",
 		"disconnect", "gateway",
-		"--all"}
+		"--all",
+		"--verbose",
+		"--jsonLogging"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
