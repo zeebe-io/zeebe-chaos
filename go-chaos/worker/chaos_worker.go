@@ -90,7 +90,9 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	if *jobVariables.ClusterId != "" {
 		clusterAccessArgs = append(clusterAccessArgs, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
 	} // else we run local against our k8 context
+
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
+	commandArgs = append(commandArgs, "--verbose", "--jsonLogging")
 
 	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
