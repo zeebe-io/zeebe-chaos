@@ -22,21 +22,21 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-
 func VersionString() string {
 	commit := Commit[0:int(math.Min(8, float64(len(Commit))))]
 	return fmt.Sprintf("zbchaos %s (commit: %s)", Version, commit)
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version of zbchaos",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		internal.LogInfo(VersionString())
-	},
-}
+func AddVersionCmd(rootCmd *cobra.Command) {
 
-func init() {
+	var versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version of zbchaos",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			internal.LogInfo(VersionString())
+		},
+	}
+
 	rootCmd.AddCommand(versionCmd)
 }

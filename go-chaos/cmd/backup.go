@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,7 +34,44 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddBackupCommand(rootCmd *cobra.Command, flags Flags) {
+
+	var backupCommand = &cobra.Command{
+		Use:   "backup",
+		Short: "Controls Zeebe backups",
+		Long:  "Can be used to take backups and query their status",
+	}
+
+	var setupBackupCommand = &cobra.Command{
+		Use:   "setup",
+		Short: "Configures a zeebe cluster's backup settings",
+		RunE:  setupBackup,
+	}
+
+	var takeBackupCommand = &cobra.Command{
+		Use:   "take",
+		Short: "Trigger a backup",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return takeBackup(flags)
+		},
+	}
+
+	var waitForBackupCommand = &cobra.Command{
+		Use:   "wait",
+		Short: "Wait for a backup to complete or fail",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return waitForBackup(flags)
+		},
+	}
+
+	var restoreBackupCommand = &cobra.Command{
+		Use:   "restore",
+		Short: "Restore from a given backup id",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return restoreFromBackup(flags)
+		},
+	}
+
 	rootCmd.AddCommand(backupCommand)
 	backupCommand.AddCommand(setupBackupCommand)
 	backupCommand.AddCommand(takeBackupCommand)
@@ -42,36 +80,6 @@ func init() {
 	waitForBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 	backupCommand.AddCommand(restoreBackupCommand)
 	restoreBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
-}
-
-var backupCommand = &cobra.Command{
-	Use:   "backup",
-	Short: "Controls Zeebe backups",
-	Long:  "Can be used to take backups and query their status",
-}
-
-var setupBackupCommand = &cobra.Command{
-	Use:   "setup",
-	Short: "Configures a zeebe cluster's backup settings",
-	RunE:  setupBackup,
-}
-
-var takeBackupCommand = &cobra.Command{
-	Use:   "take",
-	Short: "Trigger a backup",
-	RunE:  takeBackup,
-}
-
-var waitForBackupCommand = &cobra.Command{
-	Use:   "wait",
-	Short: "Wait for a backup to complete or fail",
-	RunE:  waitForBackup,
-}
-
-var restoreBackupCommand = &cobra.Command{
-	Use:   "restore",
-	Short: "Restore from a given backup id",
-	RunE:  restoreFromBackup,
 }
 
 func setupBackup(cmd *cobra.Command, _ []string) error {
@@ -172,7 +180,7 @@ func createBackupSecret(cmd *cobra.Command, k8Client internal.K8Client, namespac
 	)
 }
 
-func takeBackup(*cobra.Command, []string) error {
+func takeBackup(flags Flags) error {
 	k8Client, err := internal.CreateK8Client()
 	if err != nil {
 		panic(err)
@@ -201,7 +209,7 @@ func takeBackup(*cobra.Command, []string) error {
 	return err
 }
 
-func waitForBackup(*cobra.Command, []string) error {
+func waitForBackup(flags Flags) error {
 	k8Client, err := internal.CreateK8Client()
 	if err != nil {
 		panic(err)
@@ -230,7 +238,7 @@ func waitForBackup(*cobra.Command, []string) error {
 
 }
 
-func restoreFromBackup(cmd *cobra.Command, _ []string) error {
+func restoreFromBackup(flags Flags) error {
 	k8Client, err := internal.CreateK8Client()
 	if err != nil {
 		panic(err)
@@ -268,7 +276,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 		Name:            "restore-from-backup",
 		Image:           sfs.Spec.Template.Spec.Containers[0].Image,
 		ImagePullPolicy: core.PullAlways,
-		Env:             restoreEnvFromSfs(sfs),
+		Env:             restoreEnvFromSfs(flags, sfs),
 		EnvFrom:         []core.EnvFromSource{{SecretRef: &core.SecretEnvSource{LocalObjectReference: core.LocalObjectReference{Name: "zeebe-backup-store-s3"}}}},
 		VolumeMounts: []core.VolumeMount{
 			{
@@ -280,7 +288,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	}
 	sfs.Spec.Template.Spec.InitContainers = []core.Container{deleteContainer, restoreContainer}
 
-	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(cmd.Context(), sfs, meta.UpdateOptions{})
+	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(context.TODO(), sfs, meta.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -304,7 +312,7 @@ func restoreFromBackup(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func restoreEnvFromSfs(sfs *apps.StatefulSet) []core.EnvVar {
+func restoreEnvFromSfs(flags Flags, sfs *apps.StatefulSet) []core.EnvVar {
 	zeebeEnv := sfs.Spec.Template.Spec.Containers[0].Env
 	restoreEnv := make([]core.EnvVar, 0)
 	for _, env := range zeebeEnv {

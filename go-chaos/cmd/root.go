@@ -65,38 +65,8 @@ type Flags struct {
 	timeoutInSec  int
 }
 
-func (f *Flags) reset() {
-	f.partitionId = 0
-	f.role = ""
-	f.nodeId = 0
-	f.processModelPath = ""
-	f.versionCount = 0
-	f.variables = ""
-	f.msgName = ""
-	f.awaitResult = false
-	f.broker1PartitionId = 0
-	f.broker1Role = ""
-	f.broker1NodeId = 0
-	f.broker2PartitionId = 0
-	f.broker2Role = ""
-	f.broker2NodeId = 0
-	f.backupId = ""
-	f.oneDirection = false
-	f.disconnectToAll = false
-	f.cpuStress = false
-	f.memoryStress = false
-	f.ioStress = false
-	f.timeoutSec = ""
-	f.all = false
-	f.version = 0
-	f.bpmnProcessId = ""
-	f.timeoutInSec = 0
-}
-
-var flags = Flags{}
-
 var Version = "development"
-var Commit  = "HEAD"
+var Commit = "HEAD"
 var Verbose bool
 var KubeConfigPath string
 var Namespace string
@@ -105,30 +75,32 @@ var ClientSecret string
 var Audience string
 var JsonLogging bool
 
-var rootCmd = &cobra.Command{
-	Use:   "zbchaos",
-	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
-	Long: `A chaos experimenting toolkit for Zeebe.
-    Perfect to inject some chaos into your brokers and gateways.`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		internal.JsonLogging = JsonLogging
-		if JsonLogging {
-			internal.JsonLogger = log.With().Logger()
-		}
-		internal.Namespace = Namespace
-		internal.KubeConfigPath = KubeConfigPath
-		if ClientId != "" && ClientSecret != "" {
-			internal.ZeebeClientCredential, _ = zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
-				ClientID:     ClientId,
-				ClientSecret: ClientSecret,
-				Audience:     Audience,
-			})
-		}
-	},
-}
+func NewCmd() *cobra.Command {
+	flags := Flags{}
 
-func init() {
+	rootCmd := &cobra.Command{
+		Use:   "zbchaos",
+		Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
+		Long: `A chaos experimenting toolkit for Zeebe.
+    Perfect to inject some chaos into your brokers and gateways.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			internal.Verbosity = Verbose
+			internal.JsonLogging = JsonLogging
+			if JsonLogging {
+				internal.JsonLogger = log.With().Logger()
+			}
+			internal.Namespace = Namespace
+			internal.KubeConfigPath = KubeConfigPath
+			if ClientId != "" && ClientSecret != "" {
+				internal.ZeebeClientCredential, _ = zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
+					ClientID:     ClientId,
+					ClientSecret: ClientSecret,
+					Audience:     Audience,
+				})
+			}
+		},
+	}
+
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
 	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
@@ -136,14 +108,28 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&ClientId, "clientId", "c", "", "connect using the given clientId")
 	rootCmd.PersistentFlags().StringVar(&ClientSecret, "clientSecret", "", "connect using the given client secret")
 	rootCmd.PersistentFlags().StringVar(&Audience, "audience", "", "connect using the given client secret")
-}
 
-func NewCmd() *cobra.Command {
+	AddBackupCommand(rootCmd, flags)
+	AddBrokersCommand(rootCmd)
+	AddConnectCmd(rootCmd)
+	AddDatalossSimulationCmd(rootCmd, flags)
+	AddDeployCmd(rootCmd, flags)
+	AddDisconnectCommand(rootCmd, flags)
+	AddExportingCmds(rootCmd)
+	AddPublishCmd(rootCmd, flags)
+	AddRestartCmd(rootCmd, flags)
+	AddStressCmd(rootCmd, flags)
+	AddTerminateCommand(rootCmd, flags)
+	AddTopologyCmd(rootCmd)
+	AddVerifyCommands(rootCmd, flags)
+	AddVersionCmd(rootCmd)
+	AddWorkerCmd(rootCmd)
+
 	return rootCmd
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := NewCmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

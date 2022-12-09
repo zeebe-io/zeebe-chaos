@@ -24,12 +24,58 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-var (
-)
+func AddStressCmd(rootCmd *cobra.Command, flags Flags) {
+	stress := &cobra.Command{
+		Use:   "stress",
+		Short: "Put stress on a Zeebe node",
+		Long:  `Put stress on a Zeebe node. Node can be choose from gateway or brokers. Stress can be of different kind: memory, io or CPU. The different stress types can be combined.`,
+	}
 
-func init() {
+	stressBroker := &cobra.Command{
+		Use:   "broker",
+		Short: "Put stress on a Zeebe Broker",
+		Long:  `Put stress on a Zeebe Broker. Broker can be identified via ID or partition and role. Stress can be of different kinds: memory, io or CPU.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			internal.Verbosity = Verbose
+			k8Client, err := internal.CreateK8Client()
+			ensureNoError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			ensureNoError(err)
+			defer zbClient.Close()
+
+			pod := getBrokerPod(k8Client, zbClient, flags.nodeId, flags.partitionId, flags.role)
+			internal.LogInfo("Put stress on %s", pod.Name)
+
+			stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
+			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
+			ensureNoError(err)
+		},
+	}
+
+	stressGateway := &cobra.Command{
+		Use:   "gateway",
+		Short: "Put stress on a Zeebe Gateway",
+		Long:  `Put stress on a Zeebe Gateway. Stress can be of different kinds: memory, io or CPU.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			internal.Verbosity = Verbose
+			k8Client, err := internal.CreateK8Client()
+			ensureNoError(err)
+
+			pod := getGatewayPod(k8Client)
+			internal.LogInfo("Put stress on %s", pod.Name)
+
+			stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
+			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
+			ensureNoError(err)
+		},
+	}
+
 	rootCmd.AddCommand(stress)
-
 	stress.PersistentFlags().BoolVar(&flags.cpuStress, "cpu", true, "Specify whether CPU stress should put on the node")
 	stress.PersistentFlags().BoolVar(&flags.memoryStress, "memory", false, "Specify whether memory stress should put on the node")
 	stress.PersistentFlags().BoolVar(&flags.ioStress, "io", false, "Specify whether io stress should put on the node")
@@ -46,56 +92,6 @@ func init() {
 
 }
 
-var stress = &cobra.Command{
-	Use:   "stress",
-	Short: "Put stress on a Zeebe node",
-	Long:  `Put stress on a Zeebe node. Node can be choose from gateway or brokers. Stress can be of different kind: memory, io or CPU. The different stress types can be combined.`,
-}
-
-var stressBroker = &cobra.Command{
-	Use:   "broker",
-	Short: "Put stress on a Zeebe Broker",
-	Long:  `Put stress on a Zeebe Broker. Broker can be identified via ID or partition and role. Stress can be of different kinds: memory, io or CPU.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		ensureNoError(err)
-		defer zbClient.Close()
-
-		pod := getBrokerPod(k8Client, zbClient, flags.nodeId, flags.partitionId, flags.role)
-		internal.LogInfo("Put stress on %s", pod.Name)
-
-		stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
-		err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
-		ensureNoError(err)
-	},
-}
-
-var stressGateway = &cobra.Command{
-	Use:   "gateway",
-	Short: "Put stress on a Zeebe Gateway",
-	Long:  `Put stress on a Zeebe Gateway. Stress can be of different kinds: memory, io or CPU.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		pod := getGatewayPod(k8Client)
-		internal.LogInfo("Put stress on %s", pod.Name)
-
-		stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
-		err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
-		ensureNoError(err)
-	},
-}
-
 func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId int, brokerPartitionId int, brokerRole string) *v1.Pod {
 	var brokerPod *v1.Pod
 	var err error
@@ -106,7 +102,7 @@ func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId 
 	} else {
 		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
 		ensureNoError(err)
-		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, flags.role, brokerPartitionId)
+		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, brokerRole, brokerPartitionId)
 	}
 
 	return brokerPod

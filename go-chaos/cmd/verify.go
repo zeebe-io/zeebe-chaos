@@ -21,8 +21,65 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
+func AddVerifyCommands(rootCmd *cobra.Command, flags Flags) {
 
-func init() {
+	var verifyCmd = &cobra.Command{
+		Use:   "verify",
+		Short: "Verify certain properties",
+		Long:  `Verify certain properties on Zeebe nodes, like readiness or steady-state.`,
+	}
+
+	var verifyReadinessCmd = &cobra.Command{
+		Use:   "readiness",
+		Short: "Verify readiness of a Zeebe nodes",
+		Long:  `Verifies the readiness of Zeebe nodes.`,
+		Run: func(cmd *cobra.Command, args []string) {
+
+			k8Client, err := internal.CreateK8Client()
+			ensureNoError(err)
+
+			err = k8Client.AwaitReadiness()
+			ensureNoError(err)
+
+			internal.LogInfo("All Zeebe nodes are running.")
+		},
+	}
+
+	var verifyInstanceCreation = &cobra.Command{
+		Use:   "instance-creation",
+		Short: "Verify the instance creation",
+		Long: `Verifies that an instance from a specific process model can be created on a specific partition.
+Process instances are created until the required partition is reached.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := internal.CreateK8Client()
+			ensureNoError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			ensureNoError(err)
+			defer zbClient.Close()
+
+			processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
+				BpmnProcessId: flags.bpmnProcessId,
+				Version:       int32(flags.version),
+				AwaitResult:   flags.awaitResult,
+				Variables:     flags.variables,
+			})
+			ensureNoError(err)
+			if flags.awaitResult {
+				internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
+				flags.partitionId = 0
+			}
+			err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(flags.partitionId), time.Duration(flags.timeoutInSec)*time.Second)
+			ensureNoError(err)
+
+			internal.LogInfo("The steady-state was successfully verified!")
+		},
+	}
+
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifyInstanceCreation)
@@ -35,62 +92,4 @@ func init() {
 
 	verifyInstanceCreation.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
 	verifyInstanceCreation.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
-
-}
-
-var verifyCmd = &cobra.Command{
-	Use:   "verify",
-	Short: "Verify certain properties",
-	Long:  `Verify certain properties on Zeebe nodes, like readiness or steady-state.`,
-}
-
-var verifyReadinessCmd = &cobra.Command{
-	Use:   "readiness",
-	Short: "Verify readiness of a Zeebe nodes",
-	Long:  `Verifies the readiness of Zeebe nodes.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		err = k8Client.AwaitReadiness()
-		ensureNoError(err)
-
-		internal.LogInfo("All Zeebe nodes are running.")
-	},
-}
-
-var verifyInstanceCreation = &cobra.Command{
-	Use:   "instance-creation",
-	Short: "Verify the instance creation",
-	Long: `Verifies that an instance from a specific process model can be created on a specific partition.
-Process instances are created until the required partition is reached.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		ensureNoError(err)
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		ensureNoError(err)
-		defer zbClient.Close()
-
-		processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
-			BpmnProcessId: flags.bpmnProcessId,
-			Version:       int32(flags.version),
-			AwaitResult:   flags.awaitResult,
-			Variables:     flags.variables,
-		})
-		ensureNoError(err)
-		if flags.awaitResult {
-			internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
-			flags.partitionId = 0
-		}
-		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(flags.partitionId), time.Duration(flags.timeoutInSec)*time.Second)
-		ensureNoError(err)
-
-		internal.LogInfo("The steady-state was successfully verified!")
-	},
 }

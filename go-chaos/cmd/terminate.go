@@ -22,8 +22,46 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
+func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
 
-func init() {
+	var terminateCmd = &cobra.Command{
+		Use:   "terminate",
+		Short: "Terminates a Zeebe node",
+		Long:  `Terminates a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
+	}
+
+	var terminateBrokerCmd = &cobra.Command{
+		Use:   "broker",
+		Short: "Terminates a Zeebe broker",
+		Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			gracePeriodSec := int64(0)
+			brokerName := restartBroker(flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
+			internal.LogInfo("Terminated %s", brokerName)
+		},
+	}
+
+	var terminateGatewayCmd = &cobra.Command{
+		Use:   "gateway",
+		Short: "Terminates a Zeebe gateway",
+		Long:  `Terminates a Zeebe gateway.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			gracePeriodSec := int64(0)
+			gatewayPod := restartGateway(&gracePeriodSec)
+			internal.LogInfo("Terminated %s", gatewayPod)
+		},
+	}
+
+	var terminateWorkerCmd = &cobra.Command{
+		Use:   "worker",
+		Short: "Terminates a Zeebe worker",
+		Long:  `Terminates a Zeebe worker.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			gracePeriodSec := int64(0)
+			restartWorker(flags.all, "Terminated", &gracePeriodSec)
+		},
+	}
+
 	rootCmd.AddCommand(terminateCmd)
 
 	terminateCmd.AddCommand(terminateBrokerCmd)
@@ -36,44 +74,7 @@ func init() {
 
 	terminateCmd.AddCommand(terminateWorkerCmd)
 	terminateWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be terminated")
-}
 
-var terminateCmd = &cobra.Command{
-	Use:   "terminate",
-	Short: "Terminates a Zeebe node",
-	Long:  `Terminates a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
-}
-
-var terminateBrokerCmd = &cobra.Command{
-	Use:   "broker",
-	Short: "Terminates a Zeebe broker",
-	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gracePeriodSec := int64(0)
-		brokerName := restartBroker(flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
-		internal.LogInfo("Terminated %s", brokerName)
-	},
-}
-
-var terminateGatewayCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "Terminates a Zeebe gateway",
-	Long:  `Terminates a Zeebe gateway.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gracePeriodSec := int64(0)
-		gatewayPod := restartGateway(&gracePeriodSec)
-		internal.LogInfo("Terminated %s", gatewayPod)
-	},
-}
-
-var terminateWorkerCmd = &cobra.Command{
-	Use:   "worker",
-	Short: "Terminates a Zeebe worker",
-	Long:  `Terminates a Zeebe worker.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gracePeriodSec := int64(0)
-		restartWorker(flags.all, "Terminated", &gracePeriodSec)
-	},
 }
 
 // Restart a broker pod. Pod is identified either by nodeId or by partitionId and role.

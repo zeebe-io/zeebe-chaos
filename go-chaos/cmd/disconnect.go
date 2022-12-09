@@ -19,10 +19,60 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
-var (
-)
+func ensureNoError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
-func init() {
+func AddDisconnectCommand(rootCmd *cobra.Command, flags Flags) {
+
+	var disconnect = &cobra.Command{
+		Use:   "disconnect",
+		Short: "Disconnect Zeebe nodes",
+		Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
+	}
+
+	var disconnectBrokers = &cobra.Command{
+		Use:   "brokers",
+		Short: "Disconnect Zeebe Brokers",
+		Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
+				Broker1Cfg: backend.Broker{
+					NodeId:      flags.broker1NodeId,
+					PartitionId: flags.broker1PartitionId,
+					Role:        flags.broker1Role,
+				},
+				Broker2Cfg: backend.Broker{
+					NodeId:      flags.broker2NodeId,
+					PartitionId: flags.broker2PartitionId,
+					Role:        flags.broker2Role,
+				},
+				OneDirection: flags.oneDirection,
+			})
+			ensureNoError(err)
+		},
+	}
+
+	var disconnectGateway = &cobra.Command{
+		Use:   "gateway",
+		Short: "Disconnect Zeebe Gateway",
+		Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := backend.DisconnectGateway(backend.DisconnectGatewayCfg{
+				OneDirection:    flags.oneDirection,
+				DisconnectToAll: flags.disconnectToAll,
+				BrokerCfg: backend.Broker{
+					Role:        flags.role,
+					PartitionId: flags.partitionId,
+					NodeId:      flags.nodeId,
+				},
+			})
+			ensureNoError(err)
+		},
+	}
+
 	rootCmd.AddCommand(disconnect)
 
 	// disconnect brokers
@@ -48,56 +98,4 @@ func init() {
 	disconnectGateway.Flags().BoolVar(&flags.oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
 	disconnectGateway.Flags().BoolVar(&flags.disconnectToAll, "all", false, "Specify whether the gateway should be disconnected to all brokers")
 	disconnectGateway.MarkFlagsMutuallyExclusive("all", "partitionId", "nodeId")
-}
-
-var disconnect = &cobra.Command{
-	Use:   "disconnect",
-	Short: "Disconnect Zeebe nodes",
-	Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
-}
-
-func ensureNoError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-var disconnectBrokers = &cobra.Command{
-	Use:   "brokers",
-	Short: "Disconnect Zeebe Brokers",
-	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
-			Broker1Cfg: backend.Broker{
-				NodeId:      flags.broker1NodeId,
-				PartitionId: flags.broker1PartitionId,
-				Role:        flags.broker1Role,
-			},
-			Broker2Cfg: backend.Broker{
-				NodeId:      flags.broker2NodeId,
-				PartitionId: flags.broker2PartitionId,
-				Role:        flags.broker2Role,
-			},
-			OneDirection: flags.oneDirection,
-		})
-		ensureNoError(err)
-	},
-}
-
-var disconnectGateway = &cobra.Command{
-	Use:   "gateway",
-	Short: "Disconnect Zeebe Gateway",
-	Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := backend.DisconnectGateway(backend.DisconnectGatewayCfg{
-			OneDirection:    flags.oneDirection,
-			DisconnectToAll: flags.disconnectToAll,
-			BrokerCfg: backend.Broker{
-				Role:        flags.role,
-				PartitionId: flags.partitionId,
-				NodeId:      flags.nodeId,
-			},
-		})
-		ensureNoError(err)
-	},
 }

@@ -22,29 +22,29 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddExportingCmds(rootCmd *cobra.Command) {
+	var exportingCommand = &cobra.Command{
+		Use:   "exporting",
+		Short: "Controls Zeebe Exporting",
+		Long:  "Can be used to start and stop exporting",
+	}
+
+	var pauseExportingCommand = &cobra.Command{
+		Use:   "pause",
+		Short: "Pause exporting on all partitions",
+		RunE:  pauseExporting,
+	}
+
+	var resumeExportingCommand = &cobra.Command{
+		Use:   "resume",
+		Short: "Resume exporting on all partitions",
+		RunE:  resumeExporting,
+	}
+
 	rootCmd.AddCommand(exportingCommand)
 
 	exportingCommand.AddCommand(pauseExportingCommand)
 	exportingCommand.AddCommand(resumeExportingCommand)
-}
-
-var exportingCommand = &cobra.Command{
-	Use:   "exporting",
-	Short: "Controls Zeebe Exporting",
-	Long:  "Can be used to start and stop exporting",
-}
-
-var pauseExportingCommand = &cobra.Command{
-	Use:   "pause",
-	Short: "Pause exporting on all partitions",
-	RunE:  pauseExporting,
-}
-
-var resumeExportingCommand = &cobra.Command{
-	Use:   "resume",
-	Short: "Resume exporting on all partitions",
-	RunE:  resumeExporting,
 }
 
 func pauseExporting(cmd *cobra.Command, args []string) error {
