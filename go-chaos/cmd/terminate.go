@@ -22,7 +22,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
+func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 
 	var terminateCmd = &cobra.Command{
 		Use:   "terminate",

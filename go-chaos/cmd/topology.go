@@ -26,7 +26,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddTopologyCmd(rootCmd *cobra.Command, flags Flags) {
+func AddTopologyCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	var topologyCmd = &cobra.Command{
 		Use:   "topology",

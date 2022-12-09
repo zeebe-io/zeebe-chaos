@@ -19,7 +19,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddBrokersCommand(rootCmd *cobra.Command, flags Flags) {
+func AddBrokersCommand(rootCmd *cobra.Command, flags *Flags) {
 	var getZeebeBrokersCmd = &cobra.Command{
 		Use:   "brokers",
 		Short: "Print the name of the Zeebe broker pods",
