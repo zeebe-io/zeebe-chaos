@@ -231,12 +231,6 @@ func createZbChaosVariables() ZbChaosVariables {
 			Path:      "zbchaos",
 			Arguments: []string{"disconnect", "gateway", "--all"},
 		},
-		AuthenticationDetails: AuthenticationProvider{
-			Audience:     "audience",
-			ClientId:     "clientId",
-			ClientSecret: "clientSecret",
-			ContactPoint: "contactPoint",
-		},
 	}
 	return variables
 }

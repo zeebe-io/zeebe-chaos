@@ -54,8 +54,6 @@ type ZbChaosVariables struct {
 	ClusterId *string
 	// the chaos provider, which contain details to the chaos experiment
 	Provider ChaosProvider
-	// the authentication details for our target cluster
-	AuthenticationDetails AuthenticationProvider
 }
 
 func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner CommandRunner) {
@@ -88,7 +86,7 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 
 	var clusterAccessArgs []string
 	if *jobVariables.ClusterId != "" {
-		clusterAccessArgs = append(clusterAccessArgs, "--namespace", *jobVariables.ClusterId+"-zeebe", "--clientId", jobVariables.AuthenticationDetails.ClientId, "--clientSecret", jobVariables.AuthenticationDetails.ClientSecret, "--audience", jobVariables.AuthenticationDetails.Audience)
+		clusterAccessArgs = append(clusterAccessArgs, "--namespace", *jobVariables.ClusterId+"-zeebe")
 	} // else we run local against our k8 context
 
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
