@@ -22,7 +22,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddExportingCmds(rootCmd *cobra.Command) {
+func AddExportingCmds(rootCmd *cobra.Command, flags Flags) {
 	var exportingCommand = &cobra.Command{
 		Use:   "exporting",
 		Short: "Controls Zeebe Exporting",
@@ -32,13 +32,21 @@ func AddExportingCmds(rootCmd *cobra.Command) {
 	var pauseExportingCommand = &cobra.Command{
 		Use:   "pause",
 		Short: "Pause exporting on all partitions",
-		RunE:  pauseExporting,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			return pauseExporting(k8Client)
+		},
 	}
 
 	var resumeExportingCommand = &cobra.Command{
 		Use:   "resume",
 		Short: "Resume exporting on all partitions",
-		RunE:  resumeExporting,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			return resumeExporting(k8Client)
+		},
 	}
 
 	rootCmd.AddCommand(exportingCommand)
@@ -47,12 +55,7 @@ func AddExportingCmds(rootCmd *cobra.Command) {
 	exportingCommand.AddCommand(resumeExportingCommand)
 }
 
-func pauseExporting(cmd *cobra.Command, args []string) error {
-	k8Client, err := internal.CreateK8Client()
-	if err != nil {
-		panic(err)
-	}
-
+func pauseExporting(k8Client internal.K8Client) error {
 	port := 9600
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
@@ -65,12 +68,7 @@ func pauseExporting(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-func resumeExporting(cmd *cobra.Command, args []string) error {
-	k8Client, err := internal.CreateK8Client()
-	if err != nil {
-		panic(err)
-	}
-
+func resumeExporting(k8Client internal.K8Client) error {
 	port := 9600
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
@@ -81,5 +79,4 @@ func resumeExporting(cmd *cobra.Command, args []string) error {
 	}
 	defer resp.Body.Close()
 	return err
-
 }

@@ -32,7 +32,9 @@ func AddRestartCmd(rootCmd *cobra.Command, flags Flags) {
 		Short: "Restarts a Zeebe broker",
 		Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			brokerPod := restartBroker(flags.nodeId, flags.partitionId, flags.role, nil)
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			brokerPod := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, nil)
 			internal.LogInfo("Restarted %s", brokerPod)
 		},
 	}
@@ -42,7 +44,9 @@ func AddRestartCmd(rootCmd *cobra.Command, flags Flags) {
 		Short: "Restarts a Zeebe gateway",
 		Long:  `Restarts a Zeebe gateway.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			gatewayPod := restartGateway(nil)
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			gatewayPod := restartGateway(k8Client, nil)
 			internal.LogInfo("Restarted %s", gatewayPod)
 		},
 	}
@@ -52,7 +56,9 @@ func AddRestartCmd(rootCmd *cobra.Command, flags Flags) {
 		Short: "Restart a Zeebe worker",
 		Long:  `Restart a Zeebe worker.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			restartWorker(flags.all, "Restarted", nil)
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			restartWorker(k8Client, flags.all, "Restarted", nil)
 		},
 	}
 

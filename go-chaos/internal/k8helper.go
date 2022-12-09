@@ -43,8 +43,8 @@ func (c K8Client) GetCurrentNamespace() string {
 }
 
 // Creates a kubernetes client, based on the local kubeconfig
-func CreateK8Client() (K8Client, error) {
-	settings := findKubernetesSettings()
+func CreateK8Client(kubeConfigPath string, namespace string) (K8Client, error) {
+	settings := findKubernetesSettings(kubeConfigPath, namespace)
 	return createK8Client(settings)
 }
 
@@ -89,8 +89,8 @@ type KubernetesSettings struct {
 	namespace      string
 }
 
-func findKubernetesSettings() KubernetesSettings {
-	kubeconfig := KubeConfigPath
+func findKubernetesSettings(kubeConfigPath string, namespace string) KubernetesSettings {
+	kubeconfig := kubeConfigPath
 	if kubeconfig == "" {
 		// based on https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
 		if home := homedir.HomeDir(); home != "" {
@@ -99,6 +99,6 @@ func findKubernetesSettings() KubernetesSettings {
 	}
 	return KubernetesSettings{
 		kubeConfigPath: kubeconfig,
-		namespace:      Namespace,
+		namespace:      namespace,
 	}
 }

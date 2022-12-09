@@ -35,8 +35,10 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
 		Short: "Terminates a Zeebe broker",
 		Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
 			gracePeriodSec := int64(0)
-			brokerName := restartBroker(flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
+			brokerName := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
 			internal.LogInfo("Terminated %s", brokerName)
 		},
 	}
@@ -46,8 +48,10 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
 		Short: "Terminates a Zeebe gateway",
 		Long:  `Terminates a Zeebe gateway.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
 			gracePeriodSec := int64(0)
-			gatewayPod := restartGateway(&gracePeriodSec)
+			gatewayPod := restartGateway(k8Client, &gracePeriodSec)
 			internal.LogInfo("Terminated %s", gatewayPod)
 		},
 	}
@@ -57,8 +61,10 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
 		Short: "Terminates a Zeebe worker",
 		Long:  `Terminates a Zeebe worker.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
 			gracePeriodSec := int64(0)
-			restartWorker(flags.all, "Terminated", &gracePeriodSec)
+			restartWorker(k8Client, flags.all, "Terminated", &gracePeriodSec)
 		},
 	}
 
@@ -80,10 +86,7 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags Flags) {
 // Restart a broker pod. Pod is identified either by nodeId or by partitionId and role.
 // GracePeriod (in second) can be nil, which would mean using K8 default.
 // Returns the broker which has been restarted
-func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64) string {
-	k8Client, err := internal.CreateK8Client()
-	ensureNoError(err)
-
+func restartBroker(k8Client internal.K8Client, nodeId int, partitionId int, role string, gracePeriod *int64) string {
 	port := 26500
 	closeFn := k8Client.MustGatewayPortForward(port, port)
 	defer closeFn()
@@ -102,10 +105,7 @@ func restartBroker(nodeId int, partitionId int, role string, gracePeriod *int64)
 // Restart a gateway pod. The pod is the first from a list of existing pods.
 // GracePeriod (in second) can be nil, which would mean using K8 default.
 // Returns the gateway which has been restarted
-func restartGateway(gracePeriod *int64) string {
-	k8Client, err := internal.CreateK8Client()
-	ensureNoError(err)
-
+func restartGateway(k8Client internal.K8Client, gracePeriod *int64) string {
 	gatewayPodNames, err := k8Client.GetGatewayPodNames()
 	ensureNoError(err)
 
@@ -122,10 +122,7 @@ func restartGateway(gracePeriod *int64) string {
 // Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
 // GracePeriod (in second) can be nil, which would mean using K8 default.
 // The actionName specifies whether it was restarted or terminated to log the right thing.
-func restartWorker(all bool, actionName string, gracePeriod *int64) {
-	k8Client, err := internal.CreateK8Client()
-	ensureNoError(err)
-
+func restartWorker(k8Client internal.K8Client, all bool, actionName string, gracePeriod *int64) {
 	workerPods, err := k8Client.GetWorkerPods()
 	ensureNoError(err)
 

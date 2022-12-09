@@ -45,7 +45,9 @@ func AddBackupCommand(rootCmd *cobra.Command, flags Flags) {
 	var setupBackupCommand = &cobra.Command{
 		Use:   "setup",
 		Short: "Configures a zeebe cluster's backup settings",
-		RunE:  setupBackup,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return setupBackup(flags.kubeConfigPath, flags.namespace)
+		},
 	}
 
 	var takeBackupCommand = &cobra.Command{
@@ -82,33 +84,33 @@ func AddBackupCommand(rootCmd *cobra.Command, flags Flags) {
 	restoreBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 }
 
-func setupBackup(cmd *cobra.Command, _ []string) error {
-	k8Client, err := internal.CreateK8Client()
+func setupBackup(kubeConfigPath string, namespace string) error {
+	k8Client, err := internal.CreateK8Client(kubeConfigPath, namespace)
 	if err != nil {
 		panic(err)
 	}
 
-	namespace := k8Client.GetCurrentNamespace()
+	namespace = k8Client.GetCurrentNamespace()
 
 	err = k8Client.PauseReconciliation()
 	if err != nil {
 		return err
 	}
 
-	_, err = createBackupSecret(cmd, k8Client, namespace)
+	_, err = createBackupSecret(k8Client, namespace)
 	if err != nil {
 		return err
 	}
 
-	err = setupStatefulSetForBackups(cmd, err, k8Client, namespace)
+	err = setupStatefulSetForBackups(err, k8Client, namespace)
 	if err != nil {
 		return err
 	}
-	err = setupGatewayForBackups(cmd, err, k8Client, namespace)
+	err = setupGatewayForBackups(err, k8Client, namespace)
 	return err
 }
 
-func setupStatefulSetForBackups(cmd *cobra.Command, err error, k8Client internal.K8Client, namespace string) error {
+func setupStatefulSetForBackups(err error, k8Client internal.K8Client, namespace string) error {
 	sfs, err := k8Client.GetZeebeStatefulSet()
 	if err != nil {
 		return err
@@ -126,17 +128,17 @@ func setupStatefulSetForBackups(cmd *cobra.Command, err error, k8Client internal
 		core.EnvVar{Name: "MANAGEMENT_ENDPOINTS_BACKUPS_ENABLED", Value: "true"},
 	)
 
-	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(cmd.Context(), sfs, meta.UpdateOptions{})
+	_, err = k8Client.Clientset.AppsV1().StatefulSets(namespace).Update(context.TODO(), sfs, meta.UpdateOptions{})
 	return err
 }
 
-func setupGatewayForBackups(cmd *cobra.Command, err error, k8Client internal.K8Client, namespace string) error {
+func setupGatewayForBackups(err error, k8Client internal.K8Client, namespace string) error {
 	saasGatewayLabels := meta.LabelSelector{
 		MatchLabels: map[string]string{"app.kubernetes.io/component": "standalone-gateway"},
 	}
 	var gatewayDeployments *apps.DeploymentList
 
-	gatewayDeployments, err = k8Client.Clientset.AppsV1().Deployments(namespace).List(cmd.Context(), meta.ListOptions{LabelSelector: labels.Set(saasGatewayLabels.MatchLabels).String()})
+	gatewayDeployments, err = k8Client.Clientset.AppsV1().Deployments(namespace).List(context.TODO(), meta.ListOptions{LabelSelector: labels.Set(saasGatewayLabels.MatchLabels).String()})
 	if err != nil {
 		return err
 	}
@@ -145,7 +147,7 @@ func setupGatewayForBackups(cmd *cobra.Command, err error, k8Client internal.K8C
 			MatchLabels: map[string]string{"app.kubernetes.io/component": "zeebe-gateway"},
 		}
 		gatewayDeployments, err = k8Client.Clientset.AppsV1().Deployments(namespace).List(
-			cmd.Context(),
+			context.TODO(),
 			meta.ListOptions{LabelSelector: labels.Set(selector.MatchLabels).String()},
 		)
 		if err != nil {
@@ -160,13 +162,13 @@ func setupGatewayForBackups(cmd *cobra.Command, err error, k8Client internal.K8C
 		core.EnvVar{Name: "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE", Value: "*"},
 		core.EnvVar{Name: "MANAGEMENT_ENDPOINTS_BACKUPS_ENABLED", Value: "true"},
 	)
-	_, err = k8Client.Clientset.AppsV1().Deployments(namespace).Update(cmd.Context(), &gateway, meta.UpdateOptions{})
+	_, err = k8Client.Clientset.AppsV1().Deployments(namespace).Update(context.TODO(), &gateway, meta.UpdateOptions{})
 	return err
 }
 
-func createBackupSecret(cmd *cobra.Command, k8Client internal.K8Client, namespace string) (*core.Secret, error) {
+func createBackupSecret(k8Client internal.K8Client, namespace string) (*core.Secret, error) {
 	return k8Client.Clientset.CoreV1().Secrets(namespace).Create(
-		cmd.Context(),
+		context.TODO(),
 		&core.Secret{
 			Type:       "Opaque",
 			ObjectMeta: meta.ObjectMeta{Name: "zeebe-backup-store-s3"},
@@ -181,7 +183,7 @@ func createBackupSecret(cmd *cobra.Command, k8Client internal.K8Client, namespac
 }
 
 func takeBackup(flags Flags) error {
-	k8Client, err := internal.CreateK8Client()
+	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
 	}
@@ -210,7 +212,7 @@ func takeBackup(flags Flags) error {
 }
 
 func waitForBackup(flags Flags) error {
-	k8Client, err := internal.CreateK8Client()
+	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
 	}
@@ -239,7 +241,7 @@ func waitForBackup(flags Flags) error {
 }
 
 func restoreFromBackup(flags Flags) error {
-	k8Client, err := internal.CreateK8Client()
+	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
 	}

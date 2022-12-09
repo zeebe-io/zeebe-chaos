@@ -38,7 +38,7 @@ func AddDisconnectCommand(rootCmd *cobra.Command, flags Flags) {
 		Short: "Disconnect Zeebe Brokers",
 		Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
+			err := backend.DisconnectBroker(flags.kubeConfigPath, flags.namespace, backend.DisconnectBrokerCfg{
 				Broker1Cfg: backend.Broker{
 					NodeId:      flags.broker1NodeId,
 					PartitionId: flags.broker1PartitionId,
@@ -60,7 +60,7 @@ func AddDisconnectCommand(rootCmd *cobra.Command, flags Flags) {
 		Short: "Disconnect Zeebe Gateway",
 		Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := backend.DisconnectGateway(backend.DisconnectGatewayCfg{
+			err := backend.DisconnectGateway(flags.kubeConfigPath, flags.namespace, backend.DisconnectGatewayCfg{
 				OneDirection:    flags.oneDirection,
 				DisconnectToAll: flags.disconnectToAll,
 				BrokerCfg: backend.Broker{

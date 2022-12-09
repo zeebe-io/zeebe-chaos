@@ -59,16 +59,16 @@ type Flags struct {
 	all bool
 
 	// verify
-	version       int
-	bpmnProcessId string
-	timeoutInSec  int
+	version        int
+	bpmnProcessId  string
+	timeoutInSec   int
+	kubeConfigPath string
+	namespace      string
 }
 
 var Version = "development"
 var Commit = "HEAD"
 var Verbose bool
-var KubeConfigPath string
-var Namespace string
 var JsonLogging bool
 
 func NewCmd() *cobra.Command {
@@ -85,33 +85,35 @@ func NewCmd() *cobra.Command {
 			if JsonLogging {
 				internal.JsonLogger = log.With().Logger()
 			}
-			internal.Namespace = Namespace
-			internal.KubeConfigPath = KubeConfigPath
 		},
 	}
 
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
-	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
-	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
+	rootCmd.PersistentFlags().StringVar(&flags.kubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
+	rootCmd.PersistentFlags().StringVarP(&flags.namespace, "namespace", "n", "", "connect to the given namespace")
 
 	AddBackupCommand(rootCmd, flags)
-	AddBrokersCommand(rootCmd)
-	AddConnectCmd(rootCmd)
+	AddBrokersCommand(rootCmd, flags)
+	AddConnectCmd(rootCmd, flags)
 	AddDatalossSimulationCmd(rootCmd, flags)
 	AddDeployCmd(rootCmd, flags)
 	AddDisconnectCommand(rootCmd, flags)
-	AddExportingCmds(rootCmd)
+	AddExportingCmds(rootCmd, flags)
 	AddPublishCmd(rootCmd, flags)
 	AddRestartCmd(rootCmd, flags)
 	AddStressCmd(rootCmd, flags)
 	AddTerminateCommand(rootCmd, flags)
-	AddTopologyCmd(rootCmd)
+	AddTopologyCmd(rootCmd, flags)
 	AddVerifyCommands(rootCmd, flags)
 	AddVersionCmd(rootCmd)
 	AddWorkerCmd(rootCmd)
 
 	return rootCmd
+}
+
+func createK8ClientWithFlags(flags Flags) (internal.K8Client, error) {
+	return internal.CreateK8Client(flags.kubeConfigPath, flags.namespace)
 }
 
 func Execute() {

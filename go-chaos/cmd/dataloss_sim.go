@@ -34,7 +34,7 @@ func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags Flags) {
 		Short: "Prepare the k8s deployment for dataloss test",
 		Long:  `Prepares the k8s deployment - such as applying patches to statefulsets - to enable applying dataloss commands.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			if err != nil {
 				panic(err)
 			}
@@ -56,7 +56,7 @@ func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags Flags) {
 		Long:  `Delete data of a broker by deleting the pvc and the pod`,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			if err != nil {
 				panic(err)
 			}
@@ -87,7 +87,7 @@ func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags Flags) {
 		Long:  `Restart the broker after full data loss, wait until the data is fully recovered`,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			if err != nil {
 				panic(err)
 			}

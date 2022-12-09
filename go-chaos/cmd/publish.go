@@ -29,7 +29,7 @@ func AddPublishCmd(rootCmd *cobra.Command, flags Flags) {
 		Short: "Publish a message",
 		Long:  `Publish a message to a certain partition.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			panicOnError(err)
 
 			port := 26500

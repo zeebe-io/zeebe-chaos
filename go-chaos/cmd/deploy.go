@@ -35,7 +35,7 @@ func AddDeployCmd(rootCmd *cobra.Command, flags Flags) {
 Can be used to deploy a specific process model or multiple version of a default BPMN and DMN model.
 Defaults to the later, which is useful for experimenting with deployment distribution.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			port := 26500
@@ -59,7 +59,7 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 		Long: `Deploy multiple versions of process and dmn models to Zeebe.
 Useful for experimenting with deployment distribution.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			port := 26500
@@ -82,7 +82,7 @@ Useful for experimenting with deployment distribution.`,
 		Long: `Deploy a worker deployment to the Zeebe cluster. 
 The workers can be used as part of some chaos experiments to complete process instances etc.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			err = k8Client.CreateWorkerDeployment()
@@ -98,7 +98,7 @@ The workers can be used as part of some chaos experiments to complete process in
 		Long: `Deploy all chaos BPMN models to the to the Zeebe cluster. 
 The process models allow to execute chaos experiments.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			zbClient, closeFn, err := backend.ConnectToZeebeCluster(k8Client)

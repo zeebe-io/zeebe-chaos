@@ -75,7 +75,7 @@ func Test_ResolveDefaultKubePath(t *testing.T) {
 	home := homedir.HomeDir()
 
 	// when
-	settings := findKubernetesSettings()
+	settings := findKubernetesSettings("", "")
 
 	// then
 	assert.Equal(t, strings.Join([]string{home, ".kube/config"}, "/"), settings.kubeConfigPath)

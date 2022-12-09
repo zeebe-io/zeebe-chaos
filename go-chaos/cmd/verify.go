@@ -35,7 +35,7 @@ func AddVerifyCommands(rootCmd *cobra.Command, flags Flags) {
 		Long:  `Verifies the readiness of Zeebe nodes.`,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			err = k8Client.AwaitReadiness()
@@ -51,7 +51,7 @@ func AddVerifyCommands(rootCmd *cobra.Command, flags Flags) {
 		Long: `Verifies that an instance from a specific process model can be created on a specific partition.
 Process instances are created until the required partition is reached.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			port := 26500

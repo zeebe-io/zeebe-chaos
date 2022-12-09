@@ -23,8 +23,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func ConnectBrokers() error {
-	k8Client, err := internal.CreateK8Client()
+func ConnectBrokers(kubeConfigPath string, namespace string) error {
+	k8Client, err := internal.CreateK8Client(kubeConfigPath, namespace)
 	if err != nil {
 		return err
 	}
@@ -55,8 +55,8 @@ func ConnectBrokers() error {
 	return nil
 }
 
-func ConnectGateway() error {
-	k8Client, err := internal.CreateK8Client()
+func ConnectGateway(kubeConfigPath string, namespace string) error {
+	k8Client, err := internal.CreateK8Client(kubeConfigPath, namespace)
 	if err != nil {
 		return err
 	}
@@ -103,8 +103,8 @@ type DisconnectBrokerCfg struct {
 	OneDirection bool
 }
 
-func DisconnectBroker(disconnectBrokerCfg DisconnectBrokerCfg) error {
-	k8Client, err := prepareBrokerDisconnect()
+func DisconnectBroker(kubeConfigPath string, namespace string, disconnectBrokerCfg DisconnectBrokerCfg) error {
+	k8Client, err := prepareBrokerDisconnect(kubeConfigPath, namespace)
 
 	zbClient, closeFn, err := ConnectToZeebeCluster(k8Client)
 	if err != nil {
@@ -138,8 +138,8 @@ type DisconnectGatewayCfg struct {
 	BrokerCfg       Broker
 }
 
-func DisconnectGateway(disconnectGatewayCfg DisconnectGatewayCfg) error {
-	k8Client, zbClient, closeFn, err := prepareGatewayDisconnect()
+func DisconnectGateway(kubeConfigPath string, namespace string, disconnectGatewayCfg DisconnectGatewayCfg) error {
+	k8Client, zbClient, closeFn, err := prepareGatewayDisconnect(kubeConfigPath, namespace)
 	if err != nil {
 		return err
 	}
@@ -173,8 +173,8 @@ func DisconnectGateway(disconnectGatewayCfg DisconnectGatewayCfg) error {
 	return nil
 }
 
-func prepareGatewayDisconnect() (internal.K8Client, zbc.Client, func(), error) {
-	k8Client, err := prepareBrokerDisconnect()
+func prepareGatewayDisconnect(kubeConfigPath string, namespace string) (internal.K8Client, zbc.Client, func(), error) {
+	k8Client, err := prepareBrokerDisconnect(kubeConfigPath, namespace)
 	if err != nil {
 		return k8Client, nil, nil, err
 	}
@@ -199,8 +199,8 @@ func prepareGatewayDisconnect() (internal.K8Client, zbc.Client, func(), error) {
 	return k8Client, zbClient, closeFn, nil
 }
 
-func prepareBrokerDisconnect() (internal.K8Client, error) {
-	k8Client, err := internal.CreateK8Client()
+func prepareBrokerDisconnect(kubeConfigPath string, namespace string) (internal.K8Client, error) {
+	k8Client, err := internal.CreateK8Client(kubeConfigPath, namespace)
 	if err != nil {
 		return internal.K8Client{}, err
 	}

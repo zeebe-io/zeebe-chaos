@@ -37,7 +37,7 @@ func AddStressCmd(rootCmd *cobra.Command, flags Flags) {
 		Long:  `Put stress on a Zeebe Broker. Broker can be identified via ID or partition and role. Stress can be of different kinds: memory, io or CPU.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			internal.Verbosity = Verbose
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			port := 26500
@@ -63,7 +63,7 @@ func AddStressCmd(rootCmd *cobra.Command, flags Flags) {
 		Long:  `Put stress on a Zeebe Gateway. Stress can be of different kinds: memory, io or CPU.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			internal.Verbosity = Verbose
-			k8Client, err := internal.CreateK8Client()
+			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
 			pod := getGatewayPod(k8Client)

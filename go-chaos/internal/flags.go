@@ -21,12 +21,6 @@ import (
 // Verbosity defines whether the functions should print verbose output
 var Verbosity = false
 
-// KubeConfigPath defines if a custom kube config should be used instead of the default one found by k8s
-var KubeConfigPath string
-
-// Namespace sets the namespace to be used instead of the namespace from the current kube context
-var Namespace string
-
 // JsonLogging defines whether the logging should be structured json logging
 var JsonLogging bool
 var JsonLogger zerolog.Logger

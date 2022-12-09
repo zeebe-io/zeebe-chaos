@@ -19,7 +19,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
-func AddConnectCmd(rootCmd *cobra.Command) {
+func AddConnectCmd(rootCmd *cobra.Command, flags Flags) {
 	var connect = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect Zeebe nodes",
@@ -31,7 +31,7 @@ func AddConnectCmd(rootCmd *cobra.Command) {
 		Short: "Connect Zeebe Brokers",
 		Long:  `Connect all Zeebe Brokers again, after they have been disconnected.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := backend.ConnectBrokers()
+			err := backend.ConnectBrokers(flags.kubeConfigPath, flags.namespace)
 			ensureNoError(err)
 		},
 	}
@@ -41,7 +41,7 @@ func AddConnectCmd(rootCmd *cobra.Command) {
 		Short: "Connect Zeebe Gateway",
 		Long:  `Connect all Zeebe Gateway again, after it has been disconnected.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := backend.ConnectGateway()
+			err := backend.ConnectGateway(flags.kubeConfigPath, flags.namespace)
 			ensureNoError(err)
 		},
 	}
