@@ -26,38 +26,38 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddTopologyCmd(rootCmd *cobra.Command, flags Flags) {
+
+	var topologyCmd = &cobra.Command{
+		Use:   "topology",
+		Short: "Print the Zeebe topology deployed in the current namespace",
+		Long:  `Shows the current Zeebe topology, in the current kubernetes namespace.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			if err != nil {
+				panic(err)
+			}
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			client, err := internal.CreateZeebeClient(port)
+			if err != nil {
+				panic(err)
+			}
+
+			response, err := client.NewTopologyCommand().Send(context.TODO())
+			if err != nil {
+				panic(err)
+			}
+
+			builder := strings.Builder{}
+			writeTopologyToOutput(&builder, response)
+			internal.LogInfo(builder.String())
+		},
+	}
 	rootCmd.AddCommand(topologyCmd)
-}
-
-var topologyCmd = &cobra.Command{
-	Use:   "topology",
-	Short: "Print the Zeebe topology deployed in the current namespace",
-	Long:  `Shows the current Zeebe topology, in the current kubernetes namespace.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		client, err := internal.CreateZeebeClient(port)
-		if err != nil {
-			panic(err)
-		}
-
-		response, err := client.NewTopologyCommand().Send(context.TODO())
-		if err != nil {
-			panic(err)
-		}
-
-		builder := strings.Builder{}
-		writeTopologyToOutput(&builder, response)
-		internal.LogInfo(builder.String())
-	},
 }
 
 func writeTopologyToOutput(output io.Writer, response *pb.TopologyResponse) {

@@ -19,27 +19,27 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddBrokersCommand(rootCmd *cobra.Command, flags Flags) {
+	var getZeebeBrokersCmd = &cobra.Command{
+		Use:   "brokers",
+		Short: "Print the name of the Zeebe broker pods",
+		Long:  `Show all names of deployed Zeebe brokers, in the current kubernetes namespace.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			if err != nil {
+				panic(err)
+			}
+
+			pods, err := k8Client.GetBrokerPodNames()
+			if err != nil {
+				panic(err)
+			}
+
+			for _, item := range pods {
+				internal.LogInfo("%s", item)
+			}
+		},
+	}
+
 	rootCmd.AddCommand(getZeebeBrokersCmd)
-}
-
-var getZeebeBrokersCmd = &cobra.Command{
-	Use:   "brokers",
-	Short: "Print the name of the Zeebe broker pods",
-	Long:  `Show all names of deployed Zeebe brokers, in the current kubernetes namespace.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		if err != nil {
-			panic(err)
-		}
-
-		pods, err := k8Client.GetBrokerPodNames()
-		if err != nil {
-			panic(err)
-		}
-
-		for _, item := range pods {
-			internal.LogInfo("%s", item)
-		}
-	},
 }

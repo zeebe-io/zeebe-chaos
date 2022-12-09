@@ -18,14 +18,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/rs/zerolog/log"
 
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
+type Flags struct {
 	partitionId        int
 	role               string
 	nodeId             int
@@ -40,55 +39,85 @@ var (
 	broker2PartitionId int
 	broker2Role        string
 	broker2NodeId      int
-)
 
+	// backup
+	backupId string
+
+	// disconnect
+	oneDirection    bool
+	disconnectToAll bool
+
+	// stress
+
+	cpuStress    bool
+	memoryStress bool
+	ioStress     bool
+	timeoutSec   string
+
+	// terminate
+
+	all bool
+
+	// verify
+	version        int
+	bpmnProcessId  string
+	timeoutInSec   int
+	kubeConfigPath string
+	namespace      string
+}
+
+var Version = "development"
+var Commit = "HEAD"
 var Verbose bool
-var KubeConfigPath string
-var Namespace string
-var ClientId string
-var ClientSecret string
-var Audience string
 var JsonLogging bool
 
-var rootCmd = &cobra.Command{
-	Use:   "zbchaos",
-	Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
-	Long: `A chaos experimenting toolkit for Zeebe.
-    Perfect to inject some chaos into your brokers and gateways.`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		internal.Verbosity = Verbose
-		internal.JsonLogging = JsonLogging
-		if JsonLogging {
-			internal.JsonLogger = log.With().Logger()
-		}
-		internal.Namespace = Namespace
-		internal.KubeConfigPath = KubeConfigPath
-		if ClientId != "" && ClientSecret != "" {
-			internal.ZeebeClientCredential, _ = zbc.NewOAuthCredentialsProvider(&zbc.OAuthProviderConfig{
-				ClientID:     ClientId,
-				ClientSecret: ClientSecret,
-				Audience:     Audience,
-			})
-		}
-	},
-}
+func NewCmd() *cobra.Command {
+	flags := Flags{}
 
-func init() {
+	rootCmd := &cobra.Command{
+		Use:   "zbchaos",
+		Short: "Zeebe chaos is a chaos experiment tool for Zeebe",
+		Long: `A chaos experimenting toolkit for Zeebe.
+    Perfect to inject some chaos into your brokers and gateways.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			internal.Verbosity = Verbose
+			internal.JsonLogging = JsonLogging
+			if JsonLogging {
+				internal.JsonLogger = log.With().Logger()
+			}
+		},
+	}
+
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
-	rootCmd.PersistentFlags().StringVar(&KubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
-	rootCmd.PersistentFlags().StringVarP(&Namespace, "namespace", "n", "", "connect to the given namespace")
-	rootCmd.PersistentFlags().StringVarP(&ClientId, "clientId", "c", "", "connect using the given clientId")
-	rootCmd.PersistentFlags().StringVar(&ClientSecret, "clientSecret", "", "connect using the given client secret")
-	rootCmd.PersistentFlags().StringVar(&Audience, "audience", "", "connect using the given client secret")
-}
+	rootCmd.PersistentFlags().StringVar(&flags.kubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
+	rootCmd.PersistentFlags().StringVarP(&flags.namespace, "namespace", "n", "", "connect to the given namespace")
 
-func NewCmd() *cobra.Command {
+	AddBackupCommand(rootCmd, flags)
+	AddBrokersCommand(rootCmd, flags)
+	AddConnectCmd(rootCmd, flags)
+	AddDatalossSimulationCmd(rootCmd, flags)
+	AddDeployCmd(rootCmd, flags)
+	AddDisconnectCommand(rootCmd, flags)
+	AddExportingCmds(rootCmd, flags)
+	AddPublishCmd(rootCmd, flags)
+	AddRestartCmd(rootCmd, flags)
+	AddStressCmd(rootCmd, flags)
+	AddTerminateCommand(rootCmd, flags)
+	AddTopologyCmd(rootCmd, flags)
+	AddVerifyCommands(rootCmd, flags)
+	AddVersionCmd(rootCmd)
+	AddWorkerCmd(rootCmd)
+
 	return rootCmd
 }
 
+func createK8ClientWithFlags(flags Flags) (internal.K8Client, error) {
+	return internal.CreateK8Client(flags.kubeConfigPath, flags.namespace)
+}
+
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := NewCmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

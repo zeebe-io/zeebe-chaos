@@ -36,15 +36,14 @@ const ENV_CLIENT_ID = "CHAOS_AUTOMATION_CLUSTER_CLIENT_ID"
 const ENV_CLIENT_SECRET = "CHAOS_AUTOMATION_CLUSTER_CLIENT_SECRET"
 const ENV_ADDRESS = "CHAOS_AUTOMATION_CLUSTER_ADDRESS"
 
-func init() {
+func AddWorkerCmd(rootCmd *cobra.Command) {
+	var workerCommand = &cobra.Command{
+		Use:   "worker",
+		Short: "Starts a worker for zbchaos jobs",
+		Long:  "Starts a worker for zbchaos jobs that executes zbchaos commands",
+		Run:   start_worker,
+	}
 	rootCmd.AddCommand(workerCommand)
-}
-
-var workerCommand = &cobra.Command{
-	Use:   "worker",
-	Short: "Starts a worker for zbchaos jobs",
-	Long:  "Starts a worker for zbchaos jobs that executes zbchaos commands",
-	Run:   start_worker,
 }
 
 func start_worker(cmd *cobra.Command, args []string) {
@@ -94,8 +93,9 @@ func handleZbChaosJob(client zbworker.JobClient, job entities.Job) {
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
 	internal.LogInfo("Running command with args: %v ", args)
-	rootCmd.SetArgs(args)
-	_, err := rootCmd.ExecuteContextC(ctx)
+	cmd := NewCmd()
+	cmd.SetArgs(args)
+	_, err := cmd.ExecuteContextC(ctx)
 	if err != nil {
 		return err
 	}

@@ -19,87 +19,83 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
-var (
-	oneDirection    bool
-	disconnectToAll bool
-)
-
-func init() {
-	rootCmd.AddCommand(disconnect)
-
-	// disconnect brokers
-	disconnect.AddCommand(disconnectBrokers)
-	// broker 1
-	disconnectBrokers.Flags().StringVar(&broker1Role, "broker1Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the first Broker")
-	disconnectBrokers.Flags().IntVar(&broker1PartitionId, "broker1PartitionId", 1, "Specify the partition id of the first Broker")
-	disconnectBrokers.Flags().IntVar(&broker1NodeId, "broker1NodeId", -1, "Specify the nodeId of the first Broker")
-	disconnectBrokers.MarkFlagsMutuallyExclusive("broker1PartitionId", "broker1NodeId")
-	// broker 2
-	disconnectBrokers.Flags().StringVar(&broker2Role, "broker2Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the second Broker")
-	disconnectBrokers.Flags().IntVar(&broker2PartitionId, "broker2PartitionId", 2, "Specify the partition id of the second Broker")
-	disconnectBrokers.Flags().IntVar(&broker2NodeId, "broker2NodeId", -1, "Specify the nodeId of the second Broker")
-	// general
-	disconnectBrokers.Flags().BoolVar(&oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
-	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId")
-
-	// disconnect gateway
-	disconnect.AddCommand(disconnectGateway)
-	disconnectGateway.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
-	disconnectGateway.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the Broker")
-	disconnectGateway.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the partition id of the Broker")
-	disconnectGateway.Flags().BoolVar(&oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
-	disconnectGateway.Flags().BoolVar(&disconnectToAll, "all", false, "Specify whether the gateway should be disconnected to all brokers")
-	disconnectGateway.MarkFlagsMutuallyExclusive("all", "partitionId", "nodeId")
-}
-
-var disconnect = &cobra.Command{
-	Use:   "disconnect",
-	Short: "Disconnect Zeebe nodes",
-	Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
-}
-
 func ensureNoError(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-var disconnectBrokers = &cobra.Command{
-	Use:   "brokers",
-	Short: "Disconnect Zeebe Brokers",
-	Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := backend.DisconnectBroker(backend.DisconnectBrokerCfg{
-			Broker1Cfg: backend.Broker{
-				NodeId:      broker1NodeId,
-				PartitionId: broker1PartitionId,
-				Role:        broker1Role,
-			},
-			Broker2Cfg: backend.Broker{
-				NodeId:      broker2NodeId,
-				PartitionId: broker2PartitionId,
-				Role:        broker2Role,
-			},
-			OneDirection: oneDirection,
-		})
-		ensureNoError(err)
-	},
-}
+func AddDisconnectCommand(rootCmd *cobra.Command, flags Flags) {
 
-var disconnectGateway = &cobra.Command{
-	Use:   "gateway",
-	Short: "Disconnect Zeebe Gateway",
-	Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := backend.DisconnectGateway(backend.DisconnectGatewayCfg{
-			OneDirection:    oneDirection,
-			DisconnectToAll: disconnectToAll,
-			BrokerCfg: backend.Broker{
-				Role:        role,
-				PartitionId: partitionId,
-				NodeId:      nodeId,
-			},
-		})
-		ensureNoError(err)
-	},
+	var disconnect = &cobra.Command{
+		Use:   "disconnect",
+		Short: "Disconnect Zeebe nodes",
+		Long:  `Disconnect Zeebe nodes, uses sub-commands to disconnect leaders, followers, etc.`,
+	}
+
+	var disconnectBrokers = &cobra.Command{
+		Use:   "brokers",
+		Short: "Disconnect Zeebe Brokers",
+		Long:  `Disconnect Zeebe Brokers with a given partition and role.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := backend.DisconnectBroker(flags.kubeConfigPath, flags.namespace, backend.DisconnectBrokerCfg{
+				Broker1Cfg: backend.Broker{
+					NodeId:      flags.broker1NodeId,
+					PartitionId: flags.broker1PartitionId,
+					Role:        flags.broker1Role,
+				},
+				Broker2Cfg: backend.Broker{
+					NodeId:      flags.broker2NodeId,
+					PartitionId: flags.broker2PartitionId,
+					Role:        flags.broker2Role,
+				},
+				OneDirection: flags.oneDirection,
+			})
+			ensureNoError(err)
+		},
+	}
+
+	var disconnectGateway = &cobra.Command{
+		Use:   "gateway",
+		Short: "Disconnect Zeebe Gateway",
+		Long:  `Disconnect Zeebe Gateway from Broker with a given partition and role.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := backend.DisconnectGateway(flags.kubeConfigPath, flags.namespace, backend.DisconnectGatewayCfg{
+				OneDirection:    flags.oneDirection,
+				DisconnectToAll: flags.disconnectToAll,
+				BrokerCfg: backend.Broker{
+					Role:        flags.role,
+					PartitionId: flags.partitionId,
+					NodeId:      flags.nodeId,
+				},
+			})
+			ensureNoError(err)
+		},
+	}
+
+	rootCmd.AddCommand(disconnect)
+
+	// disconnect brokers
+	disconnect.AddCommand(disconnectBrokers)
+	// broker 1
+	disconnectBrokers.Flags().StringVar(&flags.broker1Role, "broker1Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the first Broker")
+	disconnectBrokers.Flags().IntVar(&flags.broker1PartitionId, "broker1PartitionId", 1, "Specify the partition id of the first Broker")
+	disconnectBrokers.Flags().IntVar(&flags.broker1NodeId, "broker1NodeId", -1, "Specify the nodeId of the first Broker")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker1PartitionId", "broker1NodeId")
+	// broker 2
+	disconnectBrokers.Flags().StringVar(&flags.broker2Role, "broker2Role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the second Broker")
+	disconnectBrokers.Flags().IntVar(&flags.broker2PartitionId, "broker2PartitionId", 2, "Specify the partition id of the second Broker")
+	disconnectBrokers.Flags().IntVar(&flags.broker2NodeId, "broker2NodeId", -1, "Specify the nodeId of the second Broker")
+	// general
+	disconnectBrokers.Flags().BoolVar(&flags.oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
+	disconnectBrokers.MarkFlagsMutuallyExclusive("broker2PartitionId", "broker2NodeId")
+
+	// disconnect gateway
+	disconnect.AddCommand(disconnectGateway)
+	disconnectGateway.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	disconnectGateway.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the Broker")
+	disconnectGateway.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the partition id of the Broker")
+	disconnectGateway.Flags().BoolVar(&flags.oneDirection, "one-direction", false, "Specify whether the network partition should be setup only in one direction (asymmetric)")
+	disconnectGateway.Flags().BoolVar(&flags.disconnectToAll, "all", false, "Specify whether the gateway should be disconnected to all brokers")
+	disconnectGateway.MarkFlagsMutuallyExclusive("all", "partitionId", "nodeId")
 }

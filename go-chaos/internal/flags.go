@@ -15,21 +15,12 @@
 package internal
 
 import (
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/rs/zerolog"
 )
 
-// defines whether the functions should print verbose output
+// Verbosity defines whether the functions should print verbose output
 var Verbosity = false
 
-// defines if a custom kube config should be used instead of the default one found by k8s
-var KubeConfigPath string
-
-// sets the namespace to be used instead of the namespace from the current kube context
-var Namespace string
-
-var ZeebeClientCredential zbc.CredentialsProvider
-
-// defines whether the logging should be structured json logging
+// JsonLogging defines whether the logging should be structured json logging
 var JsonLogging bool
 var JsonLogger zerolog.Logger

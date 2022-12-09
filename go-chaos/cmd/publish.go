@@ -22,41 +22,42 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddPublishCmd(rootCmd *cobra.Command, flags Flags) {
+
+	var publishCmd = &cobra.Command{
+		Use:   "publish",
+		Short: "Publish a message",
+		Long:  `Publish a message to a certain partition.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			panicOnError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			panicOnError(err)
+			defer zbClient.Close()
+
+			topology, err := internal.GetTopology(zbClient)
+			panicOnError(err)
+
+			correlationKey, err := internal.FindCorrelationKeyForPartition(flags.partitionId, int(topology.PartitionsCount))
+			panicOnError(err)
+
+			internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", flags.msgName, correlationKey, int(correlationKey[0]))
+
+			messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(flags.msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
+			partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
+
+			internal.LogInfo("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
+		},
+	}
+
 	rootCmd.AddCommand(publishCmd)
-	publishCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	publishCmd.Flags().StringVar(&msgName, "msgName", "msg", "Specify the name of the message, which should be published.")
-}
-
-var publishCmd = &cobra.Command{
-	Use:   "publish",
-	Short: "Publish a message",
-	Long:  `Publish a message to a certain partition.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		k8Client, err := internal.CreateK8Client()
-		panicOnError(err)
-
-		port := 26500
-		closeFn := k8Client.MustGatewayPortForward(port, port)
-		defer closeFn()
-
-		zbClient, err := internal.CreateZeebeClient(port)
-		panicOnError(err)
-		defer zbClient.Close()
-
-		topology, err := internal.GetTopology(zbClient)
-		panicOnError(err)
-
-		correlationKey, err := internal.FindCorrelationKeyForPartition(partitionId, int(topology.PartitionsCount))
-		panicOnError(err)
-
-		internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", msgName, correlationKey, int(correlationKey[0]))
-
-		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
-		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
-
-		internal.LogInfo("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
-	},
+	publishCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	publishCmd.Flags().StringVar(&flags.msgName, "msgName", "msg", "Specify the name of the message, which should be published.")
 }
 
 func panicOnError(err error) {

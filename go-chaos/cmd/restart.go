@@ -19,50 +19,57 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func init() {
+func AddRestartCmd(rootCmd *cobra.Command, flags Flags) {
+
+	var restartCmd = &cobra.Command{
+		Use:   "restart",
+		Short: "Restarts a Zeebe node",
+		Long:  `Restarts a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
+	}
+
+	var restartBrokerCmd = &cobra.Command{
+		Use:   "broker",
+		Short: "Restarts a Zeebe broker",
+		Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			brokerPod := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, nil)
+			internal.LogInfo("Restarted %s", brokerPod)
+		},
+	}
+
+	var restartGatewayCmd = &cobra.Command{
+		Use:   "gateway",
+		Short: "Restarts a Zeebe gateway",
+		Long:  `Restarts a Zeebe gateway.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			gatewayPod := restartGateway(k8Client, nil)
+			internal.LogInfo("Restarted %s", gatewayPod)
+		},
+	}
+
+	var restartWorkerCmd = &cobra.Command{
+		Use:   "worker",
+		Short: "Restart a Zeebe worker",
+		Long:  `Restart a Zeebe worker.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+			restartWorker(k8Client, flags.all, "Restarted", nil)
+		},
+	}
+
 	rootCmd.AddCommand(restartCmd)
 	restartCmd.AddCommand(restartBrokerCmd)
-	restartBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
-	restartBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	restartBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	restartBrokerCmd.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
+	restartBrokerCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	restartBrokerCmd.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
 	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
-	restartWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be restarted")
-}
-
-var restartCmd = &cobra.Command{
-	Use:   "restart",
-	Short: "Restarts a Zeebe node",
-	Long:  `Restarts a Zeebe node, it can be chosen between: broker, gateway or a worker.`,
-}
-
-var restartBrokerCmd = &cobra.Command{
-	Use:   "broker",
-	Short: "Restarts a Zeebe broker",
-	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		brokerPod := restartBroker(nodeId, partitionId, role, nil)
-		internal.LogInfo("Restarted %s", brokerPod)
-	},
-}
-
-var restartGatewayCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "Restarts a Zeebe gateway",
-	Long:  `Restarts a Zeebe gateway.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		gatewayPod := restartGateway(nil)
-		internal.LogInfo("Restarted %s", gatewayPod)
-	},
-}
-
-var restartWorkerCmd = &cobra.Command{
-	Use:   "worker",
-	Short: "Restart a Zeebe worker",
-	Long:  `Restart a Zeebe worker.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		restartWorker(all, "Restarted", nil)
-	},
+	restartWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be restarted")
 }
