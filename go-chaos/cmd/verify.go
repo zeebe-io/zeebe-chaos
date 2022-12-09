@@ -34,11 +34,13 @@ func init() {
 
 	verifyInstanceCreation.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
 	verifyInstanceCreation.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
-	verifyInstanceCreation.Flags().BoolVar(&awaitResult, "awaitResult", false, "Specify whether the completion of the created process instance should be awaited.")
+	verifyInstanceCreation.Flags().BoolVar(&awaitResult, "awaitResult", false,
+		"Specify whether the completion of the created process instance should be awaited. Note: if this flag is specified it is expected that it doesn't matter where the instance creation is happening, partition id is not validated and creation not retried.")
 	verifyInstanceCreation.Flags().IntVar(&timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
 
 	verifyInstanceCreation.Flags().StringVar(&bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
 	verifyInstanceCreation.Flags().IntVar(&version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+
 }
 
 var verifyCmd = &cobra.Command{
@@ -87,6 +89,10 @@ Process instances are created until the required partition is reached.`,
 			Variables:     variables,
 		})
 		ensureNoError(err)
+		if awaitResult {
+			internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
+			partitionId = 0
+		}
 		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), time.Duration(timeoutInSec)*time.Second)
 		ensureNoError(err)
 
