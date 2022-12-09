@@ -66,7 +66,7 @@
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["verify", "instance-creation", "--partitionId", "1", "--awaitResult"],
+                "arguments": ["verify", "instance-creation", "--awaitResult"],
                 "timeout": 900
             }
         },
@@ -91,7 +91,7 @@
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["verify", "instance-creation", "--partitionId", "1", "--awaitResult"],
+                "arguments": ["verify", "instance-creation", "--awaitResult"],
                 "timeout": 900
             }
         }

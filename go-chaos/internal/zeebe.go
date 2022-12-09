@@ -327,6 +327,8 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 
 			if partitionId == requiredPartition {
 				return nil
+			} else if requiredPartition == 0 {
+				return nil
 			}
 		}
 	}

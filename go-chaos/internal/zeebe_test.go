@@ -228,6 +228,19 @@ func Test_ShouldSucceedOnCorrectPartition(t *testing.T) {
 	assert.NoError(t, err, "expected no error")
 }
 
+func Test_ShouldSucceedWhenRequiredPartitionIsZero(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
+	}
+
+	// when
+	err := CreateProcessInstanceOnPartition(dummyCreator, 0, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
 func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
 	// given
 	expectedPartition := 47
