@@ -19,7 +19,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/backend"
 )
 
-func AddConnectCmd(rootCmd *cobra.Command, flags Flags) {
+func AddConnectCmd(rootCmd *cobra.Command, flags *Flags) {
 	var connect = &cobra.Command{
 		Use:   "connect",
 		Short: "Connect Zeebe nodes",

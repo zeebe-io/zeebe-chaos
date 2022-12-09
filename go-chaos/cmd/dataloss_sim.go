@@ -21,7 +21,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags Flags) {
+func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	var datalossCmd = &cobra.Command{
 		Use:   "dataloss",

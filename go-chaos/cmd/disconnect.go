@@ -25,7 +25,7 @@ func ensureNoError(err error) {
 	}
 }
 
-func AddDisconnectCommand(rootCmd *cobra.Command, flags Flags) {
+func AddDisconnectCommand(rootCmd *cobra.Command, flags *Flags) {
 
 	var disconnect = &cobra.Command{
 		Use:   "disconnect",
