@@ -22,23 +22,20 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
-	all bool
-)
 
 func init() {
 	rootCmd.AddCommand(terminateCmd)
 
 	terminateCmd.AddCommand(terminateBrokerCmd)
-	terminateBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
-	terminateBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	terminateBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	terminateBrokerCmd.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
+	terminateBrokerCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	terminateBrokerCmd.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
 	terminateBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
 
 	terminateCmd.AddCommand(terminateWorkerCmd)
-	terminateWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be terminated")
+	terminateWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be terminated")
 }
 
 var terminateCmd = &cobra.Command{
@@ -53,7 +50,7 @@ var terminateBrokerCmd = &cobra.Command{
 	Long:  `Terminates a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		gracePeriodSec := int64(0)
-		brokerName := restartBroker(nodeId, partitionId, role, &gracePeriodSec)
+		brokerName := restartBroker(flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
 		internal.LogInfo("Terminated %s", brokerName)
 	},
 }
@@ -75,7 +72,7 @@ var terminateWorkerCmd = &cobra.Command{
 	Long:  `Terminates a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		gracePeriodSec := int64(0)
-		restartWorker(all, "Terminated", &gracePeriodSec)
+		restartWorker(flags.all, "Terminated", &gracePeriodSec)
 	},
 }
 

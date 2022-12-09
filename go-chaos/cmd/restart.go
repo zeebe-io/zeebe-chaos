@@ -22,14 +22,14 @@ import (
 func init() {
 	rootCmd.AddCommand(restartCmd)
 	restartCmd.AddCommand(restartBrokerCmd)
-	restartBrokerCmd.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
-	restartBrokerCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	restartBrokerCmd.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	restartBrokerCmd.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
+	restartBrokerCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	restartBrokerCmd.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
 	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)
-	restartWorkerCmd.Flags().BoolVar(&all, "all", false, "Specify whether all workers should be restarted")
+	restartWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be restarted")
 }
 
 var restartCmd = &cobra.Command{
@@ -43,7 +43,7 @@ var restartBrokerCmd = &cobra.Command{
 	Short: "Restarts a Zeebe broker",
 	Long:  `Restarts a Zeebe broker with a certain role and given partition.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		brokerPod := restartBroker(nodeId, partitionId, role, nil)
+		brokerPod := restartBroker(flags.nodeId, flags.partitionId, flags.role, nil)
 		internal.LogInfo("Restarted %s", brokerPod)
 	},
 }
@@ -63,6 +63,6 @@ var restartWorkerCmd = &cobra.Command{
 	Short: "Restart a Zeebe worker",
 	Long:  `Restart a Zeebe worker.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		restartWorker(all, "Restarted", nil)
+		restartWorker(flags.all, "Restarted", nil)
 	},
 }

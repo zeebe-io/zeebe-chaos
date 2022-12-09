@@ -24,8 +24,8 @@ import (
 
 func init() {
 	rootCmd.AddCommand(publishCmd)
-	publishCmd.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	publishCmd.Flags().StringVar(&msgName, "msgName", "msg", "Specify the name of the message, which should be published.")
+	publishCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	publishCmd.Flags().StringVar(&flags.msgName, "msgName", "msg", "Specify the name of the message, which should be published.")
 }
 
 var publishCmd = &cobra.Command{
@@ -47,12 +47,12 @@ var publishCmd = &cobra.Command{
 		topology, err := internal.GetTopology(zbClient)
 		panicOnError(err)
 
-		correlationKey, err := internal.FindCorrelationKeyForPartition(partitionId, int(topology.PartitionsCount))
+		correlationKey, err := internal.FindCorrelationKeyForPartition(flags.partitionId, int(topology.PartitionsCount))
 		panicOnError(err)
 
-		internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", msgName, correlationKey, int(correlationKey[0]))
+		internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", flags.msgName, correlationKey, int(correlationKey[0]))
 
-		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
+		messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(flags.msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
 		partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
 		internal.LogInfo("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)

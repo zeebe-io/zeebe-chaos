@@ -25,26 +25,22 @@ import (
 )
 
 var (
-	cpuStress    bool
-	memoryStress bool
-	ioStress     bool
-	timeoutSec   string
 )
 
 func init() {
 	rootCmd.AddCommand(stress)
 
-	stress.PersistentFlags().BoolVar(&cpuStress, "cpu", true, "Specify whether CPU stress should put on the node")
-	stress.PersistentFlags().BoolVar(&memoryStress, "memory", false, "Specify whether memory stress should put on the node")
-	stress.PersistentFlags().BoolVar(&ioStress, "io", false, "Specify whether io stress should put on the node")
-	stressBroker.PersistentFlags().StringVar(&timeoutSec, "timeout", "30", "Specify how long the stress should be executed in seconds. Default: 30")
+	stress.PersistentFlags().BoolVar(&flags.cpuStress, "cpu", true, "Specify whether CPU stress should put on the node")
+	stress.PersistentFlags().BoolVar(&flags.memoryStress, "memory", false, "Specify whether memory stress should put on the node")
+	stress.PersistentFlags().BoolVar(&flags.ioStress, "io", false, "Specify whether io stress should put on the node")
+	stressBroker.PersistentFlags().StringVar(&flags.timeoutSec, "timeout", "30", "Specify how long the stress should be executed in seconds. Default: 30")
 
 	// stress brokers
 	stress.AddCommand(stressBroker)
 
-	stressBroker.Flags().IntVar(&nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
-	stressBroker.Flags().StringVar(&role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the Broker")
-	stressBroker.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the partition id of the Broker")
+	stressBroker.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
+	stressBroker.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER] of the Broker")
+	stressBroker.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the partition id of the Broker")
 
 	stress.AddCommand(stressGateway)
 
@@ -73,11 +69,11 @@ var stressBroker = &cobra.Command{
 		ensureNoError(err)
 		defer zbClient.Close()
 
-		pod := getBrokerPod(k8Client, zbClient, nodeId, partitionId, role)
+		pod := getBrokerPod(k8Client, zbClient, flags.nodeId, flags.partitionId, flags.role)
 		internal.LogInfo("Put stress on %s", pod.Name)
 
-		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
-		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)
+		stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
+		err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
 		ensureNoError(err)
 	},
 }
@@ -94,8 +90,8 @@ var stressGateway = &cobra.Command{
 		pod := getGatewayPod(k8Client)
 		internal.LogInfo("Put stress on %s", pod.Name)
 
-		stressType := internal.StressType{CpuStress: cpuStress, IoStress: ioStress, MemStress: memoryStress}
-		err = internal.PutStressOnPod(k8Client, timeoutSec, pod.Name, stressType)
+		stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
+		err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
 		ensureNoError(err)
 	},
 }
@@ -110,7 +106,7 @@ func getBrokerPod(k8Client internal.K8Client, zbClient zbc.Client, brokerNodeId 
 	} else {
 		brokerPod, err = internal.GetBrokerPodForPartitionAndRole(k8Client, zbClient, brokerPartitionId, brokerRole)
 		ensureNoError(err)
-		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, role, brokerPartitionId)
+		internal.LogVerbose("Found Broker %s as %s for partition %d.", brokerPod.Name, flags.role, brokerPartitionId)
 	}
 
 	return brokerPod

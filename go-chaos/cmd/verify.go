@@ -21,25 +21,20 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
-	version       int
-	bpmnProcessId string
-	timeoutInSec  int
-)
 
 func init() {
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifyInstanceCreation)
 
-	verifyInstanceCreation.Flags().IntVar(&partitionId, "partitionId", 1, "Specify the id of the partition")
-	verifyInstanceCreation.Flags().StringVar(&variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
-	verifyInstanceCreation.Flags().BoolVar(&awaitResult, "awaitResult", false,
+	verifyInstanceCreation.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
+	verifyInstanceCreation.Flags().StringVar(&flags.variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
+	verifyInstanceCreation.Flags().BoolVar(&flags.awaitResult, "awaitResult", false,
 		"Specify whether the completion of the created process instance should be awaited. Note: if this flag is specified it is expected that it doesn't matter where the instance creation is happening, partition id is not validated and creation not retried.")
-	verifyInstanceCreation.Flags().IntVar(&timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
+	verifyInstanceCreation.Flags().IntVar(&flags.timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
 
-	verifyInstanceCreation.Flags().StringVar(&bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
-	verifyInstanceCreation.Flags().IntVar(&version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+	verifyInstanceCreation.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
+	verifyInstanceCreation.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
 
 }
 
@@ -83,17 +78,17 @@ Process instances are created until the required partition is reached.`,
 		defer zbClient.Close()
 
 		processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
-			BpmnProcessId: bpmnProcessId,
-			Version:       int32(version),
-			AwaitResult:   awaitResult,
-			Variables:     variables,
+			BpmnProcessId: flags.bpmnProcessId,
+			Version:       int32(flags.version),
+			AwaitResult:   flags.awaitResult,
+			Variables:     flags.variables,
 		})
 		ensureNoError(err)
-		if awaitResult {
+		if flags.awaitResult {
 			internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
-			partitionId = 0
+			flags.partitionId = 0
 		}
-		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(partitionId), time.Duration(timeoutInSec)*time.Second)
+		err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(flags.partitionId), time.Duration(flags.timeoutInSec)*time.Second)
 		ensureNoError(err)
 
 		internal.LogInfo("The steady-state was successfully verified!")

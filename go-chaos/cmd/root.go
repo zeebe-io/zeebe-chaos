@@ -25,7 +25,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
+type Flags struct {
 	partitionId        int
 	role               string
 	nodeId             int
@@ -40,8 +40,63 @@ var (
 	broker2PartitionId int
 	broker2Role        string
 	broker2NodeId      int
-)
 
+	// backup
+	backupId string
+
+	// disconnect
+	oneDirection    bool
+	disconnectToAll bool
+
+	// stress
+
+	cpuStress    bool
+	memoryStress bool
+	ioStress     bool
+	timeoutSec   string
+
+	// terminate
+
+	all bool
+
+	// verify
+	version       int
+	bpmnProcessId string
+	timeoutInSec  int
+}
+
+func (f *Flags) reset() {
+	f.partitionId = 0
+	f.role = ""
+	f.nodeId = 0
+	f.processModelPath = ""
+	f.versionCount = 0
+	f.variables = ""
+	f.msgName = ""
+	f.awaitResult = false
+	f.broker1PartitionId = 0
+	f.broker1Role = ""
+	f.broker1NodeId = 0
+	f.broker2PartitionId = 0
+	f.broker2Role = ""
+	f.broker2NodeId = 0
+	f.backupId = ""
+	f.oneDirection = false
+	f.disconnectToAll = false
+	f.cpuStress = false
+	f.memoryStress = false
+	f.ioStress = false
+	f.timeoutSec = ""
+	f.all = false
+	f.version = 0
+	f.bpmnProcessId = ""
+	f.timeoutInSec = 0
+}
+
+var flags = Flags{}
+
+var Version = "development"
+var Commit  = "HEAD"
 var Verbose bool
 var KubeConfigPath string
 var Namespace string

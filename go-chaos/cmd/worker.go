@@ -94,6 +94,7 @@ func handleZbChaosJob(client zbworker.JobClient, job entities.Job) {
 
 func runZbChaosCommand(args []string, ctx context.Context) error {
 	internal.LogInfo("Running command with args: %v ", args)
+	flags.reset()
 	rootCmd.SetArgs(args)
 	_, err := rootCmd.ExecuteContextC(ctx)
 	if err != nil {

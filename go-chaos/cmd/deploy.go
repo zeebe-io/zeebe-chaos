@@ -24,11 +24,11 @@ func init() {
 	rootCmd.AddCommand(deployCmd)
 
 	deployCmd.AddCommand(deployProcessModelCmd)
-	deployProcessModelCmd.Flags().StringVar(&processModelPath, "processModelPath", "",
+	deployProcessModelCmd.Flags().StringVar(&flags.processModelPath, "processModelPath", "",
 		"Specify the path to a BPMN process model, which should be deployed. Defaults to a benchmark process model with one task (included in zbchaos). If the path starts with 'bpmn/' zbchaos will look for a referenced model bundled within the cli, like: 'bpmn/one_task.bpmn'.")
 
 	deployCmd.AddCommand(deployMultiVersionProcessModelCmd)
-	deployMultiVersionProcessModelCmd.Flags().IntVar(&versionCount, "versionCount", 10,
+	deployMultiVersionProcessModelCmd.Flags().IntVar(&flags.versionCount, "versionCount", 10,
 		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
 
 	deployCmd.AddCommand(deployWorkerCmd)
@@ -59,10 +59,10 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 		ensureNoError(err)
 		defer zbClient.Close()
 
-		processDefinitionKey, err := internal.DeployModel(zbClient, processModelPath)
+		processDefinitionKey, err := internal.DeployModel(zbClient, flags.processModelPath)
 		ensureNoError(err)
 
-		internal.LogInfo("Deployed given process model %s, under key %d!", processModelPath, processDefinitionKey)
+		internal.LogInfo("Deployed given process model %s, under key %d!", flags.processModelPath, processDefinitionKey)
 	},
 }
 
@@ -83,7 +83,7 @@ Useful for experimenting with deployment distribution.`,
 		ensureNoError(err)
 		defer zbClient.Close()
 
-		err = internal.DeployDifferentVersions(zbClient, int32(versionCount))
+		err = internal.DeployDifferentVersions(zbClient, int32(flags.versionCount))
 		ensureNoError(err)
 		internal.LogInfo("Deployed different process models of different types and versions to zeebe!")
 	},

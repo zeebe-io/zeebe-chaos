@@ -33,19 +33,15 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-var (
-	backupId string
-)
-
 func init() {
 	rootCmd.AddCommand(backupCommand)
 	backupCommand.AddCommand(setupBackupCommand)
 	backupCommand.AddCommand(takeBackupCommand)
-	takeBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
+	takeBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 	backupCommand.AddCommand(waitForBackupCommand)
-	waitForBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
+	waitForBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 	backupCommand.AddCommand(restoreBackupCommand)
-	restoreBackupCommand.Flags().StringVar(&backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
+	restoreBackupCommand.Flags().StringVar(&flags.backupId, "backupId", strconv.FormatInt(time.Now().UnixMilli(), 10), "optionally specify the backup id to use, uses the current timestamp by default")
 }
 
 var backupCommand = &cobra.Command{
@@ -190,7 +186,7 @@ func takeBackup(*cobra.Command, []string) error {
 	port := 9600
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
-	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
+	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, flags.backupId)
 	resp, err := http.Post(url, "", nil)
 	if err != nil {
 		return err
@@ -216,7 +212,7 @@ func waitForBackup(*cobra.Command, []string) error {
 	defer closePortForward()
 
 	for {
-		backup, err := getBackupStatus(port, backupId)
+		backup, err := getBackupStatus(port, flags.backupId)
 		if err != nil {
 			return err
 		}
@@ -326,7 +322,7 @@ func restoreEnvFromSfs(sfs *apps.StatefulSet) []core.EnvVar {
 		},
 		core.EnvVar{
 			Name:  "ZEEBE_RESTORE_FROM_BACKUP_ID",
-			Value: backupId,
+			Value: flags.backupId,
 		})
 	return restoreEnv
 }
