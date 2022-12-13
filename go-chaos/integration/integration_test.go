@@ -73,7 +73,9 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 	go cmd.OpenWorkers(zeebeClient)
 	go func() {
 		internal.LogInfo("Create ChaosToolkit instance")
-		response, err := commandStep3.WithResult().Send(ctx)
+		deadline, cancelFunc := context.WithDeadline(ctx, time.UnixMilli(time.Now().UnixMilli()+int64(60*time.Minute)))
+		defer cancelFunc()
+		response, err := commandStep3.WithResult().Send(deadline)
 		require.NoError(t, err)
 		internal.LogInfo("Instance %d [definition %d ] completed", response.ProcessInstanceKey, response.ProcessDefinitionKey)
 		close(done)
