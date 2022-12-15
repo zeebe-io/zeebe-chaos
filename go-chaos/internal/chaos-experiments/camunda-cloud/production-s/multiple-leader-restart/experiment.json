@@ -1,0 +1,121 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe Leader restart multiple times experiment",
+    "description": "Zeebe should be able to handle multiple leader changes in short period.",
+    "contributions": {
+        "reliability": "high",
+        "availability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Can deploy process model",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["deploy", "process"],
+                    "timeout": 900
+                }
+            },
+            {
+                "name": "Should be able to create process instances on partition 1",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                    "timeout": 900
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "Terminate leader of partition 1 non-gracefully",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+            }
+        },
+        {
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "Should be able to create process instances on partition 1",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                "timeout": 900
+            }
+        },
+        {
+            "type": "action",
+            "name": "Terminate leader of partition 1 non-gracefully",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+            }
+        },
+        {
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "Should be able to create process instances on partition 1",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                "timeout": 900
+            }
+        },
+        {
+            "type": "action",
+            "name": "Terminate leader of partition 1 non-gracefully",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+            }
+        }
+    ],
+    "rollbacks": []
+}
