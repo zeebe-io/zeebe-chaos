@@ -16,7 +16,7 @@ spec:
         app: zbchaos-worker
     spec:
       containers:
-        - image: gcr.io/zeebe-io/zbchaos:dde8fdb18c4fae69701fd19121ae6c05cb261168@sha256:f5398ce503577873a14c3f2a1582adfc452ead365096aef30cebab0128d0b3d8
+        - image: gcr.io/zeebe-io/zbchaos:527a6cea3cc870650fff3bb88018aa2f4c79cee8
           #gcr.io/zeebe-io/zbchaos:latest
           name: zbchaos-worker
           resources:

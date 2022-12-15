@@ -54,6 +54,7 @@ func AddStressCmd(rootCmd *cobra.Command, flags *Flags) {
 			stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
 			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
 			ensureNoError(err)
+			internal.LogInfo("Finished putting stress on %s", pod.Name)
 		},
 	}
 

@@ -52,6 +52,7 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 	ctx := context.Background()
 	container := CreateEZEContainer(t, ctx)
 	defer container.StopLogProducer()
+	time.Sleep(15 * time.Second)
 	mappedPort, err := container.MappedPort(ctx, "26500/tcp")
 	require.NoError(t, err)
 	zeebeClient, err := internal.CreateZeebeClient(mappedPort.Int())
@@ -60,12 +61,12 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 
 	// required variables
 	vars := make(map[string]interface{})
-	vars["clusterPlan"] = "test" // specifies the cluster plan for which we read the experiments
-	vars["clusterId"] = ""       // need to be set to empty string, otherwise we run into a SIGSEG
+	vars["clusterPlan"] = "production-s"                       // specifies the cluster plan for which we read the experiments
+	vars["clusterId"] = "967418c4-dd62-4230-939b-0597897d8685" // need to be set to empty string, otherwise we run into a SIGSEG
 
 	commandStep3, err := zeebeClient.NewCreateInstanceCommand().BPMNProcessId("chaosToolkit").LatestVersion().VariablesFromMap(vars)
 	require.NoError(t, err)
-	timeout := time.After(60 * time.Second)
+	timeout := time.After(60 * time.Minute)
 	done := make(chan struct{})
 
 	// when
@@ -91,9 +92,9 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 
 func CreateEZEContainer(t *testing.T, ctx context.Context) testcontainers.Container {
 	req := testcontainers.ContainerRequest{
-		Image:        "ghcr.io/camunda-community-hub/eze:1.0.2",
+		Image:        "camunda/zeebe:8.1.4",
 		ExposedPorts: []string{"26500/tcp"},
-		WaitingFor:   wait.ForLog("EZE agent started at 0.0.0.0:26500"),
+		WaitingFor:   wait.ForLog("Partition-1 recovered, marking it as healthy"),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
