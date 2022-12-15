@@ -51,7 +51,7 @@
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["stress", "broker", "--cpu"]
+                "arguments": ["stress", "broker", "--cpu", "--role=LEADER", "--partitionId=3"]
             }
         }
     ],
