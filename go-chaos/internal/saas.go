@@ -43,6 +43,7 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 		return nil
 	}
 
+	LogVerbose("Set pause reconcilation flag to %t!", pauseEnabled)
 	ctx := context.TODO()
 	namespace := c.GetCurrentNamespace()
 	clusterId := strings.TrimSuffix(namespace, "-zeebe")
@@ -52,6 +53,7 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 		_, err := c.DynamicClient.Resource(zeebeCrd).Patch(ctx, clusterId, types.MergePatchType, []byte(payload), meta.PatchOptions{})
 		return err
 	})
+	LogVerbose("Pause reconcilation flag was set to %t!, error: %s", pauseEnabled, err)
 	return err
 }
 

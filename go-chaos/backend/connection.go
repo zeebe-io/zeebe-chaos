@@ -29,6 +29,11 @@ func ConnectBrokers(kubeConfigPath string, namespace string) error {
 		return err
 	}
 
+	err = k8Client.ResumeReconciliation()
+	if err != nil {
+		return err
+	}
+
 	// No patch is need, since we expect that disconnect was executed before.
 	// If not all fine and the pods are already connected.
 
@@ -57,6 +62,11 @@ func ConnectBrokers(kubeConfigPath string, namespace string) error {
 
 func ConnectGateway(kubeConfigPath string, namespace string) error {
 	k8Client, err := internal.CreateK8Client(kubeConfigPath, namespace)
+	if err != nil {
+		return err
+	}
+
+	err = k8Client.ResumeReconciliation()
 	if err != nil {
 		return err
 	}
@@ -105,6 +115,9 @@ type DisconnectBrokerCfg struct {
 
 func DisconnectBroker(kubeConfigPath string, namespace string, disconnectBrokerCfg DisconnectBrokerCfg) error {
 	k8Client, err := prepareBrokerDisconnect(kubeConfigPath, namespace)
+	if err != nil {
+		return err
+	}
 
 	zbClient, closeFn, err := ConnectToZeebeCluster(k8Client)
 	if err != nil {
