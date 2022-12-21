@@ -88,6 +88,7 @@ func NewCmd() *cobra.Command {
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			internal.LogInfo("%v", flags)
 			internal.Verbosity = Verbose
+			internal.LogVerbose("Flags: %v", flags)
 			internal.JsonLogging = JsonLogging
 			if JsonLogging {
 				internal.JsonLogger = log.With().Logger()
