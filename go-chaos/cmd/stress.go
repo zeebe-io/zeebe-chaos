@@ -24,7 +24,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func AddStressCmd(rootCmd *cobra.Command, flags Flags) {
+func AddStressCmd(rootCmd *cobra.Command, flags *Flags) {
 	stress := &cobra.Command{
 		Use:   "stress",
 		Short: "Put stress on a Zeebe node",

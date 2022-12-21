@@ -21,7 +21,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddVerifyCommands(rootCmd *cobra.Command, flags Flags) {
+func AddVerifyCommands(rootCmd *cobra.Command, flags *Flags) {
 
 	var verifyCmd = &cobra.Command{
 		Use:   "verify",

@@ -19,7 +19,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddRestartCmd(rootCmd *cobra.Command, flags Flags) {
+func AddRestartCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	var restartCmd = &cobra.Command{
 		Use:   "restart",

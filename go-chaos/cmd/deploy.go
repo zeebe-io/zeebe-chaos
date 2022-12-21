@@ -20,7 +20,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddDeployCmd(rootCmd *cobra.Command, flags Flags) {
+func AddDeployCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	var deployCmd = &cobra.Command{
 		Use:   "deploy",
