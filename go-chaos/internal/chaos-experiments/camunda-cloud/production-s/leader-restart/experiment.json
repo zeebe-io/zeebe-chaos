@@ -32,13 +32,13 @@
                 }
             },
             {
-                "name": "Should be able to create process instances on partition 1",
+                "name": "Should be able to create process instances on partition three",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
                     "path": "zbchaos",
-                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                    "arguments": ["verify", "instance-creation", "--partitionId", "3"],
                     "timeout": 900
                 }
             }
@@ -47,11 +47,11 @@
     "method": [
         {
             "type": "action",
-            "name": "Restart leader of partition 1",
+            "name": "Restart leader of partition three",
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["restart", "broker", "--role", "LEADER", "--partitionId", "1"]
+                "arguments": ["restart", "broker", "--role", "LEADER", "--partitionId", "3"]
             }
         }
     ],

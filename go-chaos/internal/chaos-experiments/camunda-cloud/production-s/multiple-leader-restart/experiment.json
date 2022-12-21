@@ -32,13 +32,13 @@
                 }
             },
             {
-                "name": "Should be able to create process instances on partition 1",
+                "name": "Should be able to create process instances on partition two",
                 "type": "probe",
                 "tolerance": 0,
                 "provider": {
                     "type": "process",
                     "path": "zbchaos",
-                    "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                    "arguments": ["verify", "instance-creation", "--partitionId", "2"],
                     "timeout": 900
                 }
             }
@@ -47,11 +47,11 @@
     "method": [
         {
             "type": "action",
-            "name": "Terminate leader of partition 1 non-gracefully",
+            "name": "Terminate leader of partition two non-gracefully",
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "2"]
             }
         },
         {
@@ -66,23 +66,23 @@
             }
         },
         {
-            "name": "Should be able to create process instances on partition 1",
+            "name": "Should be able to create process instances on partition two",
             "type": "probe",
             "tolerance": 0,
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                "arguments": ["verify", "instance-creation", "--partitionId", "2"],
                 "timeout": 900
             }
         },
         {
             "type": "action",
-            "name": "Terminate leader of partition 1 non-gracefully",
+            "name": "Terminate leader of partition two non-gracefully",
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "2"]
             }
         },
         {
@@ -97,23 +97,23 @@
             }
         },
         {
-            "name": "Should be able to create process instances on partition 1",
+            "name": "Should be able to create process instances on partition two",
             "type": "probe",
             "tolerance": 0,
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["verify", "instance-creation", "--partitionId", "1"],
+                "arguments": ["verify", "instance-creation", "--partitionId", "2"],
                 "timeout": 900
             }
         },
         {
             "type": "action",
-            "name": "Terminate leader of partition 1 non-gracefully",
+            "name": "Terminate leader of partition two non-gracefully",
             "provider": {
                 "type": "process",
                 "path": "zbchaos",
-                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "1"]
+                "arguments": ["terminate", "broker", "--role", "LEADER", "--partitionId", "2"]
             }
         }
     ],
