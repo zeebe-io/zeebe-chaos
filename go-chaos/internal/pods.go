@@ -27,6 +27,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/tools/remotecommand"
@@ -281,11 +282,13 @@ func (c K8Client) createPortForwarder(localPort int, remotePort int, portForward
 
 // createPortForwardUrl constructs the Url to which is used to create the port forwarding
 func (c K8Client) createPortForwardUrl(names []string) *url.URL {
+	gatewayName := names[rand.Intn(len(names))]
+	LogVerbose("Port forward to %s", gatewayName)
 	restClient := c.Clientset.CoreV1().RESTClient()
 	portForwardCreateURL := restClient.Post().
 		Resource("pods").
 		Namespace(c.GetCurrentNamespace()).
-		Name(names[0]).
+		Name(gatewayName).
 		SubResource("portforward").
 		URL()
 	return portForwardCreateURL
