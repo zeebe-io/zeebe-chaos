@@ -61,8 +61,8 @@ func Test_ShouldBeAbleToRunExperiments(t *testing.T) {
 
 	// required variables
 	vars := make(map[string]interface{})
-	vars["clusterPlan"] = "production-s"                       // specifies the cluster plan for which we read the experiments
-	vars["clusterId"] = "967418c4-dd62-4230-939b-0597897d8685" // need to be set to empty string, otherwise we run into a SIGSEG
+	vars["clusterPlan"] = "production-s" // specifies the cluster plan for which we read the experiments
+	vars["clusterId"] = ""               // 967418c4-dd62-4230-939b-0597897d8685" // need to be set to empty string, otherwise we run into a SIGSEG
 
 	commandStep3, err := zeebeClient.NewCreateInstanceCommand().BPMNProcessId("chaosToolkit").LatestVersion().VariablesFromMap(vars)
 	require.NoError(t, err)
