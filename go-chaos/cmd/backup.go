@@ -34,7 +34,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddBackupCommand(rootCmd *cobra.Command, flags Flags) {
+func AddBackupCommand(rootCmd *cobra.Command, flags *Flags) {
 
 	var backupCommand = &cobra.Command{
 		Use:   "backup",
@@ -182,7 +182,7 @@ func createBackupSecret(k8Client internal.K8Client, namespace string) (*core.Sec
 	)
 }
 
-func takeBackup(flags Flags) error {
+func takeBackup(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
@@ -211,7 +211,7 @@ func takeBackup(flags Flags) error {
 	return err
 }
 
-func waitForBackup(flags Flags) error {
+func waitForBackup(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
@@ -240,7 +240,7 @@ func waitForBackup(flags Flags) error {
 
 }
 
-func restoreFromBackup(flags Flags) error {
+func restoreFromBackup(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
@@ -314,7 +314,7 @@ func restoreFromBackup(flags Flags) error {
 	return nil
 }
 
-func restoreEnvFromSfs(flags Flags, sfs *apps.StatefulSet) []core.EnvVar {
+func restoreEnvFromSfs(flags *Flags, sfs *apps.StatefulSet) []core.EnvVar {
 	zeebeEnv := sfs.Spec.Template.Spec.Containers[0].Env
 	restoreEnv := make([]core.EnvVar, 0)
 	for _, env := range zeebeEnv {

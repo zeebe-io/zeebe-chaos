@@ -22,7 +22,7 @@ import (
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
-func AddPublishCmd(rootCmd *cobra.Command, flags Flags) {
+func AddPublishCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	var publishCmd = &cobra.Command{
 		Use:   "publish",

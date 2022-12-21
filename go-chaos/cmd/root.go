@@ -86,6 +86,7 @@ func NewCmd() *cobra.Command {
 		Long: `A chaos experimenting toolkit for Zeebe.
     Perfect to inject some chaos into your brokers and gateways.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			internal.LogInfo("%v", flags)
 			internal.Verbosity = Verbose
 			internal.JsonLogging = JsonLogging
 			if JsonLogging {
@@ -99,26 +100,26 @@ func NewCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&flags.kubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&flags.namespace, "namespace", "n", "", "connect to the given namespace")
 
-	AddBackupCommand(rootCmd, flags)
-	AddBrokersCommand(rootCmd, flags)
-	AddConnectCmd(rootCmd, flags)
-	AddDatalossSimulationCmd(rootCmd, flags)
-	AddDeployCmd(rootCmd, flags)
-	AddDisconnectCommand(rootCmd, flags)
-	AddExportingCmds(rootCmd, flags)
-	AddPublishCmd(rootCmd, flags)
-	AddRestartCmd(rootCmd, flags)
-	AddStressCmd(rootCmd, flags)
-	AddTerminateCommand(rootCmd, flags)
-	AddTopologyCmd(rootCmd, flags)
-	AddVerifyCommands(rootCmd, flags)
+	AddBackupCommand(rootCmd, &flags)
+	AddBrokersCommand(rootCmd, &flags)
+	AddConnectCmd(rootCmd, &flags)
+	AddDatalossSimulationCmd(rootCmd, &flags)
+	AddDeployCmd(rootCmd, &flags)
+	AddDisconnectCommand(rootCmd, &flags)
+	AddExportingCmds(rootCmd, &flags)
+	AddPublishCmd(rootCmd, &flags)
+	AddRestartCmd(rootCmd, &flags)
+	AddStressCmd(rootCmd, &flags)
+	AddTerminateCommand(rootCmd, &flags)
+	AddTopologyCmd(rootCmd, &flags)
+	AddVerifyCommands(rootCmd, &flags)
 	AddVersionCmd(rootCmd)
 	AddWorkerCmd(rootCmd)
 
 	return rootCmd
 }
 
-func createK8ClientWithFlags(flags Flags) (internal.K8Client, error) {
+func createK8ClientWithFlags(flags *Flags) (internal.K8Client, error) {
 	return internal.CreateK8Client(flags.kubeConfigPath, flags.namespace)
 }
 
