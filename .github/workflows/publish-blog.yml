@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - chaos-days/**
+  workflow_dispatch: { }
 
 env:
   # Used by docusaurus publish-site command
