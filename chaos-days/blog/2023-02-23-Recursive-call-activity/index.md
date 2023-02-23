@@ -102,6 +102,6 @@ With this, I mark this chaos experiment as failed. We need to investigate this f
 
 ## Found Bugs
 
-* zbchaos logs debug message on normal usage
-* Every 2.5 seconds we send a topology request, which is shown in the metrics
+* [zbchaos logs debug message on normal usage](https://github.com/zeebe-io/zeebe-chaos/issues/323)
+* [Every 2.5 seconds we send a topology request, which is shown in the metrics](https://github.com/camunda/zeebe/issues/11799)
 * [Batch processing doesn't respect the limit](https://github.com/camunda/zeebe/issues/11798)
