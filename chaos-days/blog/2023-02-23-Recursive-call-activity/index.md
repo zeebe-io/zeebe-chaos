@@ -104,4 +104,4 @@ With this, I mark this chaos experiment as failed. We need to investigate this f
 
 * zbchaos logs debug message on normal usage
 * Every 2.5 seconds we send a topology request, which is shown in the metrics
-* Batch processing doesn't respect the limit
+* [Batch processing doesn't respect the limit](https://github.com/camunda/zeebe/issues/11798)
