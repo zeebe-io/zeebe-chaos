@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "Gateway termination"
+title:  "Gateway Termination"
 date:   2023-04-06
 categories: 
   - chaos_experiment 
@@ -13,14 +13,14 @@ authors: zell
 
 # Chaos Day Summary
 
-In today chaos day we wanted to experiment with the gateway and resiliency of workers.
+In today's chaos day, we wanted to experiment with the gateway and resiliency of workers.
 
-We have seen in the recent weeks some issues within our benchmarks when gateways have been restarted,
+We have seen in recent weeks some issues within our benchmarks when gateways have been restarted,
 see [zeebe#11975](https://github.com/camunda/zeebe/issues/11975).
 
 We did a similar experiment [in the past](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md),
 today we want to focus on self-managed ([benchmarks with our helm charts](https://helm.camunda.io/)).
-Ideally we can automate this as well soon.
+Ideally, we can automate this as well soon.
 
 Today [Nicolas](https://github.com/npepinpe) joined me on the chaos day :tada: 
 
@@ -31,23 +31,23 @@ Furthermore, we have discovered a potential performance issue on lower load, whi
 
 ## Chaos Experiment
 
-We will use our [Zeebe benchmark helm charts](https://github.com/zeebe-io/benchmark-helm) to setup the test cluster, and
+We will use our [Zeebe benchmark helm charts](https://github.com/zeebe-io/benchmark-helm) to set up the test cluster, and
 our helper scripts [here](https://github.com/camunda/zeebe/tree/main/benchmarks/setup).
 
 ### Setup:
 
-We will run with default benchmark configuration, which means:
+We will run with the default benchmark configuration, which means:
 
  * three brokers
  * three partitions
  * replication count three
  * two gateways
 
-We will run the benchmark with low load, 10 process instance per second created and completed. For that
-we deploy one starter and worker. This reduces the blast radius, and allows us to observe more easily how the workers
+We will run the benchmark with a low load, 10 process instances per second created and completed. For that,
+we deploy one starter and worker. This reduces the blast radius and allows us to observe more easily how the workers
 behave when a gateway is restarted.
 
-During the experiment we will use our [grafana dashboard](https://github.com/camunda/zeebe/tree/main/monitor/grafana) to
+During the experiment, we will use our [grafana dashboard](https://github.com/camunda/zeebe/tree/main/monitor/grafana) to
 observe to which gateway the worker will connect and which gateway we need to stop/restart.
 
 
@@ -75,7 +75,7 @@ The benchmark is running with:
 ### Expected
 
 
-When we terminate a gateway to which the worker has connected to, **we expect** that the worker connects to the different
+When we terminate a gateway to which the worker has connected, **we expect** that the worker connects to the different
 replica and starts completing jobs again.
 
 The performance drop is expected to be not significant, or at least should recover fast.
@@ -85,7 +85,7 @@ The performance drop is expected to be not significant, or at least should recov
 We will run the experiment in two ways, first via terminating the gateway (using [zbchaos](https://github.com/zeebe-io/zeebe-chaos/releases/tag/zbchaos-v1.0.0))
 and later via scaling down the gateway deployment to one replica. 
 
-We want to verify whether this makes any difference, since terminating will cause kubernetes to recreate immediately the pod.
+We want to verify whether this makes any difference, since terminating will cause Kubernetes to recreate immediately the pod.
 
 #### Termination
 
@@ -108,7 +108,7 @@ zell-chaos-zeebe-gateway-7bbdf9fd58-xc6d9   1/1     Running     0          45m
 
 ```
 
-Via our Grafana dashboard (and the grpc metrics) we are able to track to which gateway the worker connect to:
+Via our Grafana dashboard (and the gRPC metrics) we are able to track to which gateway the worker connects to:
 
 ![grpc](grpc.png)
 
@@ -139,15 +139,15 @@ zell-chaos-zeebe-gateway-7bbdf9fd58-pkj48   1/1     Running     0          33s
 zell-chaos-zeebe-gateway-7bbdf9fd58-xc6d9   1/1     Running     0          52m
 ```
 
-In the metrics we can see that due to the restart the throughput slightly dropped, but recovered pretty fast. The worker
-were able to connect to the different gateway. :white_check_mark:
+In the metrics, we can see that due to the restart, the throughput slightly dropped, but recovered pretty fast. The worker
+was able to connect to the different gateway. :white_check_mark:
 
 ![restart](restart.png)
 
 > **Note**
 > 
 > _In the panel `Pod Restarts` on the top right, we don't see any restarts and that is something
-we should always be aware of that the _metrics are just samples of data_. If a pod, like the gateway restarts fast enough
+we should always be aware of that the _metrics are just samples of data_. If a pod, like a gateway, restarts fast enough
 and the metric collect interval is higher (per default we have ~30 s (?)) then you might not see a change._
 
 
@@ -159,17 +159,17 @@ it, which causes restarting a new pod (which might get the same IP).
 
 For scaling down Nicolas found this annotation: `controller.kubernetes.io/pod-deletion-cost`
 
-[That annotation allows to give hints to the schedule which pod to turn-down, because another pod might have higher cost 
+[That annotation allows giving hints to the schedule which pod to turn-down, because another pod might have a higher cost 
 to be deleted (this is of course best-effort).](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#pod-deletion-cost)
 
-This means we edit one pod, and gave the following annotation:
+This means we edit one pod and gave the following annotation:
 
 ```yaml
 annotations:
   controller.kubernetes.io/pod-deletion-cost:  "-1"
 ```
 
-We have chosen the pod in a similar way as we have seen above, based on the grpc metrics.
+We have similarly chosen the pod as we have seen above, based on the gRPC metrics.
 
 Checking the running pods and editing the correct gateway:
 ```shell
@@ -190,7 +190,7 @@ zell-chaos-zeebe-gateway-7bbdf9fd58-xc6d9   1/1     Running     0          59m
 ```
 
 
-When I did the following I was wondering why it didn't scaled down the deployment, one pod was recreated.
+When I did the following I was wondering why it didn't scale down the deployment, one pod was recreated.
 ```shell
 [cqjawa 2023-04-06-gateway-termination/ cluster: zeebe-cluster ns:zell-chaos]$ k scale replicaset zell-chaos-zeebe-gateway-7bbdf9fd58 --replicas=1
 Warning: spec.template.spec.containers[0].env[16].name: duplicate name "ZEEBE_LOG_LEVEL"
@@ -215,7 +215,7 @@ zell-chaos-zeebe-gateway-7bbdf9fd58-pkj48   1/1     Running           0         
 > **Note:**
 > 
 > During the experiment I learned that when you have deployed a [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), you need to scale down the deployment, not the [ReplicaSet](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/).
-> Otherwise your Kubernetes deployment controller will recreate the replicaset in the next reconcile loop, which means you
+> Otherwise your Kubernetes deployment controller will recreate the ReplicaSet in the next reconcile loop, which means you
 > will have again the same replicas as defined in the deployment.
 
 
@@ -258,8 +258,8 @@ zell-chaos-zeebe-2                          1/1     Running     0          64m
 zell-chaos-zeebe-gateway-7bbdf9fd58-2v6gs   1/1     Running     0          4m
 ```
 
-With that we have only one gateway pod left, and all traffic goes to that gateway. Based on the metrics
-we can see that the workers recovered everytime, when we restarted/terminated or scaled down.
+With that, we have only one gateway pod left, and all traffic goes to that gateway. Based on the metrics
+we can see that the workers recovered everytime when we restarted/terminated or scaled down.
 
 ![activate](activate.png)
 
@@ -290,21 +290,15 @@ in our processing execution latency.
 
 The spikes are going up to 1-1.5 seconds, while the avg is at 0.06s. This happens every 6 minutes.
 
-We can see that the commit latency is as well at the same time high, which might be an issue because of high io.
+We can see that the commit latency is as well at the same time high, which might be an issue because of the high IO.
 
 ![commit](commit.png)
 
-We first expected that to be related to snapshotting, but snapshots are happen much more often.
+We first expected that to be related to snapshotting, but snapshots happen much more often.
 
 ![snapshot](snapshot-count.png)
 
-Interesting is that it seems to be related to our segment creation (again), even if we have 
+Interestingly is that it seems to be related to our segment creation (again), even if we have 
 async segment creation in our journal built recently. We need to investigate this further within [zeebe#12311](https://github.com/camunda/zeebe/issues/12311).
 
 ![segment](segment.png)
-
-
-
-
-
-
