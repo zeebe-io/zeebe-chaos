@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "gateway-termination"
+title:  "Gateway termination"
 date:   2023-04-06
 categories: 
   - chaos_experiment 
@@ -18,7 +18,7 @@ In today chaos day we wanted to experiment with the gateway and resiliency of wo
 We have seen in the recent weeks some issues within our benchmarks when gateways have been restarted,
 see [zeebe#11975](https://github.com/camunda/zeebe/issues/11975).
 
-We did a similar experiment [in the past](blog/2022-02-15-Standalone-Gateway-in-CCSaaS),
+We did a similar experiment [in the past](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md),
 today we want to focus on self-managed ([benchmarks with our helm charts](https://helm.camunda.io/)).
 Ideally we can automate this as well soon.
 
@@ -281,7 +281,7 @@ $ zbchaos terminate gateway
 Terminated zell-chaos-zeebe-gateway-7bbdf9fd58-vs28f
 ```
 
-### Performance issue
+### Segment creation impact
 
 During checking the metrics together with Nicolas, we realized that even on low load (10 PI/s) we have high spikes
 in our processing execution latency.
