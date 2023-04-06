@@ -24,8 +24,8 @@ Ideally we can automate this as well soon.
 
 Today [Nicolas](https://github.com/npepinpe) joined me on the chaos day :tada: 
 
-**TL;DR;** We were able to show that the workers can reconnect after a gateway is shutdown :white_check_mark:
-Furthermore, we have discovered a potential performance issue on lower load, which impacts process execution latency. 
+**TL;DR;** We were able to show that the workers (clients) can reconnect after a gateway is shutdown :white_check_mark:
+Furthermore, we have discovered a potential performance issue on lower load, which impacts process execution latency ([zeebe#12311](https://github.com/camunda/zeebe/issues/12311)). 
 
 <!--truncate-->
 
@@ -299,7 +299,7 @@ We first expected that to be related to snapshotting, but snapshots are happen m
 ![snapshot](snapshot-count.png)
 
 Interesting is that it seems to be related to our segment creation (again), even if we have 
-async segment creation in our journal built recently. We need to investigate this further with 
+async segment creation in our journal built recently. We need to investigate this further within [zeebe#12311](https://github.com/camunda/zeebe/issues/12311).
 
 ![segment](segment.png)
 
