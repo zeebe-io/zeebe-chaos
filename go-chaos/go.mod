@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/camunda/zeebe/clients/go/v8 v8.2.1
-	github.com/rs/zerolog v1.29.0
+	github.com/rs/zerolog v1.29.1
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.19.0
