@@ -9,9 +9,9 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.19.0
 	google.golang.org/grpc v1.54.0
-	k8s.io/api v0.27.0
+	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.27.0
+	k8s.io/client-go v0.27.1
 )
 
 require (
