@@ -4,25 +4,26 @@ title:  "SST Partitioning toggle"
 date:   2023-05-15
 categories: 
   - chaos_experiment 
-  - bpmn
+  - configuration
 tags:
   - availability
+  - data
 authors: zell
 ---
 
 # Chaos Day Summary
 
-In this chaos day I wanted to experiment with a new experimental feature we have released recently. The [enablement of partitioning of the SST files in RocksDB](https://github.com/camunda/zeebe/pull/12483). This is actually an experimental feature from RocksDb, which we made available now for our users as well, since we have seen great benefits in performance, especially with larger runtime data.
+On this chaos day I wanted to experiment with a new experimental feature we have released recently. The [enablement of the partitioning of the SST files in RocksDB](https://github.com/camunda/zeebe/pull/12483). This is an experimental feature from RocksDb, which we made available now for our users as well, since we have seen great benefits in performance, especially with larger runtime data.
 
-I wanted to experiment a bit with the SST partitioning, and find out whether it would be possible to enable and disable the flag/configuration without issues.
+I wanted to experiment a bit with the SST partitioning and find out whether it would be possible to enable and disable the flag/configuration without issues.
 
-**TL;DR;** The first experiment was successful, it looks like we can enable and disable the partitioning without impacting the execution of one existing PI. We need to experiment a bit more with larger data sets in order to force RocksDB compaction, to be fully sure. 
+**TL;DR;** The first experiment was successful, it looks like we can enable and disable the partitioning without impacting the execution of one existing PI. We need to experiment a bit more with larger data sets to force RocksDB compaction, to be fully sure. 
 
 <!--truncate-->
 
 ## Chaos Experiment
 
-For our chaos experiment we setup again our [normal benchmark cluster](https://github.com/camunda/zeebe/tree/main/benchmarks/setup), this time without any clients (no workers/starters).
+For our chaos experiment we set up again our [normal benchmark cluster](https://github.com/camunda/zeebe/tree/main/benchmarks/setup), this time without any clients (no workers/starters).
 
 Setting all client replicas to zero:
 ```diff
@@ -37,7 +38,7 @@ $ diff default/values.yaml zell-chaos/values.yaml
 >   replicas: 0
 ``` 
 
-The experiment we want to do in this chaos day we look like the following:
+The experiment we want to do on this chaos day will look like the following:
 
 **First part:** 
 
@@ -49,7 +50,7 @@ The experiment we want to do in this chaos day we look like the following:
    * enable the SST partitioning
    * restart the cluster
    * verify the readiness
-   * verify that job is activateable
+   * verify that job is activatable
    * complete the job (in consequence the PI)
    
 **Second part:**
@@ -59,22 +60,22 @@ The experiment we want to do in this chaos day we look like the following:
     * disable the SST partitioning
     * restart the cluster
     * verify the readiness
-    * verify that job is activateable
+    * verify that job is activatable
     * complete the job (in consequence the PI)
 
 
 ### Expected
 
-When operating a cluster, I can enable the SST partitioning without an impact in executing existing process instance. Existing PIs should still be executable and completable.
+When operating a cluster, I can enable the SST partitioning without an impact on executing existing process instances. Existing PIs should still be executable and completable.
 
 ### Actual
 
-As linked above I used again our [benchmark/setup](https://github.com/camunda/zeebe/tree/main/benchmarks/setup) scripts to setup a cluster.
+As linked above I used again our [benchmark/setup](https://github.com/camunda/zeebe/tree/main/benchmarks/setup) scripts to set up a cluster.
 
 #### First Part: Verify Steady state
-In order to verify the readiness and run all actions I used the [zbchaos](https://github.com/zeebe-io/zeebe-chaos/tree/zbchaos-v1.0.0) tool.
+To verify the readiness and run all actions I used the [zbchaos](https://github.com/zeebe-io/zeebe-chaos/tree/zbchaos-v1.0.0) tool.
 
-Verifying the readiness is fairly easy with zbchaos.
+Verifying readiness is fairly easy with zbchaos.
 
 ```shell
 $ zbchaos verify readiness -v
@@ -114,7 +115,7 @@ Created process instance with key 2251799813685251 on partition 1, required part
 The steady-state was successfully verified!
 ```
 
-Next we enable the SST partitioning in our broker configuration, we can do this in the `values.yaml` file and run an `helm update`.
+Next, we enable the SST partitioning in our broker configuration, we can do this in the `values.yaml` file and run a `helm update`.
 
 ```shell
 $ diff ../default/values.yaml values.yaml 
@@ -148,7 +149,7 @@ The benchmark is running with:
 ```
 
 > **Note**
-> Changing the configmap doesn't restart pods! We need to delete all Zeebe pods, in order to apply the configuration.
+> Changing the configmap doesn't restart pods! We need to delete all Zeebe pods, to apply the configuration.
 
 ```shell
 $ k delete pod -l app=camunda-platform
@@ -203,7 +204,7 @@ $ zbctl --insecure activate jobs benchmark-task
   ]
 }
 ```
-Completing of the job and the PI.
+Completing the job and the PI.
 ```shell
 $ zbctl complete job 2251799813685256 --insecure
 Completed job with key '2251799813685256' and variables '{}'
@@ -211,7 +212,7 @@ Completed job with key '2251799813685256' and variables '{}'
 
 #### Second Part:
 
-Create again an process instance `$ zbchaos verify instance-creation`
+Create again a process instance `$ zbchaos verify instance-creation`
 
 ```
 Created process instance with key 2251799813685263 on partition 1, required partition 1.
@@ -244,7 +245,7 @@ $ zbctl complete job 2251799813685268 --insecure
 Completed job with key '2251799813685268' and variables '{}'
 ```
 
-:white_check_mark: Experiment was successful. 
+:white_check_mark: The experiment was successful. 
 
 #### Further investigation
 
@@ -260,7 +261,7 @@ After the experiment, we still see that for each partition we have around ~6 fil
 
 In order to make sure whether the options have been applied correctly I investigated the RocksDB log files and option files.
 
-In the current LOG file we can see the current options printed, which is indeed the disabled partitioner. Since this  is the default as well it is not a proof yet.
+In the current LOG file, we can see the current options printed, which is indeed the disabled partitioner. Since this is the default as well it is not a proof yet.
 
 ```
 2023/05/15-18:01:46.223234 139711509092096 [/column_family.cc:621] --------------- Options for column family [default]:
@@ -271,7 +272,7 @@ In the current LOG file we can see the current options printed, which is indeed 
 2023/05/15-18:01:46.223244 139711509092096  Options.sst_partitioner_factory: None
 ```
 
-What we can see in the runtime folder of the partition is that there exist two Options files, a older one `OPTIONS-000014` and a newer one `OPTIONS-000023`.
+What we can see in the runtime folder of the partition is that there exist two Options files, an older one `OPTIONS-000014`, and a newer one `OPTIONS-000023`.
 
 The older one contains the expected configuration for the SST partitioning:
 
@@ -292,7 +293,7 @@ sst_partitioner_factory=nullptr
 
 ```
 
-We can see that the current snapshot, only copied the most recent options file:
+We can see that the current snapshot only copied the most recent options file:
 
 ```shell
 $ ll ../snapshots/188-4-230-244
@@ -308,4 +309,4 @@ drwxr-xr-x 3 root root 4096 May 15 18:13 ../
 
 We were able to toggle the SST partitioning flag without problems back and forth. We were able to make still progress on an existing process instance, which we wanted to prove.
 
-Nevertheless, we need to prove this once more for multiple process instances (100-1000 PIs), which causes or forces compaction of the SST files. Right now I'm not 100% convinced whether this experiment was enough, but it was a good first step.
+Nevertheless, we need to prove this once more for multiple process instances (100-1000 PIs), which cause or forces compaction of the SST files. Right now I'm not 100% convinced whether this experiment was enough, but it was a good first step.
