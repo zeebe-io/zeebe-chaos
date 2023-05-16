@@ -105,8 +105,6 @@ As the first step in the chaos action we create a process instance.
 
 ```shell
 $ zbchaos verify instance-creation -v
-{1 LEADER -1  10  msg false 1 LEADER -1 2 LEADER -1 1684158525694 false false true false false 30 false -1 benchmark 30  }
-Flags: {1 LEADER -1  10  msg false 1 LEADER -1 2 LEADER -1 1684158525694 false false true false false 30 false -1 benchmark 30  }
 Connecting to zell-chaos
 Running experiment in self-managed environment.
 Port forward to zell-chaos-zeebe-gateway-7bbdf9fd58-dl97j
@@ -120,14 +118,6 @@ Next we enable the SST partitioning in our broker configuration, we can do this 
 
 ```shell
 $ diff ../default/values.yaml values.yaml 
-40c40
-<   replicas: 3
----
->   replicas: 0
-47c47
-<   replicas: 1
----
->   replicas: 0
 85a86
 >     zeebe.broker.experimental.rocksdb.enableSstPartitioning: "true"
 ```
@@ -231,14 +221,6 @@ The steady-state was successfully verified!
 Disabling the configuration again, and running the update.
 ```shell
 $ diff default/values.yaml zell-chaos/values.yaml 
-40c40
-<   replicas: 3
----
->   replicas: 0
-47c47
-<   replicas: 1
----
->   replicas: 0
 85a86
 >     zeebe.broker.experimental.rocksdb.enableSstPartitioning: "false"
 
@@ -251,12 +233,6 @@ LAST DEPLOYED: Mon May 15 20:00:53 2023
 ...
 
 $ k delete pod -l app=camunda-platform
-pod "zell-chaos-zeebe-0" deleted
-pod "zell-chaos-zeebe-1" deleted
-pod "zell-chaos-zeebe-2" deleted
-pod "zell-chaos-zeebe-gateway-7bbdf9fd58-8pzlm" deleted
-pod "zell-chaos-zeebe-gateway-7bbdf9fd58-ljq8r" deleted
-
 $ zbchaos verify readiness
 All Zeebe nodes are running.
 ```
@@ -284,7 +260,7 @@ After the experiment, we still see that for each partition we have around ~6 fil
 
 In order to make sure whether the options have been applied correctly I investigated the RocksDB log files and option files.
 
-In the current LOG file we can see the current options printed, which is indeed disabled partitioner. Since this  is the default as well it is no proof yet.
+In the current LOG file we can see the current options printed, which is indeed the disabled partitioner. Since this  is the default as well it is not a proof yet.
 
 ```
 2023/05/15-18:01:46.223234 139711509092096 [/column_family.cc:621] --------------- Options for column family [default]:
