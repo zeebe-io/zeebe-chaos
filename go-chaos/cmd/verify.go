@@ -103,11 +103,7 @@ Process instances are created until the required partition is reached.`,
 				Variables:     flags.variables,
 			})
 			ensureNoError(err)
-			if flags.awaitResult {
-				internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
-				flags.partitionId = 0
-			}
-			err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(flags.partitionId), time.Duration(flags.timeoutInSec)*time.Second)
+			err = internal.CreateCountOfProcessInstances(processInstanceCreator, int32(flags.instanceCount), time.Duration(flags.timeoutInSec)*time.Second)
 			ensureNoError(err)
 
 			internal.LogInfo("The steady-state was successfully verified!")
