@@ -71,6 +71,8 @@ type Flags struct {
 	kubeConfigPath string
 	namespace      string
 	instanceCount  int
+	jobCount	   int
+	jobType		   string
 }
 
 var Version = "development"
