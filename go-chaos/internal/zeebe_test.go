@@ -252,7 +252,7 @@ func Test_ShouldTimeoutIfProcessInstanceCountWasNotReached(t *testing.T) {
 
 	// then
 	assert.Error(t, err, "expected error")
-	assert.Contains(t, err.Error(), "Expected to create 10 process instances, but timed out after 10ms created 0 instances.")
+	assert.Contains(t, err.Error(), "Expected to send 10 commands, but timed out after 10ms whereas 0 commands have been sent.")
 }
 
 func Test_ShouldImmediatelyTimeoutForCountCreation(t *testing.T) {
@@ -266,7 +266,7 @@ func Test_ShouldImmediatelyTimeoutForCountCreation(t *testing.T) {
 
 	// then
 	assert.Error(t, err, "expected error")
-	assert.Contains(t, err.Error(), "Expected to create 10 process instances, but timed out after 0s created 0 instances.")
+	assert.Contains(t, err.Error(), "Expected to send 10 commands, but timed out after 0s whereas 0 commands have been sent.")
 }
 
 func Test_ShouldRetryOnCreatingCountOfProcessInstances(t *testing.T) {

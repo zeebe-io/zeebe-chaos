@@ -370,17 +370,17 @@ func SendCountOfCommands(commandSender ZCCommandSender, countOfInstances int32, 
 	for {
 		select {
 		case <-timeoutChan:
-			return errors.New(fmt.Sprintf("Expected to create %d process instances, but timed out after %s created %d instances.", countOfInstances, timeout.String(), count))
+			return errors.New(fmt.Sprintf("Expected to send %d commands, but timed out after %s whereas %d commands have been sent.", countOfInstances, timeout.String(), count))
 		case <-tickerChan:
-			processInstanceKey, err := commandSender()
+			key, err := commandSender()
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
-				LogInfo("Encountered an error during process instance creation. Error: %s", err.Error())
+				LogInfo("Encountered an error during command sending. Error: %s", err.Error())
 				break
 			}
 			count++
-			partitionId = ExtractPartitionIdFromKey(processInstanceKey)
-			LogVerbose("[%d/%d] Created process instance with key %d on partition %d.", count, countOfInstances, processInstanceKey, partitionId)
+			partitionId = ExtractPartitionIdFromKey(key)
+			LogVerbose("[%d/%d] Successful command sent, got response with key %d on partition %d.", count, countOfInstances, key, partitionId)
 
 			if count >= countOfInstances {
 				return nil
