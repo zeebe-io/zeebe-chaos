@@ -18,7 +18,7 @@ with a bit more load. This should make sure that we trigger the compaction of Ro
 
 The reasons stay the same we want to find out whether it would be possible to enable and disable the flag/configuration without issues.
 
-**TL;DR;** Today's, experiments succeeded :rocket. We were able to show that even with a higher number of process instances (bigger state) we can easily disable and enable the SST partitioning flag without issues. I also got a confirmation from a RocksDb contributor that our observations are correct, and that we can easily toggle this feature without issues.
+**TL;DR;** Today's, experiments succeeded :rocket:. We were able to show that even with a higher number of process instances (bigger state) we can easily disable and enable the SST partitioning flag without issues. I also got a confirmation from a RocksDb contributor that our observations are correct, and that we can easily toggle this feature without issues.
 
 <!--truncate-->
 
