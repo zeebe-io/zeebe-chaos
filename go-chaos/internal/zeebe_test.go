@@ -248,7 +248,7 @@ func Test_ShouldTimeoutIfProcessInstanceCountWasNotReached(t *testing.T) {
 	}
 
 	// when
-	err := CreateCountOfProcessInstances(dummyCreator, 10, 10*time.Millisecond)
+	err := SendCountOfCommands(dummyCreator, 10, 10*time.Millisecond)
 
 	// then
 	assert.Error(t, err, "expected error")
@@ -262,7 +262,7 @@ func Test_ShouldImmediatelyTimeoutForCountCreation(t *testing.T) {
 	}
 
 	// when
-	err := CreateCountOfProcessInstances(dummyCreator, 10, 0*time.Millisecond)
+	err := SendCountOfCommands(dummyCreator, 10, 0*time.Millisecond)
 
 	// then
 	assert.Error(t, err, "expected error")
@@ -281,7 +281,7 @@ func Test_ShouldRetryOnCreatingCountOfProcessInstances(t *testing.T) {
 	}
 
 	// when
-	err := CreateCountOfProcessInstances(dummyCreator, 3, 1*time.Second)
+	err := SendCountOfCommands(dummyCreator, 3, 1*time.Second)
 
 	// then
 	assert.NoError(t, err, "expected no error")
@@ -294,7 +294,7 @@ func Test_ShouldSucceedOnCorrectInstanceCount(t *testing.T) {
 	}
 
 	// when
-	err := CreateCountOfProcessInstances(dummyCreator, 2, 1*time.Second)
+	err := SendCountOfCommands(dummyCreator, 2, 1*time.Second)
 
 	// then
 	assert.NoError(t, err, "expected no error")
@@ -307,7 +307,7 @@ func Test_ShouldSucceedWhenCountOfPartitionsIsZero(t *testing.T) {
 	}
 
 	// when
-	err := CreateCountOfProcessInstances(dummyCreator, 0, 1*time.Second)
+	err := SendCountOfCommands(dummyCreator, 0, 1*time.Second)
 
 	// then
 	assert.NoError(t, err, "expected no error")
@@ -463,4 +463,21 @@ func Test_ShouldAwaitResultForProcessInstanceWithVersionAndProcessIdWhenUsingPIC
 	assert.Equal(t, "processId", fakeClient.processId)
 	assert.Equal(t, "{\"foo\":123}", fakeClient.vars)
 	assert.True(t, fakeClient.awaitResult)
+}
+
+func Test_ShouldSetCorrectPropertiesWhenUsingJobCompleter(t *testing.T) {
+	// given
+	options := JobCompleteOptions{JobType: "benchmark-task"}
+	fakeClient := &FakeClient{}
+	completer, err := CreateJobCompleter(fakeClient, options)
+	require.NoError(t, err)
+
+	// when
+	jobKey, err := completer()
+
+	// then
+	assert.Equal(t, int64(1), jobKey)
+	assert.Equal(t, "benchmark-task", fakeClient.jobType)
+	assert.Equal(t, int64(1), fakeClient.jobKey)
+	assert.Equal(t, int32(1), fakeClient.fakeActivateCommand.maxActivate)
 }

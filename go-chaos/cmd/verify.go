@@ -103,7 +103,7 @@ Process instances are created until the required partition is reached.`,
 				Variables:     flags.variables,
 			})
 			ensureNoError(err)
-			err = internal.CreateCountOfProcessInstances(processInstanceCreator, int32(flags.instanceCount), time.Duration(flags.timeoutInSec)*time.Second)
+			err = internal.SendCountOfCommands(internal.ZCCommandSender(processInstanceCreator), int32(flags.instanceCount), time.Duration(flags.timeoutInSec)*time.Second)
 			ensureNoError(err)
 
 			internal.LogInfo("The steady-state was successfully verified!")

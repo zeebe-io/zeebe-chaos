@@ -274,6 +274,10 @@ type ProcessInstanceCreationOptions struct {
 	AwaitResult   bool
 }
 
+type JobCompleteOptions struct {
+	JobType       string
+}
+
 func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {
 	var processInstanceCreator ProcessInstanceCreator
 	processInstanceCreator = func() (int64, error) {
@@ -305,6 +309,29 @@ func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCr
 
 type ProcessInstanceCreator func() (int64, error)
 
+func CreateJobCompleter(zbClient zbc.Client, options JobCompleteOptions) (ZCCommandSender, error) {
+	var jobCompleter ZCCommandSender
+	jobCompleter = func() (int64, error) {
+		LogVerbose("Send job activate command, with job type '%s'",
+			options.JobType)
+		jobs, err := zbClient.NewActivateJobsCommand().JobType(options.JobType).MaxJobsToActivate(1).Send(context.TODO())
+		if err != nil {
+			return 0, err
+		}
+
+		if len(jobs) == 0 {
+			return 0, errors.New(fmt.Sprintf("Expected to find job with type '%s', but none found.", options.JobType))
+		}
+
+		jobKey := jobs[0].Key
+		_, err = zbClient.NewCompleteJobCommand().JobKey(jobKey).Send(context.TODO())
+		return jobKey, err
+	}
+	return jobCompleter, nil
+}
+
+type ZCCommandSender func() (int64, error)
+
 func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, requiredPartition int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
 	tickerChan := time.Tick(100 * time.Millisecond)
@@ -334,7 +361,7 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 	}
 }
 
-func CreateCountOfProcessInstances(piCreator ProcessInstanceCreator, countOfInstances int32, timeout time.Duration) error {
+func SendCountOfCommands(commandSender ZCCommandSender, countOfInstances int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
 	tickerChan := time.Tick(100 * time.Millisecond)
 
@@ -345,7 +372,7 @@ func CreateCountOfProcessInstances(piCreator ProcessInstanceCreator, countOfInst
 		case <-timeoutChan:
 			return errors.New(fmt.Sprintf("Expected to create %d process instances, but timed out after %s created %d instances.", countOfInstances, timeout.String(), count))
 		case <-tickerChan:
-			processInstanceKey, err := piCreator()
+			processInstanceKey, err := commandSender()
 			if err != nil {
 				// we do not return here, since we want to retry until the timeout
 				LogInfo("Encountered an error during process instance creation. Error: %s", err.Error())
