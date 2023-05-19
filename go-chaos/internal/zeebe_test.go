@@ -241,6 +241,78 @@ func Test_ShouldSucceedWhenRequiredPartitionIsZero(t *testing.T) {
 	assert.NoError(t, err, "expected no error")
 }
 
+func Test_ShouldTimeoutIfProcessInstanceCountWasNotReached(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 0, errors.New("maep")
+	}
+
+	// when
+	err := CreateCountOfProcessInstances(dummyCreator, 10, 10*time.Millisecond)
+
+	// then
+	assert.Error(t, err, "expected error")
+	assert.Contains(t, err.Error(), "Expected to create 10 process instances, but timed out after 10ms created 0 instances.")
+}
+
+func Test_ShouldImmediatelyTimeoutForCountCreation(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 6755399441055751, nil
+	}
+
+	// when
+	err := CreateCountOfProcessInstances(dummyCreator, 10, 0*time.Millisecond)
+
+	// then
+	assert.Error(t, err, "expected error")
+	assert.Contains(t, err.Error(), "Expected to create 10 process instances, but timed out after 0s created 0 instances.")
+}
+
+func Test_ShouldRetryOnCreatingCountOfProcessInstances(t *testing.T) {
+	// given
+	counter := 1
+	dummyCreator := func() (int64, error) {
+		if counter == 3 {
+			return 2251799813685279, nil
+		}
+		counter++
+		return 0, errors.New("foo")
+	}
+
+	// when
+	err := CreateCountOfProcessInstances(dummyCreator, 3, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
+func Test_ShouldSucceedOnCorrectInstanceCount(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
+	}
+
+	// when
+	err := CreateCountOfProcessInstances(dummyCreator, 2, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
+func Test_ShouldSucceedWhenCountOfPartitionsIsZero(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
+	}
+
+	// when
+	err := CreateCountOfProcessInstances(dummyCreator, 0, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
 func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
 	// given
 	expectedPartition := 47

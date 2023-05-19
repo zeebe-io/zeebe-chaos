@@ -80,9 +80,45 @@ Process instances are created until the required partition is reached.`,
 		},
 	}
 
+	var verifyInstanceCount = &cobra.Command{
+		Use:   "instance-count",
+		Short: "Verify the instance creation count",
+		Long: `Verifies that an specific count of process instances from a specific process model can be created.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			ensureNoError(err)
+			defer zbClient.Close()
+
+			processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
+				BpmnProcessId: flags.bpmnProcessId,
+				Version:       int32(flags.version),
+				AwaitResult:   false,
+				Variables:     flags.variables,
+			})
+			ensureNoError(err)
+			if flags.awaitResult {
+				internal.LogVerbose("We await the result of the process instance creation, thus we skip the partition id check.")
+				flags.partitionId = 0
+			}
+			err = internal.CreateProcessInstanceOnPartition(processInstanceCreator, int32(flags.partitionId), time.Duration(flags.timeoutInSec)*time.Second)
+			ensureNoError(err)
+
+			internal.LogInfo("The steady-state was successfully verified!")
+		},
+	}
+
+
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifyInstanceCreation)
+	verifyCmd.AddCommand(verifyInstanceCount)
 
 	verifyInstanceCreation.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
 	verifyInstanceCreation.Flags().StringVar(&flags.variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
@@ -92,4 +128,12 @@ Process instances are created until the required partition is reached.`,
 
 	verifyInstanceCreation.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
 	verifyInstanceCreation.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+
+	verifyInstanceCount.Flags().IntVar(&flags.instanceCount, "instanceCount", 1, "Specify the count of the process instances, which should be created")
+	verifyInstanceCount.Flags().StringVar(&flags.variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
+	verifyInstanceCount.Flags().IntVar(&flags.timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
+
+	verifyInstanceCount.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
+	verifyInstanceCount.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+
 }

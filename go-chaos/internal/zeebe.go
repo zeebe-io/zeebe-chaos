@@ -334,6 +334,34 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 	}
 }
 
+func CreateCountOfProcessInstances(piCreator ProcessInstanceCreator, countOfInstances int32, timeout time.Duration) error {
+	timeoutChan := time.After(timeout)
+	tickerChan := time.Tick(100 * time.Millisecond)
+
+	count := int32(0)
+	partitionId := int32(0)
+	for {
+		select {
+		case <-timeoutChan:
+			return errors.New(fmt.Sprintf("Expected to create %d process instances, but timed out after %s created %d instances.", countOfInstances, timeout.String(), count))
+		case <-tickerChan:
+			processInstanceKey, err := piCreator()
+			if err != nil {
+				// we do not return here, since we want to retry until the timeout
+				LogInfo("Encountered an error during process instance creation. Error: %s", err.Error())
+				break
+			}
+			count++
+			partitionId = ExtractPartitionIdFromKey(processInstanceKey)
+			LogVerbose("[%d/%d] Created process instance with key %d on partition %d.", count, countOfInstances, processInstanceKey, partitionId)
+
+			if count >= countOfInstances {
+				return nil
+			}
+		}
+	}
+}
+
 func ExtractPartitionIdFromKey(key int64) int32 {
 	return int32(key >> 51)
 }
