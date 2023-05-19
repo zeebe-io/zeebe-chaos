@@ -275,7 +275,7 @@ type ProcessInstanceCreationOptions struct {
 }
 
 type JobCompleteOptions struct {
-	JobType       string
+	JobType string
 }
 
 func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {

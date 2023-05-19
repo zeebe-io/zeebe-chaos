@@ -38,7 +38,7 @@ type FakeClient struct {
 	commands.ActivateJobsCommandStep1
 	commands.CompleteJobCommandStep1
 
-	fakeResultCommand FakeResultCommand
+	fakeResultCommand   FakeResultCommand
 	fakeActivateCommand FakeActivateCommand
 	fakeCompleteCommand FakeCompleteCommand
 
@@ -122,7 +122,7 @@ func (f *FakeActivateCommand) Send(ctx context.Context) ([]entities.Job, error) 
 				Key: 1,
 			},
 		},
-		}, nil
+	}, nil
 }
 
 func (f *FakeCompleteCommand) Send(ctx context.Context) (*pb.CompleteJobResponse, error) {
