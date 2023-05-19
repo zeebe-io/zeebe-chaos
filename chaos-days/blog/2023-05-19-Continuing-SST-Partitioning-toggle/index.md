@@ -16,9 +16,9 @@ authors: zell
 Today we want to continue with the experiment from [last Chaos day](../2023-05-15-SST-Partitioning-toggle/index.md), but this time
 with a bit more load. This should make sure that we trigger the compaction of RocksDB and cause the SST partitioning to happen, for real.
 
-The reasons stay's the same we want to find out whether it would be possible to enable and disable the flag/configuration without issues.
+The reasons stay the same we want to find out whether it would be possible to enable and disable the flag/configuration without issues.
 
-**TL;DR;** Today's, experiments succeeded :rocket. We were able to show that even with higher number of process instances (bigger state) we can easily disable and enable the SST partitioning flag without issues. I also got a confirmation of a RocksDb contributor that our observations are correct, that we can easily toggle this feature without issues.
+**TL;DR;** Today's, experiments succeeded :rocket. We were able to show that even with a higher number of process instances (bigger state) we can easily disable and enable the SST partitioning flag without issues. I also got a confirmation from a RocksDb contributor that our observations are correct, and that we can easily toggle this feature without issues.
 
 <!--truncate-->
 
@@ -28,7 +28,7 @@ Similar setup to the [last Chaos day](../2023-05-15-SST-Partitioning-toggle/inde
 Except this time we will enable Operate as well, in order to verify easily whether all instances have been completed.
 Other than that we use the standard benchmark configuration, without clients.
 
-The verification of the steady state will consist, of checking readiness and healthiness of the cluster, via zbchaos and metrics. Furthermore, we will verify that we can access operate and that no instances are running. As defined in chaos engineering principles the process of a chaos experiment looks always the same, Verify steady state, introduce chaos, verify steady state.
+The verification of the steady state will consist, of checking the readiness and healthiness of the cluster, via zbchaos and metrics. Furthermore, we will verify that we can access operate and that no instances are running. As defined in chaos engineering principles the process of a chaos experiment looks always the same, Verify the steady state, introduce chaos, and verify the steady state.
 
 In our first experiment, we will enable the SST partitioning.
 
@@ -36,8 +36,8 @@ In our first experiment, we will enable the SST partitioning.
   * Deploy a process model (which contains a [simple model](https://github.com/zeebe-io/zeebe-chaos/blob/main/go-chaos/internal/bpmn/one_task.bpmn))
   * Start 1000 process instances (PIs), with a service task
   * Enable the SST partitioning
-  * Restart the cluster, await readiness
-  * complete the jobs (in consequence the PIs)
+  * Restart the cluster, and await readiness
+  * Complete the jobs (in consequence the PIs)
 
 In our second experiment, we will disable the SST partitioning again.
 
@@ -45,8 +45,8 @@ In our second experiment, we will disable the SST partitioning again.
 
   * Start 1000 process instances (PIs), with a service task
   * Disable the SST partitioning
-  * Restart the cluster, await readiness
-  * complete the jobs (in consequence the PIs)
+  * Restart the cluster, and await readiness
+  * Complete the jobs (in consequence the PIs)
 
 ### Expected
 
@@ -87,7 +87,7 @@ $ zbchaos verify readiness
 All Zeebe nodes are running.
 ```
 
-Looking at the metrics shows that everything looks healthy. The only weird part is the topology panel which seem to be broken.
+Looking at the metrics shows that everything looks healthy. The only weird part is the topology panel which seems to be broken.
 ![start](start.png)
 
 When requesting the topology via `zbchaos` we retrieve this:
@@ -101,7 +101,7 @@ Node      |Partition 1         |Partition 2         |Partition 3
 2         |FOLLOWER (HEALTHY)  |FOLLOWER (HEALTHY)  |FOLLOWER (HEALTHY)
 ```
 
-For now, we assume the dashboard has an issue and continue with the experiment. (Note for myself: fix the dashboard)
+For now, we assume the dashboard has an issue and continue with the experiment.
 
 We are able to access operate without issues, and see no instances yet.
 
@@ -110,7 +110,7 @@ We are able to access operate without issues, and see no instances yet.
 
 #### First Experiment: Chaos Action
 
-After the verification stage we start with our chaos action, injecting chaos into system.
+After the verification stage, we start with our chaos action, injecting chaos into the system.
 The first step is to deploy the mentioned simple process model:
 ```shell
 $ zbchaos deploy process -v
@@ -127,17 +127,17 @@ This is then as well visible in operate.
 
 ![operate-process](operate-process.png)
 
-As next step we will create 1000 process instances of our simple process model, with one service task.
-For that we can [use a new functionality](https://github.com/zeebe-io/zeebe-chaos/tree/zell-chaos-create-count-of-instances) of `zbchaos` I built for this chaos day.
+As the next step, we will create 1000 process instances of our simple process model, with one service task.
+For that, we can [use a new functionality](https://github.com/zeebe-io/zeebe-chaos/tree/zell-chaos-create-count-of-instances) of `zbchaos` I built for this chaos day.
 
-On the first try I had smaller issues, with timeouts etc.
+On the first try, I had smaller issues, with timeouts etc.
 ```shell
 Send create process instance command, with BPMN process ID 'benchmark' and version '-1' (-1 means latest) [variables: '', awaitResult: false]
 [299/999] Created process instance with key 6755399441056339 on partition 3.
 panic: Expected to create 999 process instances, but timed out after 30s created 299 instances.
 ```
 
-This is the reason why I had to retry the creations in the end the count is not exact 1000 :)
+This is the reason why I had to retry the creations in the end the count is not exactly 1000 :)
 ```shell
 ./dist/zbchaos verify instance-count --instanceCount 697 -v --timeoutInSec 300
 ...
@@ -146,7 +146,7 @@ Send create process instance command, with BPMN process ID 'benchmark' and versi
 [696/697] Created process instance with key 6755399441057737 on partition 3.
 Send create process instance command, with BPMN process ID 'benchmark' and version '-1' (-1 means latest) [variables: '', awaitResult: false]
 [697/697] Created process instance with key 2251799813687255 on partition 1.
-The steady-state was successfully verified!
+The steady state was successfully verified!
 ```
 
 ![pi](operate-pi.png)
@@ -178,8 +178,8 @@ $ zbchaos verify readiness
 All Zeebe nodes are running.
 ```
 
-Now starting to complete the previous created jobs, we can use again a new feature in `zbchaos` ([which has been added during the chaos day](https://github.com/zeebe-io/zeebe-chaos/tree/zell-chaos-create-count-of-instances))
-Unfortunately, I missed to use the verbose flag.
+Now starting to complete the previously created jobs, we can use again a new feature in `zbchaos` ([which has been added during the chaos day](https://github.com/zeebe-io/zeebe-chaos/tree/zell-chaos-create-count-of-instances))
+Unfortunately, I missed using the verbose flag.
 ```shell
 $ ./dist/zbchaos verify job-completion --jobCount 1001 --timeoutInSec 1200
 The steady-state was successfully verified!
@@ -187,7 +187,7 @@ The steady-state was successfully verified!
 
 #### First Experiment: Verify Steady state
 
-The job completions, worked without issues. Metrics are looking good, the topology panel seem to work again as well.
+The job completions worked without issues. The metrics are looking good, the topology panel seems to work again as well.
 
 ![complete](metrics-complete.png)
 
@@ -196,7 +196,7 @@ In operate we can see that there are no longer any running instances and all of 
 ![complete-operate](operate-complete.png)
 ![complete-operate2](operate-complete2.png)
 
-First part of the experiment worked as expected :white_check_mark:
+The first part of the experiment worked as expected :white_check_mark:
 
 #### Second Experiment: Chaos Action
 
@@ -231,7 +231,7 @@ The steady-state was successfully verified!
 
 #### Second Experiment: Verify Steady state
 
-Again the experiment succeeded, we were able to show that even with higher number of process instances we can easily disable and enable the SST partitioning flag.
+Again the experiment succeeded, we were able to show that even with a higher number of process instances we can easily disable and enable the SST partitioning flag.
 
 ![verify](second-exp-verify.png)
 ![op-complete](second-exp-operate-complete.png)
@@ -240,22 +240,22 @@ In the snapshots at we can see that some more files are used.
 
 ![snap](second-exp-snap.png)
 
-But in RocksDb metrics we see no real compaction going on, which is why we will retry the same with higher amount of data.
+But in RocksDb metrics we see no real compaction going on, which is why we will retry the same with a higher amount of data.
 
 ![rocks](second-exp-rocks.png)
 
 
 #### SST Partitioning and compaction
 
-I tired to run the experiment again, but with more data (~11K instances).
+I tried to run the experiment again but with more data (~11K instances).
 
-Even when the metrics doesn't show the compaction, I was able to see in the RocksDB that compacting is happening.
+Even when the metrics don't show the compaction, I was able to see in the RocksDB that compacting is happening.
 
 Around 11:56 between different loads
 
 ![thirdrun](thirdrun.png)
 
-We see in the metrics of RocksDB nothing
+We see in the metrics of RocksDB that nothing
 
 ![rocks](compacting.png)
 
@@ -279,7 +279,7 @@ We see several lines which indicate the compaction.
 
 ## Conclusion
 
- We have seen that even when we toggle the SST partitioning, we are able to make progress and our stored data is not impacted. This is a great out come, since it means we can easily enable such configuration on existing clusters and gains the performance benefits for larger states as we have seen in previous benchmarks.
+ We have seen that even when we toggle the SST partitioning, we are able to make progress and our stored data is not impacted. This is a great out come since it means we can easily enable such configuration on existing clusters and gains the performance benefits for larger states as we have seen in previous benchmarks.
 
 I have posted a question related to this topic in the [RocksDb google group](https://groups.google.com/g/rocksdb/c/Ys-yZIznZwU) and I got a private answer which contains the following:
 
@@ -292,7 +292,7 @@ This confirms our observation and makes it much more trustworthy.
 
 ## Found Bugs
 
- * Grafana Topology Panel seem to be buggy from time to time
+ * Grafana Topology Panel seems to be buggy from time to time
  * RocksDB compaction panel seems to show no data (might be related to a short time frame)
 
 
