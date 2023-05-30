@@ -11,8 +11,13 @@ The secret is currently deployed **manually** but contains the content of the [k
 The Kubernetes configuration file is encrypted using [sops](https://github.com/mozilla/sops).
 
 
-You need the right permissions to decrypt or encrypt the file.
+You need the right permissions to decrypt or encrypt the file. We have created in our [google cloud project a key ring set up](https://github.com/zeebe-io/zeebe-chaos/blob/main/go-chaos/deploy/kubeconfig.yaml). The Zeebe and SRE team should have access to they key-ring (and keys). 
 
+
+If there are any updates necessary on the config, SREs can easily update the config in this repository. We should make sure to reflect the changes in our testbench namespace.
+
+
+### Accessing the Kube config
 To make changes to the file use for example:
 
 ```
