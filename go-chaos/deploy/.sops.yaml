@@ -1,0 +1,3 @@
+creation_rules:
+  - gcp_kms: projects/zeebe-io/locations/europe-west1/keyRings/zeebe-chaos/cryptoKeys/zeebe-chaos
+    path_regex: kubeconfig.yaml
