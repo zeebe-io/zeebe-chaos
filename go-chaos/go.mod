@@ -6,7 +6,7 @@ require (
 	github.com/camunda/zeebe/clients/go/v8 v8.2.5
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.20.1
 	google.golang.org/grpc v1.55.0
 	k8s.io/api v0.27.2
