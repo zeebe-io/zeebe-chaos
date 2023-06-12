@@ -83,7 +83,7 @@ Process instances are created until the required partition is reached.`,
 	var verifyInstanceCount = &cobra.Command{
 		Use:   "instance-count",
 		Short: "Verify the instance creation count",
-		Long:  `Verifies that an specific count of process instances from a specific process model can be created.`,
+		Long:  `Verifies that a specific count of process instances from a specific process model can be created.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
