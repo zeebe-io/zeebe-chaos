@@ -69,5 +69,15 @@ Adjust the deployment file [here](https://github.com/zeebe-io/zeebe-chaos/blob/m
 > **Note:**
 > This will not update the deployed resources, this is not automated yet.
 
-You can either apply the deployment again in the corresponding Kubernetes namespace (e.g. testbench-1-x-prod) or edit the existing deployment `kubectl edit deployments.apps zbchaos-worker`
+You can either apply the deployment again in the corresponding Kubernetes namespace (e.g. testbench-1-x-prod)
+
+```
+kubectl apply -f go-chaos/deploy/deployment.yaml 
+```
+
+or edit the existing deployment
+
+```
+kubectl edit deployments.apps zbchaos-worker
+```
 
