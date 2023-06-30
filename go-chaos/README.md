@@ -49,3 +49,13 @@ This will built the zbchaos artifacts with the version injected.
 You find the artifacts in the `dist` folder.
 ### Publish the release
 This will trigger the docker image to built
+
+### Update deployment
+
+Adjust the deployment file [here](https://github.com/zeebe-io/zeebe-chaos/blob/main/go-chaos/deploy/deployment.yaml), update the docker image tag.
+
+> **Note:**
+> This will not update the deployed resources, this is not automated yet.
+
+You can either apply the deployment again in the corresponding Kubernetes namespace (e.g. testbench-1-x-prod) or edit the existing deployment `kubectl edit deployments.apps zbchaos-worker`
+
