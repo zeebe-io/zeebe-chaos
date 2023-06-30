@@ -86,7 +86,6 @@ func NewCmd() *cobra.Command {
 		Long: `A chaos experimenting toolkit for Zeebe.
     Perfect to inject some chaos into your brokers and gateways.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			internal.LogInfo("%v", flags)
 			internal.Verbosity = Verbose
 			internal.LogVerbose("Flags: %v", flags)
 			internal.JsonLogging = JsonLogging
