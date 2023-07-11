@@ -106,7 +106,7 @@ Process instances are created until the required partition is reached.`,
 			err = internal.SendCountOfCommands(internal.ZCCommandSender(processInstanceCreator), int32(flags.instanceCount), time.Duration(flags.timeoutInSec)*time.Second)
 			ensureNoError(err)
 
-			internal.LogInfo("The steady-state was successfully verified!")
+			internal.LogInfo("Created %d process instances successfully.", flags.instanceCount)
 		},
 	}
 
@@ -133,7 +133,7 @@ Process instances are created until the required partition is reached.`,
 			err = internal.SendCountOfCommands(jobCompleter, int32(flags.jobCount), time.Duration(flags.timeoutInSec)*time.Second)
 			ensureNoError(err)
 
-			internal.LogInfo("The steady-state was successfully verified!")
+			internal.LogInfo("Completed %d jobs successfully.", flags.jobCount)
 		},
 	}
 
