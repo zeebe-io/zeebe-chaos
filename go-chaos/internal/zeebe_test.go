@@ -241,6 +241,78 @@ func Test_ShouldSucceedWhenRequiredPartitionIsZero(t *testing.T) {
 	assert.NoError(t, err, "expected no error")
 }
 
+func Test_ShouldTimeoutIfProcessInstanceCountWasNotReached(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 0, errors.New("maep")
+	}
+
+	// when
+	err := SendCountOfCommands(dummyCreator, 10, 10*time.Millisecond)
+
+	// then
+	assert.Error(t, err, "expected error")
+	assert.Contains(t, err.Error(), "Expected to send 10 commands, but timed out after 10ms whereas 0 commands have been sent.")
+}
+
+func Test_ShouldImmediatelyTimeoutForCountCreation(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 6755399441055751, nil
+	}
+
+	// when
+	err := SendCountOfCommands(dummyCreator, 10, 0*time.Millisecond)
+
+	// then
+	assert.Error(t, err, "expected error")
+	assert.Contains(t, err.Error(), "Expected to send 10 commands, but timed out after 0s whereas 0 commands have been sent.")
+}
+
+func Test_ShouldRetryOnCreatingCountOfProcessInstances(t *testing.T) {
+	// given
+	counter := 1
+	dummyCreator := func() (int64, error) {
+		if counter == 3 {
+			return 2251799813685279, nil
+		}
+		counter++
+		return 0, errors.New("foo")
+	}
+
+	// when
+	err := SendCountOfCommands(dummyCreator, 3, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
+func Test_ShouldSucceedOnCorrectInstanceCount(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
+	}
+
+	// when
+	err := SendCountOfCommands(dummyCreator, 2, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
+func Test_ShouldSucceedWhenCountOfPartitionsIsZero(t *testing.T) {
+	// given
+	dummyCreator := func() (int64, error) {
+		return 4503599627370515, nil
+	}
+
+	// when
+	err := SendCountOfCommands(dummyCreator, 0, 1*time.Second)
+
+	// then
+	assert.NoError(t, err, "expected no error")
+}
+
 func Test_ShouldFindCorrelationKeyForPartition(t *testing.T) {
 	// given
 	expectedPartition := 47
@@ -391,4 +463,21 @@ func Test_ShouldAwaitResultForProcessInstanceWithVersionAndProcessIdWhenUsingPIC
 	assert.Equal(t, "processId", fakeClient.processId)
 	assert.Equal(t, "{\"foo\":123}", fakeClient.vars)
 	assert.True(t, fakeClient.awaitResult)
+}
+
+func Test_ShouldSetCorrectPropertiesWhenUsingJobCompleter(t *testing.T) {
+	// given
+	options := JobCompleteOptions{JobType: "benchmark-task"}
+	fakeClient := &FakeClient{}
+	completer, err := CreateJobCompleter(fakeClient, options)
+	require.NoError(t, err)
+
+	// when
+	jobKey, err := completer()
+
+	// then
+	assert.Equal(t, int64(1), jobKey)
+	assert.Equal(t, "benchmark-task", fakeClient.jobType)
+	assert.Equal(t, int64(1), fakeClient.jobKey)
+	assert.Equal(t, int32(1), fakeClient.fakeActivateCommand.maxActivate)
 }

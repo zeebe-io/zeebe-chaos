@@ -274,6 +274,10 @@ type ProcessInstanceCreationOptions struct {
 	AwaitResult   bool
 }
 
+type JobCompleteOptions struct {
+	JobType string
+}
+
 func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCreationOptions) (ProcessInstanceCreator, error) {
 	var processInstanceCreator ProcessInstanceCreator
 	processInstanceCreator = func() (int64, error) {
@@ -305,6 +309,29 @@ func CreateProcessInstanceCreator(zbClient zbc.Client, options ProcessInstanceCr
 
 type ProcessInstanceCreator func() (int64, error)
 
+func CreateJobCompleter(zbClient zbc.Client, options JobCompleteOptions) (ZCCommandSender, error) {
+	var jobCompleter ZCCommandSender
+	jobCompleter = func() (int64, error) {
+		LogVerbose("Send job activate command, with job type '%s'",
+			options.JobType)
+		jobs, err := zbClient.NewActivateJobsCommand().JobType(options.JobType).MaxJobsToActivate(1).Send(context.TODO())
+		if err != nil {
+			return 0, err
+		}
+
+		if len(jobs) == 0 {
+			return 0, errors.New(fmt.Sprintf("Expected to find job with type '%s', but none found.", options.JobType))
+		}
+
+		jobKey := jobs[0].Key
+		_, err = zbClient.NewCompleteJobCommand().JobKey(jobKey).Send(context.TODO())
+		return jobKey, err
+	}
+	return jobCompleter, nil
+}
+
+type ZCCommandSender func() (int64, error)
+
 func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, requiredPartition int32, timeout time.Duration) error {
 	timeoutChan := time.After(timeout)
 	tickerChan := time.Tick(100 * time.Millisecond)
@@ -328,6 +355,34 @@ func CreateProcessInstanceOnPartition(piCreator ProcessInstanceCreator, required
 			if partitionId == requiredPartition {
 				return nil
 			} else if requiredPartition == 0 {
+				return nil
+			}
+		}
+	}
+}
+
+func SendCountOfCommands(commandSender ZCCommandSender, countOfInstances int32, timeout time.Duration) error {
+	timeoutChan := time.After(timeout)
+	tickerChan := time.Tick(100 * time.Millisecond)
+
+	count := int32(0)
+	partitionId := int32(0)
+	for {
+		select {
+		case <-timeoutChan:
+			return errors.New(fmt.Sprintf("Expected to send %d commands, but timed out after %s whereas %d commands have been sent.", countOfInstances, timeout.String(), count))
+		case <-tickerChan:
+			key, err := commandSender()
+			if err != nil {
+				// we do not return here, since we want to retry until the timeout
+				LogInfo("Encountered an error during command sending. Error: %s", err.Error())
+				break
+			}
+			count++
+			partitionId = ExtractPartitionIdFromKey(key)
+			LogVerbose("[%d/%d] Successful command sent, got response with key %d on partition %d.", count, countOfInstances, key, partitionId)
+
+			if count >= countOfInstances {
 				return nil
 			}
 		}

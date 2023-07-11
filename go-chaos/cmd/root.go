@@ -70,6 +70,9 @@ type Flags struct {
 	timeoutInSec   int
 	kubeConfigPath string
 	namespace      string
+	instanceCount  int
+	jobCount       int
+	jobType        string
 }
 
 var Version = "development"

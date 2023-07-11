@@ -80,9 +80,68 @@ Process instances are created until the required partition is reached.`,
 		},
 	}
 
+	var verifyInstanceCount = &cobra.Command{
+		Use:   "instance-count",
+		Short: "Verify the instance creation count",
+		Long:  `Verifies that a specific count of process instances from a specific process model can be created.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			ensureNoError(err)
+			defer zbClient.Close()
+
+			processInstanceCreator, err := internal.CreateProcessInstanceCreator(zbClient, internal.ProcessInstanceCreationOptions{
+				BpmnProcessId: flags.bpmnProcessId,
+				Version:       int32(flags.version),
+				AwaitResult:   false,
+				Variables:     flags.variables,
+			})
+			ensureNoError(err)
+			err = internal.SendCountOfCommands(internal.ZCCommandSender(processInstanceCreator), int32(flags.instanceCount), time.Duration(flags.timeoutInSec)*time.Second)
+			ensureNoError(err)
+
+			internal.LogInfo("Created %d process instances successfully.", flags.instanceCount)
+		},
+	}
+
+	var verifyJobCompletion = &cobra.Command{
+		Use:   "job-completion",
+		Short: "Verify that X jobs can be completed",
+		Long:  `Verifies that an specific count of jobs can be completed for a specific job type.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			k8Client, err := createK8ClientWithFlags(flags)
+			ensureNoError(err)
+
+			port := 26500
+			closeFn := k8Client.MustGatewayPortForward(port, port)
+			defer closeFn()
+
+			zbClient, err := internal.CreateZeebeClient(port)
+			ensureNoError(err)
+			defer zbClient.Close()
+
+			jobCompleter, err := internal.CreateJobCompleter(zbClient, internal.JobCompleteOptions{
+				JobType: flags.jobType,
+			})
+			ensureNoError(err)
+			err = internal.SendCountOfCommands(jobCompleter, int32(flags.jobCount), time.Duration(flags.timeoutInSec)*time.Second)
+			ensureNoError(err)
+
+			internal.LogInfo("Completed %d jobs successfully.", flags.jobCount)
+		},
+	}
+
 	rootCmd.AddCommand(verifyCmd)
 	verifyCmd.AddCommand(verifyReadinessCmd)
 	verifyCmd.AddCommand(verifyInstanceCreation)
+	verifyCmd.AddCommand(verifyInstanceCount)
+	verifyCmd.AddCommand(verifyJobCompletion)
 
 	verifyInstanceCreation.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
 	verifyInstanceCreation.Flags().StringVar(&flags.variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
@@ -92,4 +151,15 @@ Process instances are created until the required partition is reached.`,
 
 	verifyInstanceCreation.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
 	verifyInstanceCreation.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+
+	verifyInstanceCount.Flags().IntVar(&flags.instanceCount, "instanceCount", 1, "Specify the count of the process instances, which should be created")
+	verifyInstanceCount.Flags().StringVar(&flags.variables, "variables", "", "Specify the variables for the process instance. Expect json string.")
+	verifyInstanceCount.Flags().IntVar(&flags.timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
+
+	verifyInstanceCount.Flags().StringVar(&flags.bpmnProcessId, "bpmnProcessId", "benchmark", "Specify the BPMN process ID for which the instance should be created.")
+	verifyInstanceCount.Flags().IntVar(&flags.version, "version", -1, "Specify the version for which the instance should be created, defaults to latest version.")
+
+	verifyJobCompletion.Flags().IntVar(&flags.jobCount, "jobCount", 1, "Specify the count of jobs which need be completed.")
+	verifyJobCompletion.Flags().StringVar(&flags.jobType, "jobType", "benchmark-task", "Specify the type of the job, which should be completed.")
+	verifyJobCompletion.Flags().IntVar(&flags.timeoutInSec, "timeoutInSec", 30, "Specify the timeout of the verification in seconds")
 }
