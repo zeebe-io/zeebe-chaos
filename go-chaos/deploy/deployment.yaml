@@ -16,7 +16,7 @@ spec:
         app: zbchaos-worker
     spec:
       containers:
-        - image: gcr.io/zeebe-io/zbchaos:1.1.0
+        - image: gcr.io/zeebe-io/zbchaos:1.3.0
           name: zbchaos-worker
           resources:
             limits:
