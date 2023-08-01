@@ -14,6 +14,13 @@
 
 package internal
 
+import (
+	"context"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+)
+
 type StressType struct {
 	IoStress  bool
 	CpuStress bool
@@ -52,8 +59,18 @@ func PutStressOnPod(k8Client K8Client, timeoutSec string, podName string, stress
 }
 
 func installStressOnPod(k8Client K8Client, podName string) error {
+	err := k8Client.SetUserToRoot()
+	if err != nil {
+		return err
+	}
+
+	err = k8Client.AwaitReadiness()
+	if err != nil {
+		return err
+	}
+
 	// the -qq flag makes the tool less noisy, remove it to get more output
-	err := k8Client.ExecuteCmdOnPod([]string{"apt", "-qq", "update"}, podName)
+	err = k8Client.ExecuteCmdOnPod([]string{"apt", "-qq", "update"}, podName)
 	if err != nil {
 		return err
 	}
@@ -64,4 +81,32 @@ func installStressOnPod(k8Client K8Client, podName string) error {
 		return err
 	}
 	return nil
+}
+
+func (c K8Client) SetUserToRoot() error {
+
+	statefulSet, err := c.GetZeebeStatefulSet()
+	if err != nil {
+		return err
+	}
+
+	// We need to run the container with root to allow install tooling
+	patch := []byte(`{
+		"spec":{
+			"template":{
+				"spec":{
+					"containers":[
+						{
+							"name": "zeebe",
+							"securityContext":{
+								"runAsUser": 0
+							}
+						}]
+				}
+			}
+		}
+	}`)
+
+	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	return err
 }
