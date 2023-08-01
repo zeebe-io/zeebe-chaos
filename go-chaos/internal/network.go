@@ -32,6 +32,7 @@ func (c K8Client) ApplyNetworkPatch() error {
 		return err
 	}
 
+	// We need to run the container with root to allow install tooling and give it network admin capabilities
 	patch := []byte(`{
 		"spec":{
 			"template":{
@@ -40,6 +41,7 @@ func (c K8Client) ApplyNetworkPatch() error {
 						{
 							"name": "zeebe",
 							"securityContext":{
+								"runAsUser": 0,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
@@ -61,6 +63,7 @@ func (c K8Client) ApplyNetworkPatchOnGateway() error {
 		return err
 	}
 
+	// We need to run the container with root to allow install tooling and give it network admin capabilities
 	patch := []byte(`{
 		"spec":{
 			"template":{
@@ -69,6 +72,7 @@ func (c K8Client) ApplyNetworkPatchOnGateway() error {
 						{
 							"name": "zeebe-gateway",
 							"securityContext":{
+								"runAsUser": 0,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
