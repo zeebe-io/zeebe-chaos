@@ -48,7 +48,7 @@ func AddPublishCmd(rootCmd *cobra.Command, flags *Flags) {
 
 			internal.LogVerbose("Send message '%s', with correaltion key '%s' (ASCII: %d) ", flags.msgName, correlationKey, int(correlationKey[0]))
 
-			messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(flags.msgName).CorrelationKey(correlationKey).TimeToLive(time.Minute * 5).Send(context.TODO())
+			messageResponse, err := zbClient.NewPublishMessageCommand().MessageName(flags.msgName).CorrelationKey(correlationKey).TimeToLive(time.Hour * 1).Send(context.TODO())
 			partitionIdFromKey := internal.ExtractPartitionIdFromKey(messageResponse.Key)
 
 			internal.LogInfo("Message was sent and returned key %d, which corresponds to partition: %d", messageResponse.Key, partitionIdFromKey)
