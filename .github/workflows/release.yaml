@@ -1,0 +1,38 @@
+name: Release zbchaos
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release and tag name'     
+        required: true
+        default: 'zbchaosv0.X.0'
+
+env:
+  GO_VERSION: 1.19
+
+jobs:
+ go-release:
+    name: Run Go CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go-chaos
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_VERSION: ${{ github.event.inputs.release }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: "${{ env.GO_VERSION }}"
+    - name: "Build zbchaos"
+      run: ./build.sh
+    - name: "Create GitHub release"
+      # Use github CLI to create the release
+      #
+      #  * Per default set to latest, right now everything is latest
+      #  * Automatically generate notes based on PR's
+      #  * Dist folder will be uploaded and attached to the release
+      #  * Tag will be automatically created
+      run: gh create release $RELEASE --generate-notes ./dist/*
