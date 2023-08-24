@@ -21,7 +21,7 @@ jobs:
             // noinspection JSUnresolvedVariable
             
             const imageName = `gcr.io/zeebe-io/zbchaos`
-            const versionRegex = /zbchaos v(?<version>\d+\.\d+\.\d+)/i
+            const versionRegex = /zbchaos-v(?<version>\d+\.\d+\.\d+)/i
             if (context.eventName === "release") {
                 const versionMatch = context.payload.release.name.match(versionRegex)
                 if (versionMatch == null) {
