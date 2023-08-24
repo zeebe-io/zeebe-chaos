@@ -35,4 +35,4 @@ jobs:
       #  * Automatically generate notes based on PR's
       #  * Dist folder will be uploaded and attached to the release
       #  * Tag will be automatically created
-      run: gh release create $RELEASE --generate-notes ./dist/*
+      run: gh release create $RELEASE_VERSION --generate-notes ./dist/*
