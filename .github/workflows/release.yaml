@@ -12,7 +12,7 @@ env:
 
 jobs:
  go-release:
-    name: Run Go CI
+    name: Zbchaos go release
     runs-on: ubuntu-latest
     defaults:
       run:
