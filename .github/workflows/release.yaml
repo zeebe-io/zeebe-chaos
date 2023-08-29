@@ -18,7 +18,7 @@ jobs:
       run:
         working-directory: go-chaos
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GHA_RELEASE }}
       RELEASE_VERSION: ${{ github.event.inputs.release }}
     steps:
     - uses: actions/checkout@v2
