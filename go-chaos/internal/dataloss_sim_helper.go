@@ -17,6 +17,7 @@ package internal
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -36,6 +37,10 @@ The updated config map will be eventually (usually with in a minute) by the init
 The init container exits and the zeebe container will be started.
 */
 func (c K8Client) ApplyInitContainerPatch() error {
+	busyBoxImage := "busybox:latest"
+	if c.SaaSEnv {
+		busyBoxImage = "gcr.io/camunda-saas-registry/busybox:1.36.1"
+	}
 	// apply config map
 	err := createConfigMapForInitContainer(c)
 	if err != nil {
@@ -52,7 +57,7 @@ func (c K8Client) ApplyInitContainerPatch() error {
 	c.PauseReconciliation()
 
 	// Adds init container patch
-	patch := []byte(`{
+	patchJsonTemplate := `{
   "spec": {
     "template": {
       "spec": {
@@ -67,7 +72,7 @@ func (c K8Client) ApplyInitContainerPatch() error {
         "initContainers": [
           {
             "name": "busybox",
-            "image": "busybox:1.28",
+            "image": "BUSYBOXIMAGE",
             "command": [
               "/bin/sh",
               "-c"
@@ -96,7 +101,9 @@ func (c K8Client) ApplyInitContainerPatch() error {
       }
     }
   }
-}`)
+}`
+	patchJsonFinal := strings.Replace(patchJsonTemplate, "BUSYBOXIMAGE", busyBoxImage, 1)
+	patch := []byte(patchJsonFinal)
 	_, err = c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Patch(context.TODO(), statefulSet.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		LogInfo("Failed to apply init container patch %s", err)

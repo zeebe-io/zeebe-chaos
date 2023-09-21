@@ -1,0 +1,56 @@
+// Copyright 2023 Camunda Services GmbH
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package internal
+
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"testing"
+)
+
+func Test_ShouldApplyPatchInSaaS(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+	k8Client.CreateStatefulSetWithLabelsAndName(t, &metav1.LabelSelector{}, "zeebe")
+	k8Client.GetZeebeStatefulSet()
+
+	// when
+	result := k8Client.ApplyInitContainerPatch()
+
+	// then
+	require.NoError(t, result)
+	statefulset, _ := k8Client.GetZeebeStatefulSet()
+	busyBoxImageName := statefulset.Spec.Template.Spec.InitContainers[0].Image
+	assert.Equal(t, "gcr.io/camunda-saas-registry/busybox:1.36.1", busyBoxImageName)
+}
+
+func Test_ShouldApplyPatchInSelfManaged(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	selector, err := metav1.ParseToLabelSelector(getSelfManagedZeebeStatefulSetLabels())
+	require.NoError(t, err)
+	k8Client.CreateStatefulSetWithLabelsAndName(t, selector, "zeebe")
+
+	// when
+	result := k8Client.ApplyInitContainerPatch()
+
+	// then
+	require.NoError(t, result)
+	statefulset, _ := k8Client.GetZeebeStatefulSet()
+	busyBoxImageName := statefulset.Spec.Template.Spec.InitContainers[0].Image
+	assert.Equal(t, "busybox:latest", busyBoxImageName)
+}
