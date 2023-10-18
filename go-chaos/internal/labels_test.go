@@ -55,7 +55,7 @@ func Test_shouldGetSelfManagedGatewayLabels(t *testing.T) {
 
 func Test_shouldGetSaasGatewayLabels(t *testing.T) {
 	// given
-	var expected = "app.kubernetes.io/app=zeebe,app.kubernetes.io/component=standalone-gateway"
+	var expected = "app.kubernetes.io/app=zeebe-gateway,app.kubernetes.io/component=standalone-gateway"
 
 	// when
 	actual := getSaasGatewayLabels()
