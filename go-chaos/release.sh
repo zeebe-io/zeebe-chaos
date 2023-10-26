@@ -37,3 +37,6 @@ echo "Building docker image"
 dockerImage="gcr.io/zeebe-io/zbchaos"
 docker build -t "$dockerImage:$RELEASE_VERSION" .
 docker push "$dockerImage:$RELEASE_VERSION"
+
+echo "Update deployment.yaml"
+sed -i 's/TAG/$RELEASE_VERSION/g' deploy/deployment.yaml
