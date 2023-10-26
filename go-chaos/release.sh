@@ -26,10 +26,10 @@ export RELEASE_VERSION="$newRelease"
 echo "Build the zbchaos artifacts"
 ./build.sh
 
-echo "Create a tag and push it to the remote"
-git tag "$RELEASE_VERSION"
-git push origin "$RELEASE_VERSION"
-
+#  * Per default set to latest, right now everything is latest
+#  * Automatically generate notes based on PR's
+#  * Dist folder will be uploaded and attached to the release
+#  * Tag will be automatically created
 echo "Create a github release with the tag and artifacts"
 gh release create "$RELEASE_VERSION" --generate-notes ./dist/*
 
