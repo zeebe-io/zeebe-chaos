@@ -61,8 +61,9 @@ func (c K8Client) isSaaSEnvironment() bool {
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
 	resource, err := c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
 
-	if err != nil || resource == nil {
+	if err != nil {
+		LogInfo("Failed to retrieve SaaS CRD, fallback to self-managed mode. %v", err)
 		return false
 	}
-	return true
+	return resource != nil
 }
