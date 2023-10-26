@@ -35,6 +35,6 @@ jobs:
         username: _json_key
         password: ${{ secrets.DOCKER_GCR }}
     - name: "Run release script"
-      # We defined everything as a script so we can also run it manually/locally
-      # Release contains building the artifacts, creating github release, and publishing docker image
+      # We defined everything as a script such that we can also run it manually/locally
+      # Release contains building the artifacts, creating GitHub release, and publishing docker image
       run: ./release.sh
