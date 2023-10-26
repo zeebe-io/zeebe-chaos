@@ -41,7 +41,7 @@ git tag | sort -Vr | head -n1
 
 ```
 cd go-chaos/
-export RELEASE_VERSION=zbchaosv0.X.0; ./build.sh
+export RELEASE_VERSION=zbchaos-v0.X.0; ./build.sh
 ```
 This will built the zbchaos artifacts with the version injected.
 
