@@ -33,4 +33,7 @@ git push origin "$RELEASE_VERSION"
 echo "Create a github release with the tag and artifacts"
 gh release create "$RELEASE_VERSION" --generate-notes ./dist/*
 
-
+echo "Building docker image"
+dockerImage="gcr.io/zeebe-io/zbchaos"
+docker build -t "$dockerImage:$RELEASE_VERSION" .
+docker push "$dockerImage:$RELEASE_VERSION"
