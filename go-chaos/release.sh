@@ -40,3 +40,6 @@ docker push "$dockerImage:$RELEASE_VERSION"
 
 echo "Update deployment.yaml"
 sed -i 's/TAG/$RELEASE_VERSION/g' deploy/deployment.yaml
+
+echo "Deploy zbchaos deployment to testbench"
+kubectl -n testbench-1-x-prod apply -f deploy/deployment.yaml
