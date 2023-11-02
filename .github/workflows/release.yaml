@@ -26,13 +26,28 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: "${{ env.GO_VERSION }}"
-    - name: "Build zbchaos"
-      run: ./build.sh
-    - name: "Create GitHub release"
-      # Use github CLI to create the release
-      #
-      #  * Per default set to latest, right now everything is latest
-      #  * Automatically generate notes based on PR's
-      #  * Dist folder will be uploaded and attached to the release
-      #  * Tag will be automatically created
-      run: gh release create $RELEASE_VERSION --generate-notes ./dist/*
+    - name: Setup BuildKit
+      uses: docker/setup-buildx-action@v2
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        token_format: 'access_token'
+        workload_identity_provider: 'projects/628707732411/locations/global/workloadIdentityPools/zeebe-chaos-pool/providers/zeebe-chaos-provider'
+        service_account: 'zeebe-chaos@zeebe-io.iam.gserviceaccount.com'
+    - id: 'get-credentials'
+      name: 'Get GKE credentials'
+      uses: 'google-github-actions/get-gke-credentials@v1'
+      with:
+        cluster_name: 'zeebe-cluster'
+        location: 'europe-west1-b'
+    - name: Login to GCR
+      uses: docker/login-action@v3
+      with:
+        registry: gcr.io
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
+    - name: "Run release script"
+      # We defined everything as a script such that we can also run it manually/locally
+      # Release contains building the artifacts, creating GitHub release, and publishing docker image
+      run: ./release.sh "${{ github.event.inputs.release }}"

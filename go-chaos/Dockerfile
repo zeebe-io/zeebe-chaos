@@ -1,13 +1,8 @@
 # syntax=docker/dockerfile:1.4
 FROM golang:alpine as builder
 RUN apk update && apk upgrade && apk add --no-cache ca-certificates && update-ca-certificates
-WORKDIR /app 
-
-COPY --link go.mod go.sum .
-RUN go mod download
-
-COPY --link . ./
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o zbchaos main.go
+WORKDIR /app
+COPY --link dist/zbchaos ./
 
 FROM scratch
 
