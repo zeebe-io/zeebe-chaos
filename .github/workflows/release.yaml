@@ -17,6 +17,9 @@ jobs:
     defaults:
       run:
         working-directory: go-chaos
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     env:
       GITHUB_TOKEN: ${{ secrets.GHA_RELEASE }}
       RELEASE_VERSION: ${{ github.event.inputs.release }}
