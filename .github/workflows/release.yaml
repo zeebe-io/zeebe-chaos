@@ -50,4 +50,4 @@ jobs:
     - name: "Run release script"
       # We defined everything as a script such that we can also run it manually/locally
       # Release contains building the artifacts, creating GitHub release, and publishing docker image
-      run: ./release.sh
+      run: ./release.sh ${{ github.event.inputs.message }}
