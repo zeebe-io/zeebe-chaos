@@ -20,7 +20,7 @@ jobs:
         run: |
           cd chaos-days
           npm config set legacy-peer-deps
-          npm install
+          npm install --force
       - name: Build
         run: |
           cd chaos-days
