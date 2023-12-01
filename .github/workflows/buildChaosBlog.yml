@@ -1,6 +1,7 @@
 name: Build Chaos Blog
 
 on:
+  workflow_dispatch: { }
   push:
     branches:
       - "*"
