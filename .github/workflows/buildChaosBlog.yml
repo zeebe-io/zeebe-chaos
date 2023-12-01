@@ -19,7 +19,8 @@ jobs:
       - name: Install Dependencies
         run: |
           cd chaos-days
-          npm i
+          npm config set legacy-peer-deps
+          npm install
       - name: Build
         run: |
           cd chaos-days
