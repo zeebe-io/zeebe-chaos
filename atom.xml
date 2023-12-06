@@ -8,7 +8,7 @@
     <subtitle>Zeebe Chaos Blog</subtitle>
     <icon>https://zeebe-io.github.io/zeebe-chaos/img/zeebe-logo.png</icon>
     <entry>
-        <title type="html"><![CDATA[Job Push resiliency]]></title>
+        <title type="html"><![CDATA[Job push resiliency]]></title>
         <id>https://zeebe-io.github.io/zeebe-chaos/2023/12/06/Job-Push-resiliency</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2023/12/06/Job-Push-resiliency"/>
         <updated>2023-12-06T00:00:00.000Z</updated>
