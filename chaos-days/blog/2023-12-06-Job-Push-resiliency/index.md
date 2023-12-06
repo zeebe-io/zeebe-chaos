@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "Job Push resiliency"
+title:  "Job push resiliency"
 date:   2023-12-06
 categories: 
   - chaos_experiment 
