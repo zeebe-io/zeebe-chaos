@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkzell_chaos=self.webpackChunkzell_chaos||[]).push([[958],{89794:e=>{e.exports=JSON.parse('{"permalink":"/zeebe-chaos/page/3","page":3,"postsPerPage":10,"totalPages":5,"totalCount":46,"previousPage":"/zeebe-chaos/page/2","nextPage":"/zeebe-chaos/page/4","blogDescription":"Blog","blogTitle":"Blog"}')}}]);
