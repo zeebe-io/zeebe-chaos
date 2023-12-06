@@ -85,7 +85,7 @@ The workers can be used as part of some chaos experiments to complete process in
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			err = k8Client.CreateWorkerDeployment()
+			err = k8Client.CreateWorkerDeployment(DockerImageTag)
 			ensureNoError(err)
 
 			internal.LogInfo("Worker successfully deployed to the current namespace: %s", k8Client.GetCurrentNamespace())
