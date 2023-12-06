@@ -66,6 +66,35 @@ func Test_ShouldFailToHandleReadExperimentsJobWithoutPayload(t *testing.T) {
 	assert.Equal(t, 0, fakeJobClient.RetriesVal)
 }
 
+func Test_ShouldFailWhenDockerImageIsNotSet(t *testing.T) {
+	// given
+	fakeJobClient := &FakeJobClient{}
+	variables := createZbChaosVariables()
+	variables.ZeebeImage = ""
+	jsonString, err := json.Marshal(variables)
+	commandRunner := func(args []string, ctx context.Context) error {
+		return nil // success
+	}
+
+	require.NoError(t, err)
+	job := entities.Job{
+		ActivatedJob: &pb.ActivatedJob{
+			Key:                123,
+			ProcessInstanceKey: 456,
+			Retries:            1,
+			Variables:          string(jsonString),
+		},
+	}
+
+	// when
+	HandleZbChaosJob(fakeJobClient, job, commandRunner)
+
+	// then
+	assert.True(t, fakeJobClient.Failed)
+	assert.Equal(t, 123, fakeJobClient.Key)
+	assert.Equal(t, 0, fakeJobClient.RetriesVal)
+}
+
 func Test_ShouldHandleCommand(t *testing.T) {
 	// given
 	fakeJobClient := &FakeJobClient{}
@@ -96,7 +125,9 @@ func Test_ShouldHandleCommand(t *testing.T) {
 		"disconnect", "gateway",
 		"--all",
 		"--verbose",
-		"--jsonLogging"}
+		"--jsonLogging",
+		"--dockerImageTag",
+		"test"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -133,7 +164,9 @@ func Test_ShouldHandleCommandForSelfManagedWhenNoClusterId(t *testing.T) {
 		"disconnect", "gateway",
 		"--all",
 		"--verbose",
-		"--jsonLogging"}
+		"--jsonLogging",
+		"--dockerImageTag",
+		"test"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -209,7 +242,9 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 		"disconnect", "gateway",
 		"--all",
 		"--verbose",
-		"--jsonLogging"}
+		"--jsonLogging",
+		"--dockerImageTag",
+		"test"}
 	assert.Equal(t, expectedArgs, appliedArgs)
 }
 
@@ -231,6 +266,7 @@ func createZbChaosVariables() ZbChaosVariables {
 			Path:      "zbchaos",
 			Arguments: []string{"disconnect", "gateway", "--all"},
 		},
+		ZeebeImage: "gcr.io/zeebe-io/zeebe:test",
 	}
 	return variables
 }

@@ -79,6 +79,7 @@ var Version = "development"
 var Commit = "HEAD"
 var Verbose bool
 var JsonLogging bool
+var DockerImageTag string = "zeebe"
 
 func NewCmd() *cobra.Command {
 	flags := Flags{}
@@ -102,6 +103,7 @@ func NewCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
 	rootCmd.PersistentFlags().StringVar(&flags.kubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&flags.namespace, "namespace", "n", "", "connect to the given namespace")
+	rootCmd.PersistentFlags().StringVarP(&DockerImageTag, "dockerImageTag", "", "", "use the given docker image tag for deployed resources, e.g. worker/starter")
 
 	AddBackupCommand(rootCmd, &flags)
 	AddBrokersCommand(rootCmd, &flags)
