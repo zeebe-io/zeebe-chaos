@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
@@ -52,6 +53,9 @@ type ZbChaosVariables struct {
 	ClusterPlan *string
 	// the target cluster for our chaos experiment
 	ClusterId *string
+	// the zeebe docker image used for the chaos experiment
+	// used later for workers and starter to use the right client versions
+	ZeebeImage *string
 	// the chaos provider, which contain details to the chaos experiment
 	Provider ChaosProvider
 }
@@ -89,8 +93,16 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 		clusterAccessArgs = append(clusterAccessArgs, "--namespace", *jobVariables.ClusterId+"-zeebe")
 	} // else we run local against our k8 context
 
+	dockerImageSplit := strings.Split(*jobVariables.ZeebeImage, ":")
+	if len(dockerImageSplit) <= 1 {
+		errorMsg := fmt.Sprintf("Error on running command. [key: %d, variables: %v]. Error: %s", job.Key, jobVariables, "Expected to read a dockerImage and split on ':', but read "+*jobVariables.ZeebeImage)
+		internal.LogInfo(errorMsg)
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).ErrorMessage(errorMsg).Send(ctx)
+		return
+	}
+
 	commandArgs := append(clusterAccessArgs, jobVariables.Provider.Arguments...)
-	commandArgs = append(commandArgs, "--verbose", "--jsonLogging")
+	commandArgs = append(commandArgs, "--verbose", "--jsonLogging", "--dockerImageTag", dockerImageSplit[1])
 
 	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
