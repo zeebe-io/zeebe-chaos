@@ -23,15 +23,15 @@ The following experiments we have done today:
 2. Job streams should be resilient to leadership changes/leader restarts
 3. Job streams should be resilient to cluster restarts
 
-**TL;DR;** All experiments succeeded and show-cased the resiliency even on components restarts. :rocket:
+**TL;DR;** All experiments succeeded and showcased the resiliency even on component restarts. :rocket:
 
 <!--truncate-->
 
-To reduce the blast radius and to better verify that everything works as expected we use a trimmed version of our benchmark setup. This means: three brokers, one partition, replication factor three and one gateway. No starter deployed. We deployed one worker with a very high polling interval, to make sure that we rely on streaming.
+To reduce the blast radius and to better verify that everything works as expected we use a trimmed version of our benchmark setup. This means three brokers, one partition, replication factor three, and one gateway. No starter deployed. We deployed one worker with a very high polling interval, to make sure that we rely on streaming.
 
 ## Gateway restarts
 
-In our first experiment we wanted to verify that: Job streaming should be resilient to gateway restarts/crashes.
+In our first experiment, we wanted to verify that: Job streaming should be resilient to gateway restarts/crashes.
 
 The experiment will look like the following:
 
@@ -46,13 +46,13 @@ The experiment will look like the following:
 
 ### Expected
 
-We expect that even after a gateway restart we can retrieve a job (the stream should be recreated) and can complete our new instance.
+We expect that even after a gateway restart we can retrieve a job (the stream should be recreated) and complete our new instance.
 
 ### Actual
 
-We deployed the worker (with replica one), and configured it with a high polling interval `-Dapp.worker.pollingDelay=24h`.
+We deployed the worker (with a replica of one), and configured it with a high polling interval `-Dapp.worker.pollingDelay=24h`.
 
-To run any instances we need to deploy once a the benchmark process model
+To run any instances we need to deploy once the benchmark process model
 ```
 zbchaos deploy process
 Failed to retrieve SaaS CRD, fallback to self-managed mode. the server could not find the requested resource
@@ -82,7 +82,7 @@ The steady-state was successfully verified!
 
 #### Injecting chaos
 
-As next, we will restart the gateway.
+Next, we will restart the gateway.
 
 ```shell
 $ zbchaos restart gateway --verbose
@@ -116,7 +116,7 @@ The experiment succeeded. We were able to verify the steady state after the chao
 
 ### With termination
 
-We wanted to verify the same with  terminating the gateway instead of a graceful shutdown (which is done within the restart command).
+We wanted to verify the same by terminating the gateway instead of a graceful shutdown (which is done within the restart command).
 
 ```shell
 $ zbchaos terminate gateway --verbose
@@ -139,15 +139,15 @@ io.grpc.StatusRuntimeException: UNAVAILABLE: io exception
 
 We see as expected several `UNAVAILABLE: io exception` and later the worker recovered.
 
-Based on the metrics we can observe the same. Jobs are pushed to the workers even after restarting of the gateway.
+Based on the metrics we can observe the same. Jobs are pushed to the workers even after restarting the gateway.
 
 ![](job-push-gw-terminate.png)
 
 ## Leader restart
 
-In this experiment we want to verify how resilient job push is on leader changes/restarts.
+In this experiment, we want to verify how resilient job push is on leader changes/restarts.
 
-The verification of the steady-state is the same as above, so I will skip this description here.
+The verification of the steady state is the same as above, so I will skip this description here.
 
 ### Expected
 
@@ -203,7 +203,7 @@ This also means we had two leader changes, and the push was even pushed by the r
 
 ## Complete cluster restart
 
-In this experiment we wanted to verify whether job push can also handle a complete cluster restart.
+In this experiment, we wanted to verify whether job push can also handle a complete cluster restart.
 
 ### Expected
 
@@ -223,7 +223,7 @@ The steady-state was successfully verified!
 
 #### Inject chaos
 
-Right now `zbchaos` doesn't support to restart a complete cluster, so we had to fallback to `kubectl`. 
+Right now `zbchaos` doesn't support restarting a complete cluster, so we had to fall back to `kubectl`. 
 
 ```sh
 $ kubectl delete pod -l=app=camunda-platform
@@ -253,5 +253,5 @@ Again we were able to show that job push is resilient, and can even handle a com
 
 ## Found Bugs
 
-* On restart (especially on cluster restart) it looks like that job push engine metrics are counted multiple times
+* On restart (especially on cluster restart) it looks like job push engine metrics are counted multiple times
 * [We found a place where we should better handle the exception in pushing async.](https://github.com/camunda/zeebe/blob/a86decce9a46218798663e3466267a49adef506e/transport/src/main/java/io/camunda/zeebe/transport/stream/impl/RemoteStreamPusher.java#L55-L56C14)  
