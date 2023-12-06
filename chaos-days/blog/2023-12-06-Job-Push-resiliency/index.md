@@ -7,6 +7,7 @@ categories:
   - bpmn
 tags:
   - availability
+  - resiliency
 authors: 
   - zell
   - nicolas
