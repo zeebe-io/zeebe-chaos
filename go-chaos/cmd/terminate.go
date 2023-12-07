@@ -38,8 +38,12 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 			gracePeriodSec := int64(0)
-			brokerName := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
-			internal.LogInfo("Terminated %s", brokerName)
+			if flags.all {
+				restartBrokers(k8Client, "terminate", &gracePeriodSec)
+			} else {
+				brokerPod := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, &gracePeriodSec)
+				internal.LogInfo("Terminated %s", brokerPod)
+			}
 		},
 	}
 
@@ -74,7 +78,9 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 	terminateBrokerCmd.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER]")
 	terminateBrokerCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
 	terminateBrokerCmd.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
-	terminateBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
+	terminateBrokerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all brokers should be terminated")
+	terminateBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId", "all")
+	terminateBrokerCmd.MarkFlagsMutuallyExclusive("role", "all")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
 
