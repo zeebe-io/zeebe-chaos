@@ -1,0 +1,40 @@
+experiments:
+  - path: broker-dataloss/experiment.json
+    clusterPlans:
+      - production-s
+  - path: deployment-distribution/experiment.json
+    clusterPlans:
+      - production-s
+  - path: follower-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: follower-terminate/experiment.json
+    clusterPlans:
+      - production-s
+  - path: leader-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: leader-terminate/experiment.json
+    clusterPlans:
+      - production-s
+  - path: msg-correlation/experiment.json
+    clusterPlans:
+      - production-s
+  - path: multiple-leader-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: stress-cpu-on-broker/experiment.json
+    clusterPlans:
+      - production-s
+  - path: worker-restart/experiment.json
+    clusterPlans:
+      - production-s
+  # only for testing
+  - path: test/experiment.json
+    clusterPlans:
+      - test
+  - path: test/version-experiment.json
+    clusterPlans:
+      - test
+    minVersion: 8.3.0-SNAPSHOT
+    maxVersion: 8.4.0-SNAPSHOT

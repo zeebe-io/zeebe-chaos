@@ -145,10 +145,19 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan(*jobVariables.ClusterPlan)
+	namespace := ""
+	if jobVariables.ClusterId != nil && *jobVariables.ClusterId != "" {
+		namespace = *jobVariables.ClusterId + "-zeebe"
+	}
+	targetClusterVersion := getTargetClusterVersion(namespace)
+	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan(*jobVariables.ClusterPlan, targetClusterVersion)
 	if err != nil {
 		internal.LogInfo("Can't read experiments for given cluster plan %s, no sense in retrying will fail job. Error: %s", *jobVariables.ClusterPlan, err.Error())
 		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(err.Error()).Send(ctx)
+		return
+	} else if len(experiments.Experiments) == 0 {
+		internal.LogInfo("No experiments found for given cluster plan %s, no sense in retrying will fail job", *jobVariables.ClusterPlan)
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(0).ErrorMessage(fmt.Sprintf("No experiments found for cluster plan '%s'", *jobVariables.ClusterPlan)).Send(ctx)
 		return
 	}
 
@@ -162,4 +171,25 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 	internal.LogInfo("Read experiments successful, complete job with: %s.", string(experimentsJson))
 
 	_, _ = command.Send(ctx)
+}
+
+func getTargetClusterVersion(namespace string) string {
+	k8Client, err := internal.CreateK8Client("", namespace)
+	port := 26500
+	closeFn := k8Client.MustGatewayPortForward(port, port)
+	defer closeFn()
+
+	zbClient, err := internal.CreateZeebeClient(port)
+	if err != nil {
+		internal.LogInfo("Failed to read target cluster version from topology of '%s', will only read experiments without version bounds. Error: '%s'", namespace, err)
+		return ""
+	}
+
+	topology, err := zbClient.NewTopologyCommand().Send(context.TODO())
+	if err != nil {
+		internal.LogInfo("Failed to read target cluster version from topology of '%s', will only read experiments without version bounds. Error: '%s'", namespace, err)
+		return ""
+	}
+
+	return topology.GetGatewayVersion()
 }
