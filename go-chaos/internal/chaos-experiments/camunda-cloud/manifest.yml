@@ -1,3 +1,13 @@
+# Lists all the experiments that the chaos-worker can run.
+# Each experiment must use the following structure:
+# 
+# - path: path to the JSON file relative to the manifest
+#   clusterPlans: a list of cluster plans the experiment can run on
+#   minVersion: the minimum (inclusive) version of the target cluster the experiment can run against
+#   maxVersion: the maximum (inclusive) version of the target cluster the experiment can run against
+#
+# Both minVersion and maxVersion should only be the major and minor versions, e.g. 8.3, 8.4, etc.
+# minVersion and maxVersion are both optional.
 experiments:
   - path: broker-dataloss/experiment.json
     clusterPlans:
@@ -36,5 +46,5 @@ experiments:
   - path: test/version-experiment.json
     clusterPlans:
       - test
-    minVersion: 8.3.0-SNAPSHOT
-    maxVersion: 8.4.0-SNAPSHOT
+    minVersion: 8.3
+    maxVersion: 8.4

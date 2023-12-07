@@ -97,3 +97,42 @@ func Test_ShouldExcludeExperimentsWithVersionBoundsOnEmptyTargetVersion(t *testi
 	assert.Equal(t, 1, len(experimentsForClusterPlan.Experiments))
 	assert.Equal(t, "This is a fake experiment", experimentsForClusterPlan.Experiments[0]["title"])
 }
+
+func Test_ShouldIncludeExperimentsWithMatchingMaxVersion(t *testing.T) {
+	// given
+
+	// when
+	experimentsForClusterPlan, err := ReadExperimentsForClusterPlan("test", "8.4")
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(experimentsForClusterPlan.Experiments))
+	assert.Equal(t, "This is a fake experiment", experimentsForClusterPlan.Experiments[0]["title"])
+	assert.Equal(t, "Versioned Test Experiment", experimentsForClusterPlan.Experiments[1]["title"])
+}
+
+func Test_ShouldIncludeExperimentsWithMatchingMinVersion(t *testing.T) {
+	// given
+
+	// when
+	experimentsForClusterPlan, err := ReadExperimentsForClusterPlan("test", "8.3")
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(experimentsForClusterPlan.Experiments))
+	assert.Equal(t, "This is a fake experiment", experimentsForClusterPlan.Experiments[0]["title"])
+	assert.Equal(t, "Versioned Test Experiment", experimentsForClusterPlan.Experiments[1]["title"])
+}
+
+func Test_ShouldIncludeExperimentsWithMatchingVersion(t *testing.T) {
+	// given
+
+	// when
+	experimentsForClusterPlan, err := ReadExperimentsForClusterPlan("test", "8.3.9")
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(experimentsForClusterPlan.Experiments))
+	assert.Equal(t, "This is a fake experiment", experimentsForClusterPlan.Experiments[0]["title"])
+	assert.Equal(t, "Versioned Test Experiment", experimentsForClusterPlan.Experiments[1]["title"])
+}

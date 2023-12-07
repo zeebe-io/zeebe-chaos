@@ -67,14 +67,14 @@ type experiment struct {
 func (m manifest) filterExperiments(clusterPlan string, targetVersion string) (experiments []string) {
 	for _, entry := range m.Experiments {
 		isValidClusterPlan := slices.Contains(entry.ClusterPlans, clusterPlan)
-		matchesMinVersion := entry.MinVersion == "" || (targetVersion != "" && semver.Compare("v"+targetVersion, "v"+entry.MinVersion) >= 0)
-		matchesMaxVersion := entry.MaxVersion == "" || (targetVersion != "" && semver.Compare("v"+targetVersion, "v"+entry.MaxVersion) < 0)
+		matchesMinVersion := entry.MinVersion == "" || (targetVersion != "" && semver.Compare(semver.MajorMinor("v"+targetVersion), semver.MajorMinor("v"+entry.MinVersion)) >= 0)
+		matchesMaxVersion := entry.MaxVersion == "" || (targetVersion != "" && semver.Compare(semver.MajorMinor("v"+targetVersion), semver.MajorMinor("v"+entry.MaxVersion)) <= 0)
 		matchesVersion := matchesMinVersion && matchesMaxVersion
 
 		if isValidClusterPlan && matchesVersion {
 			experiments = append(experiments, entry.Path)
 		} else {
-			internal.LogVerbose(
+			internal.LogInfo(
 				"Skipping experiment at '%#v' for cluster plan '%s' and target version '%s' because: [isValidClusterPlan=%t, matchesMinVersion=%t, matchesMaxVersion=%t]",
 				entry, clusterPlan, targetVersion, isValidClusterPlan, matchesMinVersion, matchesMaxVersion)
 		}
