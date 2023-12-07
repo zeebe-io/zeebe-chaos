@@ -50,8 +50,13 @@ func AddRestartCmd(rootCmd *cobra.Command, flags *Flags) {
 		Run: func(cmd *cobra.Command, args []string) {
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
-			gatewayPod := restartGateway(k8Client, nil)
-			internal.LogInfo("Restarted %s", gatewayPod)
+
+			if flags.all {
+				restartGateways(k8Client, "restart", nil)
+			} else {
+				gatewayPod := restartGateway(k8Client, nil)
+				internal.LogInfo("Restarted %s", gatewayPod)
+			}
 		},
 	}
 
@@ -76,6 +81,8 @@ func AddRestartCmd(rootCmd *cobra.Command, flags *Flags) {
 	restartBrokerCmd.MarkFlagsMutuallyExclusive("role", "all")
 
 	restartCmd.AddCommand(restartGatewayCmd)
+	restartGatewayCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all gateways should be restarted")
+
 	restartCmd.AddCommand(restartWorkerCmd)
 	restartWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be restarted")
 }
