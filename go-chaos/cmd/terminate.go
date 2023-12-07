@@ -55,8 +55,13 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 			gracePeriodSec := int64(0)
-			gatewayPod := restartGateway(k8Client, &gracePeriodSec)
-			internal.LogInfo("Terminated %s", gatewayPod)
+
+			if flags.all {
+				restartGateways(k8Client, "terminate", &gracePeriodSec)
+			} else {
+				gatewayPod := restartGateway(k8Client, &gracePeriodSec)
+				internal.LogInfo("Restarted %s", gatewayPod)
+			}
 		},
 	}
 
@@ -83,6 +88,7 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 	terminateBrokerCmd.MarkFlagsMutuallyExclusive("role", "all")
 
 	terminateCmd.AddCommand(terminateGatewayCmd)
+	terminateGatewayCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all gateways should be terminated")
 
 	terminateCmd.AddCommand(terminateWorkerCmd)
 	terminateWorkerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all workers should be terminated")
@@ -140,6 +146,23 @@ func restartGateway(k8Client internal.K8Client, gracePeriod *int64) string {
 	err = k8Client.RestartPodWithGracePeriod(gatewayPod, gracePeriod)
 	ensureNoError(err)
 	return gatewayPod
+}
+
+// Restarts all gateways in the current namespace.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
+func restartGateways(k8Client internal.K8Client, actionName string, gracePeriod *int64) {
+	gatewayPodNames, err := k8Client.GetGatewayPodNames()
+	ensureNoError(err)
+
+	if len(gatewayPodNames) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find a Zeebe gateways in namespace %s, but none found", k8Client.GetCurrentNamespace())))
+	}
+
+	for _, gatewayPodName := range gatewayPodNames {
+		err = k8Client.RestartPodWithGracePeriod(gatewayPodName, gracePeriod)
+		ensureNoError(err)
+		internal.LogInfo("%s %s", actionName, gatewayPodName)
+	}
 }
 
 // Restart a worker pod. The pod is the first from a list of existing pods, if all is not specified.
