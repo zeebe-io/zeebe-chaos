@@ -34,8 +34,12 @@ func AddRestartCmd(rootCmd *cobra.Command, flags *Flags) {
 		Run: func(cmd *cobra.Command, args []string) {
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
-			brokerPod := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, nil)
-			internal.LogInfo("Restarted %s", brokerPod)
+			if flags.all {
+				restartBrokers(k8Client, "restart", nil)
+			} else {
+				brokerPod := restartBroker(k8Client, flags.nodeId, flags.partitionId, flags.role, nil)
+				internal.LogInfo("Restarted %s", brokerPod)
+			}
 		},
 	}
 
@@ -67,7 +71,9 @@ func AddRestartCmd(rootCmd *cobra.Command, flags *Flags) {
 	restartBrokerCmd.Flags().StringVar(&flags.role, "role", "LEADER", "Specify the partition role [LEADER, FOLLOWER, INACTIVE]")
 	restartBrokerCmd.Flags().IntVar(&flags.partitionId, "partitionId", 1, "Specify the id of the partition")
 	restartBrokerCmd.Flags().IntVar(&flags.nodeId, "nodeId", -1, "Specify the nodeId of the Broker")
-	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId")
+	restartBrokerCmd.Flags().BoolVar(&flags.all, "all", false, "Specify whether all brokers should be restarted")
+	restartBrokerCmd.MarkFlagsMutuallyExclusive("partitionId", "nodeId", "all")
+	restartBrokerCmd.MarkFlagsMutuallyExclusive("role", "all")
 
 	restartCmd.AddCommand(restartGatewayCmd)
 	restartCmd.AddCommand(restartWorkerCmd)

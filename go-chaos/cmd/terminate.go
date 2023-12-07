@@ -102,6 +102,23 @@ func restartBroker(k8Client internal.K8Client, nodeId int, partitionId int, role
 	return brokerPod.Name
 }
 
+// Restarts all brokers in the current namespace.
+// GracePeriod (in second) can be nil, which would mean using K8 default.
+func restartBrokers(k8Client internal.K8Client, actionName string, gracePeriod *int64) {
+	brokerPodNames, err := k8Client.GetBrokerPodNames()
+	ensureNoError(err)
+
+	if len(brokerPodNames) <= 0 {
+		panic(errors.New(fmt.Sprintf("Expected to find a Zeebe broker in namespace %s, but none found", k8Client.GetCurrentNamespace())))
+	}
+
+	for _, brokerPodName := range brokerPodNames {
+		err = k8Client.RestartPodWithGracePeriod(brokerPodName, gracePeriod)
+		ensureNoError(err)
+		internal.LogInfo("%s %s", actionName, brokerPodName)
+	}
+}
+
 // Restart a gateway pod. The pod is the first from a list of existing pods.
 // GracePeriod (in second) can be nil, which would mean using K8 default.
 // Returns the gateway which has been restarted
