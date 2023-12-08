@@ -69,9 +69,6 @@
             "path": "zbchaos",
             "arguments": ["restart", "gateway", "--all"],
             "timeout": 900
-        },
-        "pauses": {
-            "after": 5
         }
     }
   ],
