@@ -123,7 +123,7 @@ The process models allow to execute chaos experiments.`,
 		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
 
 	deployCmd.AddCommand(deployWorkerCmd)
-	deployWorkerCmd.Flags().IntVar(&flags.pollingDelayMs, "pollingDelay", 1, "Specifies the worker's polling interval")
+	deployWorkerCmd.Flags().IntVar(&flags.pollingDelayMs, "pollingDelay", 1, "Specifies the worker's polling interval in milliseconds")
 
 	deployCmd.AddCommand(deployChaosModels)
 }
