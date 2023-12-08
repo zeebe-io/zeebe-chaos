@@ -175,6 +175,13 @@ func HandleReadExperiments(client worker.JobClient, job entities.Job) {
 
 func getTargetClusterVersion(namespace string) string {
 	k8Client, err := internal.CreateK8Client("", namespace)
+	if k8Client.ClientConfig == nil || k8Client.Clientset == nil {
+		internal.LogInfo(
+			"Failed to read target cluster version from topology of '%s' as there is no Kubernetes client available. Will only read experiments without version bounds",
+			namespace)
+		return ""
+	}
+
 	port := 26500
 	closeFn := k8Client.MustGatewayPortForward(port, port)
 	defer closeFn()
