@@ -1,0 +1,76 @@
+{
+  "version": "0.1.0",
+  "title": "Job push cluster restart experiment",
+  "description": "Job workers with streaming enabled should be fault-tolerant. The worker should receive and complete jobs even if all brokers restart.",
+  "contributions": {
+      "performance": "high",
+      "reliability": "high",
+      "availability": "high"
+  },
+  "steady-state-hypothesis": {
+      "title": "Zeebe is alive",
+      "probes": [
+          {
+              "name": "All pods should be ready",
+              "type": "probe",
+              "tolerance": 0,
+              "provider": {
+                  "type": "process",
+                  "path": "zbchaos",
+                  "arguments": ["verify", "readiness"],
+                  "timeout": 900
+              }
+          },
+          {
+              "name": "Can deploy process model",
+              "type": "probe",
+              "tolerance": 0,
+              "provider": {
+                  "type": "process",
+                  "path": "zbchaos",
+                  "arguments": ["deploy", "process"],
+                  "timeout": 900
+              }
+          },
+          {
+            "name": "Can deploy workers",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["deploy", "worker", "--pollingDelay", "86400000"],
+                "timeout": 900
+            },
+            "pauses": {
+                "after": 5
+            }
+          },
+          {
+              "name": "Should be able to create process instances",
+              "type": "probe",
+              "tolerance": 0,
+              "provider": {
+                  "type": "process",
+                  "path": "zbchaos",
+                  "arguments": ["verify", "instance-creation", "--awaitResult"],
+                  "timeout": 900
+              }
+          }
+      ]
+  },
+  "method": [
+    {
+        "name": "Restart all brokers",
+        "type": "probe",
+        "tolerance": 0,
+        "provider": {
+            "type": "process",
+            "path": "zbchaos",
+            "arguments": ["restart", "broker", "--all"],
+            "timeout": 900
+        }
+    }
+  ],
+  "rollbacks": []
+}

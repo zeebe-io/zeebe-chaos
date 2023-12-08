@@ -47,6 +47,10 @@ experiments:
     clusterPlans:
       - production-s
     minVersion: 8.4
+  - path: job-push/cluster-restart.json
+    clusterPlans:
+      - production-s
+    minVersion: 8.4
   - path: worker-resilience/gateway-restart.json
     clusterPlans:
       - production-s
