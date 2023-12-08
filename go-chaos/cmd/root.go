@@ -46,6 +46,9 @@ type Flags struct {
 	broker2Role        string
 	broker2NodeId      int
 
+	// deploy worker
+	pollingDelayMs int
+
 	// backup
 	backupId string
 
