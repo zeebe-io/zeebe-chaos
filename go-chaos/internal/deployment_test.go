@@ -120,7 +120,7 @@ func Test_ShouldDeployWorkerDeploymentWithDifferentDockerImage(t *testing.T) {
 	k8Client := CreateFakeClient()
 
 	// when
-	err := k8Client.CreateWorkerDeployment("testTag")
+	err := k8Client.CreateWorkerDeployment("testTag", 1)
 
 	// then
 	require.NoError(t, err)
@@ -174,7 +174,7 @@ func Test_ShouldDeployWorkerInSaasWithDifferentDockerImageTag(t *testing.T) {
 	k8Client.createSaaSCRD(t)
 
 	// when
-	err := k8Client.CreateWorkerDeployment("testTag")
+	err := k8Client.CreateWorkerDeployment("testTag", 1)
 
 	// then
 	require.NoError(t, err)
@@ -185,4 +185,41 @@ func Test_ShouldDeployWorkerInSaasWithDifferentDockerImageTag(t *testing.T) {
 	assert.Equal(t, "worker", deploymentList.Items[0].Name)
 	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.brokerUrl=zeebe-service:26500")
 	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Image, "testTag")
+}
+
+func Test_ShouldDeployWorkerWithDifferentPollingDelay(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+
+	// when
+	err := k8Client.CreateWorkerDeployment("testTag", 50)
+
+	// then
+	require.NoError(t, err)
+	deploymentList, err := k8Client.Clientset.AppsV1().Deployments(k8Client.GetCurrentNamespace()).List(context.TODO(), metav1.ListOptions{})
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, len(deploymentList.Items))
+	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.worker.pollingDelay=50ms")
+}
+
+func Test_ShouldDeployWorkerWithDefaults(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+
+	// when
+	err := k8Client.CreateWorkerDeploymentDefault()
+
+	// then
+	require.NoError(t, err)
+	deploymentList, err := k8Client.Clientset.AppsV1().Deployments(k8Client.GetCurrentNamespace()).List(context.TODO(), metav1.ListOptions{})
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, len(deploymentList.Items))
+	assert.Equal(t, "worker", deploymentList.Items[0].Name)
+	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.brokerUrl=zeebe-service:26500")
+	assert.Equal(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Image, "gcr.io/zeebe-io/worker:zeebe")
+	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.worker.pollingDelay=1ms")
 }

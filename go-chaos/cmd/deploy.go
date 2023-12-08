@@ -85,7 +85,7 @@ The workers can be used as part of some chaos experiments to complete process in
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			err = k8Client.CreateWorkerDeployment(DockerImageTag)
+			err = k8Client.CreateWorkerDeployment(DockerImageTag, flags.pollingDelayMs)
 			ensureNoError(err)
 
 			internal.LogInfo("Worker successfully deployed to the current namespace: %s", k8Client.GetCurrentNamespace())
@@ -123,5 +123,7 @@ The process models allow to execute chaos experiments.`,
 		"Specify how many different versions of a default BPMN and DMN model should be deployed. Useful for testing deployment distribution.")
 
 	deployCmd.AddCommand(deployWorkerCmd)
+	deployWorkerCmd.Flags().IntVar(&flags.pollingDelayMs, "pollingDelay", 1, "Specifies the worker's polling interval in milliseconds")
+
 	deployCmd.AddCommand(deployChaosModels)
 }

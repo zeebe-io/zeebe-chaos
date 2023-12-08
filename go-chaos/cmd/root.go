@@ -46,6 +46,9 @@ type Flags struct {
 	broker2Role        string
 	broker2NodeId      int
 
+	// deploy worker
+	pollingDelayMs int
+
 	// backup
 	backupId string
 
@@ -103,7 +106,7 @@ func NewCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&JsonLogging, "jsonLogging", "", false, "json logging output")
 	rootCmd.PersistentFlags().StringVar(&flags.kubeConfigPath, "kubeconfig", "", "path the the kube config that will be used")
 	rootCmd.PersistentFlags().StringVarP(&flags.namespace, "namespace", "n", "", "connect to the given namespace")
-	rootCmd.PersistentFlags().StringVarP(&DockerImageTag, "dockerImageTag", "", "", "use the given docker image tag for deployed resources, e.g. worker/starter")
+	rootCmd.PersistentFlags().StringVarP(&DockerImageTag, "dockerImageTag", "", DockerImageTag, "use the given docker image tag for deployed resources, e.g. worker/starter")
 
 	AddBackupCommand(rootCmd, &flags)
 	AddBrokersCommand(rootCmd, &flags)

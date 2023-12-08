@@ -20,10 +20,13 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	v12 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	"strings"
 )
 
 // k8Deployments holds our static k8 manifests, which are copied with the go:embed directive
@@ -48,10 +51,12 @@ func (c K8Client) getGatewayDeployment() (*v12.Deployment, error) {
 	}
 	return &deploymentList.Items[0], err
 }
+
 func (c K8Client) CreateWorkerDeploymentDefault() error {
-	return c.CreateWorkerDeployment("zeebe")
+	return c.CreateWorkerDeployment("zeebe", 1)
 }
-func (c K8Client) CreateWorkerDeployment(dockerImageTag string) error {
+
+func (c K8Client) CreateWorkerDeployment(dockerImageTag string, pollingDelayMs int) error {
 	workerBytes, err := k8Deployments.ReadFile("manifests/worker.yaml")
 	if err != nil {
 		return err
@@ -71,15 +76,12 @@ func (c K8Client) CreateWorkerDeployment(dockerImageTag string) error {
 		// We are in self-managed environment
 		// We have to update the service url such that our workers can connect
 		// We expect that the used helm release name is == to the namespace name
-
-		// JAVA_OPTIONS
-		envVar := container.Env[0]
-		envVar.Value = strings.Replace(envVar.Value, "zeebe-service:26500", fmt.Sprintf("%s-zeebe-gateway:26500", c.GetCurrentNamespace()), 1)
-		container.Env[0] = envVar
+		replaceJavaOptions(container, "zeebe-service:26500", fmt.Sprintf("%s-zeebe-gateway:26500", c.GetCurrentNamespace()))
 	}
-	container.Image = strings.Replace(container.Image, "REPLACE", dockerImageTag, 1)
-	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), deployment, metav1.CreateOptions{})
+	container.Image = strings.Replace(container.Image, "{{ imageTag }}", dockerImageTag, 1)
+	replaceJavaOptions(container, "{{ pollingDelay }}", strconv.FormatInt(int64(pollingDelayMs), 10)+"ms")
 
+	_, err = c.Clientset.AppsV1().Deployments(c.GetCurrentNamespace()).Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		if err.Error() == "deployments.apps \"worker\" already exists" {
 			LogInfo("Workers have already deployed, update deployment.")
@@ -91,4 +93,11 @@ func (c K8Client) CreateWorkerDeployment(dockerImageTag string) error {
 		}
 	}
 	return err
+}
+
+// Replaces a given string for a substitution in the JAVA_OPTIONS env var
+func replaceJavaOptions(container *v1.Container, value string, subst string) {
+	envVar := container.Env[0]
+	envVar.Value = strings.Replace(envVar.Value, value, subst, 1)
+	container.Env[0] = envVar
 }
