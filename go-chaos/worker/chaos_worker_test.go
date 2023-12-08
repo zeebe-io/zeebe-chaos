@@ -186,7 +186,8 @@ func Test_ShouldSendExperimentsForClusterPlan(t *testing.T) {
 	// then
 	assert.True(t, fakeJobClient.Succeeded)
 	assert.Equal(t, 123, fakeJobClient.Key)
-	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan("Production - S", "8.4.0-SNAPSHOT")
+	// as we don't have a version in this test, we should omit version bounded experiments
+	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan("Production - S", "")
 	require.NoError(t, err)
 	assert.Equal(t, experiments, fakeJobClient.Variables)
 }
