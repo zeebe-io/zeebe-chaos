@@ -76,6 +76,9 @@ type Flags struct {
 	instanceCount  int
 	jobCount       int
 	jobType        string
+
+	// cluster
+	changeId int
 }
 
 var Version = "development"

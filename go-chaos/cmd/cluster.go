@@ -17,10 +17,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
 func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
@@ -33,15 +35,24 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 		Use:   "status",
 		Short: "Queries the current cluster topology",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return queryTopology(flags)
+			return printCurrentTopology(flags)
+		},
+	}
+	var waitCommand = &cobra.Command{
+		Use:   "wait",
+		Short: "Waits for a topology change to complete",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return waitForChange(flags)
 		},
 	}
 
 	rootCmd.AddCommand(clusterCommand)
 	clusterCommand.AddCommand(statusCommand)
+	clusterCommand.AddCommand(waitCommand)
+	waitCommand.Flags().IntVar(&flags.changeId, "changeId", 0, "The id of the change to wait for")
 }
 
-func queryTopology(flags *Flags) error {
+func printCurrentTopology(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
@@ -55,37 +66,86 @@ func queryTopology(flags *Flags) error {
 	port := 9600
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
+
+	topology, err := queryTopology(port)
+	if err != nil {
+		return err
+	}
+	formatted, err := json.MarshalIndent(topology, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(formatted))
+	return nil
+}
+
+func waitForChange(flags *Flags) error {
+	k8Client, err := createK8ClientWithFlags(flags)
+	if err != nil {
+		panic(err)
+	}
+
+	err = k8Client.AwaitReadiness()
+	if err != nil {
+		return err
+	}
+
+	port := 9600
+	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	defer closePortForward()
+
+	for {
+		topology, err := queryTopology(port)
+		if err != nil {
+			return err
+		}
+		if topology.LastChange != nil && topology.LastChange.Id == int64(flags.changeId) {
+			if topology.LastChange.Status == "COMPLETED" {
+				internal.LogInfo("Change %d completed successfully", flags.changeId)
+				return nil
+			} else {
+				return fmt.Errorf("change %d failed with status %s", flags.changeId, topology.LastChange.Status)
+			}
+		} else if topology.LastChange != nil && topology.LastChange.Id > int64(flags.changeId) {
+			internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", flags.changeId, topology.LastChange.Id)
+			return nil
+		} else if topology.PendingChange != nil && topology.PendingChange.Id == int64(flags.changeId) {
+			competed := len(topology.PendingChange.Completed)
+			pending := len(topology.PendingChange.Pending)
+			total := competed + pending
+			internal.LogInfo("Change %d is %s with %d/%d operations complete", flags.changeId, topology.PendingChange.Status, competed, total)
+		} else {
+			internal.LogInfo("Change %d not yet started", flags.changeId)
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func queryTopology(port int) (*CurrentTopology, error) {
 	url := fmt.Sprintf("http://localhost:%d/actuator/cluster", port)
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var topology CurrentTopology
 	err = json.Unmarshal(body, &topology)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	formatted, err := json.MarshalIndent(topology, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	internal.LogInfo(fmt.Sprintf("Current topology: %s", string(formatted)))
-	return err
-
+	return &topology, nil
 }
 
 type CurrentTopology struct {
-	ChangeId      int32
+	Version       int32
 	Brokers       []BrokerState
 	LastChange    *LastChange
 	PendingChange *TopologyChange
