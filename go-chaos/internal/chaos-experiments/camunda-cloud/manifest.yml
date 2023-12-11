@@ -39,6 +39,22 @@ experiments:
   - path: worker-restart/experiment.json
     clusterPlans:
       - production-s
+  - path: job-push-gateway/restart.json
+    clusterPlans:
+      - production-s
+    minVersion: 8.4
+  - path: job-push-gateway/terminate.json
+    clusterPlans:
+      - production-s
+    minVersion: 8.4
+  - path: worker-resilience/gateway-restart.json
+    clusterPlans:
+      - production-s
+    maxVersion: 8.3
+  - path: worker-resilience/gateway-terminate.json
+    clusterPlans:
+      - production-s
+    minVersion: 8.3
   # only for testing
   - path: test/experiment.json
     clusterPlans:
