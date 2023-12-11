@@ -123,6 +123,7 @@ func NewCmd() *cobra.Command {
 	AddVerifyCommands(rootCmd, &flags)
 	AddVersionCmd(rootCmd)
 	AddWorkerCmd(rootCmd)
+	AddClusterCommands(rootCmd, &flags)
 
 	return rootCmd
 }
