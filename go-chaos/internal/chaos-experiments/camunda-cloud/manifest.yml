@@ -1,0 +1,50 @@
+# Lists all the experiments that the chaos-worker can run.
+# Each experiment must use the following structure:
+# 
+# - path: path to the JSON file relative to the manifest
+#   clusterPlans: a list of cluster plans the experiment can run on
+#   minVersion: the minimum (inclusive) version of the target cluster the experiment can run against
+#   maxVersion: the maximum (inclusive) version of the target cluster the experiment can run against
+#
+# Both minVersion and maxVersion should only be the major and minor versions, e.g. 8.3, 8.4, etc.
+# minVersion and maxVersion are both optional.
+experiments:
+  - path: broker-dataloss/experiment.json
+    clusterPlans:
+      - production-s
+  - path: deployment-distribution/experiment.json
+    clusterPlans:
+      - production-s
+  - path: follower-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: follower-terminate/experiment.json
+    clusterPlans:
+      - production-s
+  - path: leader-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: leader-terminate/experiment.json
+    clusterPlans:
+      - production-s
+  - path: msg-correlation/experiment.json
+    clusterPlans:
+      - production-s
+  - path: multiple-leader-restart/experiment.json
+    clusterPlans:
+      - production-s
+  - path: stress-cpu-on-broker/experiment.json
+    clusterPlans:
+      - production-s
+  - path: worker-restart/experiment.json
+    clusterPlans:
+      - production-s
+  # only for testing
+  - path: test/experiment.json
+    clusterPlans:
+      - test
+  - path: test/version-experiment.json
+    clusterPlans:
+      - test
+    minVersion: 8.3
+    maxVersion: 8.4

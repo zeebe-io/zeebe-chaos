@@ -186,7 +186,7 @@ func Test_ShouldSendExperimentsForClusterPlan(t *testing.T) {
 	// then
 	assert.True(t, fakeJobClient.Succeeded)
 	assert.Equal(t, 123, fakeJobClient.Key)
-	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan("Production - S")
+	experiments, err := chaos_experiments.ReadExperimentsForClusterPlan("Production - S", "8.4.0-SNAPSHOT")
 	require.NoError(t, err)
 	assert.Equal(t, experiments, fakeJobClient.Variables)
 }
@@ -207,7 +207,7 @@ func Test_ShouldFailWhenNoClusterPlanForReadExperimentsJob(t *testing.T) {
 	// then
 	assert.True(t, fakeJobClient.Failed)
 	assert.Equal(t, 123, fakeJobClient.Key)
-	assert.Equal(t, "open camunda-cloud/noop: file does not exist", fakeJobClient.ErrorMsg)
+	assert.Equal(t, "No experiments found for cluster plan 'noop'", fakeJobClient.ErrorMsg)
 }
 
 func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
