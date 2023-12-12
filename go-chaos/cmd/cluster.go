@@ -29,7 +29,7 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 	var clusterCommand = &cobra.Command{
 		Use:   "cluster",
 		Short: "Interact with the Cluster API",
-		Long:  "Can be used query cluster topology and to request dynamic scaling",
+		Long:  "Can be used to query cluster topology and to request dynamic scaling",
 	}
 	var statusCommand = &cobra.Command{
 		Use:   "status",
