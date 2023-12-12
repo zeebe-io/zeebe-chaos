@@ -76,6 +76,9 @@ type Flags struct {
 	instanceCount  int
 	jobCount       int
 	jobType        string
+
+	// cluster
+	changeId int
 }
 
 var Version = "development"
@@ -123,6 +126,7 @@ func NewCmd() *cobra.Command {
 	AddVerifyCommands(rootCmd, &flags)
 	AddVersionCmd(rootCmd)
 	AddWorkerCmd(rootCmd)
+	AddClusterCommands(rootCmd, &flags)
 
 	return rootCmd
 }
