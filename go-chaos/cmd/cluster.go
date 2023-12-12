@@ -67,7 +67,7 @@ func printCurrentTopology(flags *Flags) error {
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
 
-	topology, err := queryTopology(port)
+	topology, err := QueryTopology(port)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func waitForChange(flags *Flags) error {
 	timeout := (time.Minute * 25)
 	iterations := int(timeout / interval)
 	for i := 0; i < int(iterations); i++ {
-		topology, err := queryTopology(port)
+		topology, err := QueryTopology(port)
 		if err != nil {
 			return err
 		}
@@ -154,11 +154,14 @@ func describeChangeStatus(topology *CurrentTopology, changeId int64) ChangeStatu
 	}
 }
 
-func queryTopology(port int) (*CurrentTopology, error) {
+func QueryTopology(port int) (*CurrentTopology, error) {
 	url := fmt.Sprintf("http://localhost:%d/actuator/cluster", port)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("expected status code 200 but got %d", resp.StatusCode)
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
