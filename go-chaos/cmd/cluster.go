@@ -99,26 +99,52 @@ func waitForChange(flags *Flags) error {
 		if err != nil {
 			return err
 		}
-		if topology.LastChange != nil && topology.LastChange.Id == int64(flags.changeId) {
-			if topology.LastChange.Status == "COMPLETED" {
-				internal.LogInfo("Change %d completed successfully", flags.changeId)
-				return nil
-			} else {
-				return fmt.Errorf("change %d failed with status %s", flags.changeId, topology.LastChange.Status)
-			}
-		} else if topology.LastChange != nil && topology.LastChange.Id > int64(flags.changeId) {
+		changeStatus := describeChangeStatus(topology, int64(flags.changeId))
+		switch changeStatus {
+		case ChangeStatusCompleted:
+			internal.LogInfo("Change %d completed successfully", flags.changeId)
+			return nil
+		case ChangeStatusFailed:
+			internal.LogInfo("Change %d failed with status %s", flags.changeId, topology.LastChange.Status)
+			return fmt.Errorf("change %d failed with status %s", flags.changeId, topology.LastChange.Status)
+		case ChangeStatusOutdated:
 			internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", flags.changeId, topology.LastChange.Id)
 			return nil
-		} else if topology.PendingChange != nil && topology.PendingChange.Id == int64(flags.changeId) {
+		case ChangeStatusPending:
 			competed := len(topology.PendingChange.Completed)
 			pending := len(topology.PendingChange.Pending)
 			total := competed + pending
 			internal.LogInfo("Change %d is %s with %d/%d operations complete", flags.changeId, topology.PendingChange.Status, competed, total)
-		} else {
+		case ChangeStatusUnknown:
 			internal.LogInfo("Change %d not yet started", flags.changeId)
 		}
-
 		time.Sleep(5 * time.Second)
+	}
+}
+
+type ChangeStatus string
+
+const (
+	ChangeStatusOutdated  ChangeStatus = "OUTDATED"
+	ChangeStatusCompleted ChangeStatus = "COMPLETED"
+	ChangeStatusFailed    ChangeStatus = "FAILED"
+	ChangeStatusPending   ChangeStatus = "PENDING"
+	ChangeStatusUnknown   ChangeStatus = "UNKNOWN"
+)
+
+func describeChangeStatus(topology *CurrentTopology, changeId int64) ChangeStatus {
+	if topology.LastChange != nil && topology.LastChange.Id == changeId {
+		if topology.LastChange.Status == "COMPLETED" {
+			return ChangeStatusCompleted
+		} else {
+			return ChangeStatusFailed
+		}
+	} else if topology.LastChange != nil && topology.LastChange.Id > changeId {
+		return ChangeStatusOutdated
+	} else if topology.PendingChange != nil && topology.PendingChange.Id == changeId {
+		return ChangeStatusPending
+	} else {
+		return ChangeStatusUnknown
 	}
 }
 
