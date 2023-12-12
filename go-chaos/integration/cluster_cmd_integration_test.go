@@ -57,7 +57,7 @@ func Test_ShouldBeAbleToQueryTopology(t *testing.T) {
 
 func CreateZeebeContainer(t *testing.T, ctx context.Context) testcontainers.Container {
 	req := testcontainers.ContainerRequest{
-		Image:        "camunda/zeebe:SNAPSHOT",
+		Image:        "camunda/zeebe:8.4.0-alpha2",
 		ExposedPorts: []string{"26500/tcp", "9600/tcp"},
 		WaitingFor:   wait.ForHTTP("/actuator/health").WithPort("9600"),
 	}
