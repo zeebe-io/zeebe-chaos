@@ -94,7 +94,10 @@ func waitForChange(flags *Flags) error {
 	closePortForward := k8Client.MustGatewayPortForward(port, port)
 	defer closePortForward()
 
-	for {
+	interval := time.Second * 5
+	timeout := (time.Minute * 25)
+	iterations := int(timeout / interval)
+	for i := 0; i < int(iterations); i++ {
 		topology, err := queryTopology(port)
 		if err != nil {
 			return err
@@ -118,8 +121,11 @@ func waitForChange(flags *Flags) error {
 		case ChangeStatusUnknown:
 			internal.LogInfo("Change %d not yet started", flags.changeId)
 		}
-		time.Sleep(5 * time.Second)
+		internal.LogInfo("Waiting %s before checking again. Iteration %d out of %d", interval, i, iterations)
+		time.Sleep(interval)
 	}
+
+	return fmt.Errorf("change %d did not complete within 25 minutes", flags.changeId)
 }
 
 type ChangeStatus string
