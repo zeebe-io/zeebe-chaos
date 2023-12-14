@@ -43,7 +43,7 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 		Use:   "wait",
 		Short: "Waits for a topology change to complete",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return waitForChange(flags)
+			return portForwardAndWaitForChange(flags)
 		},
 	}
 	var scaleCommand = &cobra.Command{
@@ -57,9 +57,12 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 	rootCmd.AddCommand(clusterCommand)
 	clusterCommand.AddCommand(statusCommand)
 	clusterCommand.AddCommand(waitCommand)
-	waitCommand.Flags().IntVar(&flags.changeId, "changeId", 0, "The id of the change to wait for")
+	waitCommand.Flags().Int64Var(&flags.changeId, "changeId", 0, "The id of the change to wait for")
+	waitCommand.MarkFlagRequired("changeId")
 	clusterCommand.AddCommand(scaleCommand)
 	scaleCommand.Flags().IntVar(&flags.brokers, "brokers", 0, "The amount of brokers to scale to")
+	scaleCommand.MarkFlagRequired("brokers")
+	scaleCommand.Flags().BoolVar(&flags.wait, "wait", false, "Whether to wait for the scaling to complete")
 }
 
 func scaleCluster(flags *Flags) error {
@@ -89,6 +92,10 @@ func scaleCluster(flags *Flags) error {
 	_, err = k8Client.ScaleZeebeCluster(flags.brokers)
 	if err != nil {
 		return err
+	}
+
+	if flags.wait {
+		waitForChange(port, changeResponse.ChangeId)
 	}
 
 	return nil
@@ -155,7 +162,7 @@ func printCurrentTopology(flags *Flags) error {
 	return nil
 }
 
-func waitForChange(flags *Flags) error {
+func portForwardAndWaitForChange(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	if err != nil {
 		panic(err)
@@ -169,6 +176,10 @@ func waitForChange(flags *Flags) error {
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
+	return waitForChange(port, flags.changeId)
+}
+
+func waitForChange(port int, changeId int64) error {
 	interval := time.Second * 5
 	timeout := (time.Minute * 25)
 	iterations := int(timeout / interval)
@@ -177,30 +188,30 @@ func waitForChange(flags *Flags) error {
 		if err != nil {
 			return err
 		}
-		changeStatus := describeChangeStatus(topology, int64(flags.changeId))
+		changeStatus := describeChangeStatus(topology, int64(changeId))
 		switch changeStatus {
 		case ChangeStatusCompleted:
-			internal.LogInfo("Change %d completed successfully", flags.changeId)
+			internal.LogInfo("Change %d completed successfully", changeId)
 			return nil
 		case ChangeStatusFailed:
-			internal.LogInfo("Change %d failed with status %s", flags.changeId, topology.LastChange.Status)
-			return fmt.Errorf("change %d failed with status %s", flags.changeId, topology.LastChange.Status)
+			internal.LogInfo("Change %d failed with status %s", changeId, topology.LastChange.Status)
+			return fmt.Errorf("change %d failed with status %s", changeId, topology.LastChange.Status)
 		case ChangeStatusOutdated:
-			internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", flags.changeId, topology.LastChange.Id)
+			internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", changeId, topology.LastChange.Id)
 			return nil
 		case ChangeStatusPending:
 			competed := len(topology.PendingChange.Completed)
 			pending := len(topology.PendingChange.Pending)
 			total := competed + pending
-			internal.LogInfo("Change %d is %s with %d/%d operations complete", flags.changeId, topology.PendingChange.Status, competed, total)
+			internal.LogInfo("Change %d is %s with %d/%d operations complete", changeId, topology.PendingChange.Status, competed, total)
 		case ChangeStatusUnknown:
-			internal.LogInfo("Change %d not yet started", flags.changeId)
+			internal.LogInfo("Change %d not yet started", changeId)
 		}
 		internal.LogInfo("Waiting %s before checking again. Iteration %d out of %d", interval, i, iterations)
 		time.Sleep(interval)
 	}
 
-	return fmt.Errorf("change %d did not complete within 25 minutes", flags.changeId)
+	return fmt.Errorf("change %d did not complete within 25 minutes", changeId)
 }
 
 type ChangeStatus string
