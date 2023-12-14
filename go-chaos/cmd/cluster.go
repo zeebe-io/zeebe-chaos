@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,11 +46,87 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 			return waitForChange(flags)
 		},
 	}
+	var scaleCommand = &cobra.Command{
+		Use:   "scale",
+		Short: "Scales the cluster to the given size",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return scaleCluster(flags)
+		},
+	}
 
 	rootCmd.AddCommand(clusterCommand)
 	clusterCommand.AddCommand(statusCommand)
 	clusterCommand.AddCommand(waitCommand)
 	waitCommand.Flags().IntVar(&flags.changeId, "changeId", 0, "The id of the change to wait for")
+	clusterCommand.AddCommand(scaleCommand)
+	scaleCommand.Flags().IntVar(&flags.brokers, "brokers", 0, "The amount of brokers to scale to")
+}
+
+func scaleCluster(flags *Flags) error {
+	k8Client, err := createK8ClientWithFlags(flags)
+	if err != nil {
+		panic(err)
+	}
+
+	err = k8Client.AwaitReadiness()
+	if err != nil {
+		return err
+	}
+
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
+	defer closePortForward()
+
+	changeResponse, err := requestBrokerScaling(port, flags.brokers)
+	if err != nil {
+		return err
+	}
+	formatted, err := json.MarshalIndent(changeResponse, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(formatted))
+
+	_, err = k8Client.ScaleZeebeCluster(flags.brokers)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func requestBrokerScaling(port int, brokers int) (*ChangeResponse, error) {
+	brokerIds := make([]int32, brokers)
+	for i := 0; i < brokers; i++ {
+		brokerIds[i] = int32(i)
+	}
+	url := fmt.Sprintf("http://localhost:%d/actuator/cluster/brokers", port)
+	request, err := json.Marshal(brokerIds)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.Post(url, "application/json", bytes.NewReader(request))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("scaling failed with code %d", resp.StatusCode)
+	}
+
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
+
+	response, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var changeResponse ChangeResponse
+	err = json.Unmarshal(response, &changeResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &changeResponse, nil
 }
 
 func printCurrentTopology(flags *Flags) error {
@@ -175,6 +252,13 @@ func QueryTopology(port int) (*CurrentTopology, error) {
 		return nil, err
 	}
 	return &topology, nil
+}
+
+type ChangeResponse struct {
+	ChangeId         int64
+	CurrentTopology  []BrokerState
+	PlannedChanges   []Operation
+	ExpectedTopology []BrokerState
 }
 
 type CurrentTopology struct {
