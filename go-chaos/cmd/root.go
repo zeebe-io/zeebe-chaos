@@ -80,7 +80,6 @@ type Flags struct {
 	// cluster
 	changeId int64
 	brokers  int
-	wait     bool
 }
 
 var Version = "development"
