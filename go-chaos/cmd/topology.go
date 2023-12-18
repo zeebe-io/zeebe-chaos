@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -67,6 +68,9 @@ func writeTopologyToOutput(output io.Writer, response *pb.TopologyResponse) {
 }
 
 func writeTopology(response *pb.TopologyResponse, writer *tabwriter.Writer) {
+	sort.Slice(response.Brokers, func(i, j int) bool {
+		return response.Brokers[i].NodeId < response.Brokers[j].NodeId
+	})
 	for _, broker := range response.Brokers {
 		addLineToWriter(writer, createBrokerTopologyString(response.PartitionsCount, broker))
 	}
