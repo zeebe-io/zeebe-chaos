@@ -63,8 +63,7 @@ func printCurrentTopology(flags *Flags) error {
 		return err
 	}
 
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
 	topology, err := QueryTopology(port)
@@ -90,8 +89,7 @@ func waitForChange(flags *Flags) error {
 		return err
 	}
 
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
 	interval := time.Second * 5

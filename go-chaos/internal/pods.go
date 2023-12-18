@@ -215,9 +215,12 @@ func (c K8Client) RestartPod(podName string) error {
 
 // MustGatewayPortForward creates a port forwarding to a zeebe gateway with the given port.
 // Panics when port forwarding fails.
+// localPort can be 0 to let the OS choose a random, free port.
+// Returns the exposed local port and a function to close the port forwarding.
+//
 // https://github.com/gruntwork-io/terratest/blob/master/modules/k8s/tunnel.go#L187-L196
 // https://github.com/kubernetes/client-go/issues/51#issuecomment-436200428
-func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) func() {
+func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) (int, func()) {
 	names, err := c.GetGatewayPodNames()
 	if err != nil {
 		panic(err)
@@ -246,8 +249,13 @@ func (c K8Client) MustGatewayPortForward(localPort int, remotePort int) func() {
 		LogVerbose("\nError starting port forwarding tunnel: %s", err)
 		panic(err)
 	case <-portForwarder.Ready:
-		LogVerbose("Successfully created port forwarding tunnel")
-		return func() {
+		ports, err := portForwarder.GetPorts()
+		if err != nil {
+			panic(err)
+		}
+		exposedLocalPort := ports[0].Local
+		LogVerbose("Successfully created port forwarding tunnel from %d (local) to %d (remote)", exposedLocalPort, remotePort)
+		return int(exposedLocalPort), func() {
 			portForwarder.Close()
 		}
 	}

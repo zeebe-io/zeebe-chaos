@@ -56,8 +56,7 @@ func AddExportingCmds(rootCmd *cobra.Command, flags *Flags) {
 }
 
 func pauseExporting(k8Client internal.K8Client) error {
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/exporting/pause", port)
 	resp, err := http.Post(url, "", nil)
@@ -69,8 +68,7 @@ func pauseExporting(k8Client internal.K8Client) error {
 }
 
 func resumeExporting(k8Client internal.K8Client) error {
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/exporting/resume", port)
 	resp, err := http.Post(url, "", nil)

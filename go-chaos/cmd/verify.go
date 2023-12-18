@@ -54,8 +54,7 @@ Process instances are created until the required partition is reached.`,
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			port := 26500
-			closeFn := k8Client.MustGatewayPortForward(port, port)
+			port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 			defer closeFn()
 
 			zbClient, err := internal.CreateZeebeClient(port)
@@ -88,8 +87,7 @@ Process instances are created until the required partition is reached.`,
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			port := 26500
-			closeFn := k8Client.MustGatewayPortForward(port, port)
+			port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 			defer closeFn()
 
 			zbClient, err := internal.CreateZeebeClient(port)
@@ -118,8 +116,7 @@ Process instances are created until the required partition is reached.`,
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			port := 26500
-			closeFn := k8Client.MustGatewayPortForward(port, port)
+			port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 			defer closeFn()
 
 			zbClient, err := internal.CreateZeebeClient(port)

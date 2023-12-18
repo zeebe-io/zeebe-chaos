@@ -38,8 +38,7 @@ Defaults to the later, which is useful for experimenting with deployment distrib
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			port := 26500
-			closeFn := k8Client.MustGatewayPortForward(port, port)
+			port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 			defer closeFn()
 
 			zbClient, err := internal.CreateZeebeClient(port)
@@ -62,8 +61,7 @@ Useful for experimenting with deployment distribution.`,
 			k8Client, err := createK8ClientWithFlags(flags)
 			ensureNoError(err)
 
-			port := 26500
-			closeFn := k8Client.MustGatewayPortForward(port, port)
+			port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 			defer closeFn()
 
 			zbClient, err := internal.CreateZeebeClient(port)

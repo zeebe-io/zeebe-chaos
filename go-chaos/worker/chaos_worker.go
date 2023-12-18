@@ -182,8 +182,7 @@ func getTargetClusterVersion(namespace string) string {
 		return ""
 	}
 
-	port := 26500
-	closeFn := k8Client.MustGatewayPortForward(port, port)
+	port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 	defer closeFn()
 
 	zbClient, err := internal.CreateZeebeClient(port)
