@@ -99,8 +99,7 @@ func AddTerminateCommand(rootCmd *cobra.Command, flags *Flags) {
 // GracePeriod (in second) can be nil, which would mean using K8 default.
 // Returns the broker which has been restarted
 func restartBroker(k8Client internal.K8Client, nodeId int, partitionId int, role string, gracePeriod *int64) string {
-	port := 26500
-	closeFn := k8Client.MustGatewayPortForward(port, port)
+	port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 	defer closeFn()
 
 	zbClient, err := internal.CreateZeebeClient(port)

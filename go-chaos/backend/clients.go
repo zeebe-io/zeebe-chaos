@@ -20,8 +20,7 @@ import (
 )
 
 func ConnectToZeebeCluster(k8Client internal.K8Client) (zbc.Client, func(), error) {
-	port := 26500
-	closeFn := k8Client.MustGatewayPortForward(port, port)
+	port, closeFn := k8Client.MustGatewayPortForward(0, 26500)
 
 	zbClient, err := internal.CreateZeebeClient(port)
 	if err != nil {

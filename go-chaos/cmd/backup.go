@@ -193,8 +193,7 @@ func takeBackup(flags *Flags) error {
 		return err
 	}
 
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, flags.backupId)
 	resp, err := http.Post(url, "", nil)
@@ -217,8 +216,7 @@ func waitForBackup(flags *Flags) error {
 		panic(err)
 	}
 
-	port := 9600
-	closePortForward := k8Client.MustGatewayPortForward(port, port)
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
 	for {
