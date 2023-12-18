@@ -105,7 +105,8 @@ func scaleDownBrokers(k8Client internal.K8Client, port int, brokers int) (*Chang
 	ensureNoError(err)
 
 	// Wait for brokers to leave before scaling down
-	waitForChange(port, changeResponse.ChangeId)
+	err = waitForChange(port, changeResponse.ChangeId)
+	ensureNoError(err)
 	_, err = k8Client.ScaleZeebeCluster(brokers)
 
 	ensureNoError(err)
@@ -153,11 +154,6 @@ func printCurrentTopology(flags *Flags) error {
 		panic(err)
 	}
 
-	err = k8Client.AwaitReadiness()
-	if err != nil {
-		return err
-	}
-
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
@@ -179,11 +175,6 @@ func portForwardAndWaitForChange(flags *Flags) error {
 		panic(err)
 	}
 
-	err = k8Client.AwaitReadiness()
-	if err != nil {
-		return err
-	}
-
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
@@ -197,7 +188,8 @@ func waitForChange(port int, changeId int64) error {
 	for i := 0; i < int(iterations); i++ {
 		topology, err := QueryTopology(port)
 		if err != nil {
-			return err
+			internal.LogInfo("Failed to query topology: %s", err)
+			continue
 		}
 		changeStatus := describeChangeStatus(topology, int64(changeId))
 		switch changeStatus {
