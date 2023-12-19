@@ -13,7 +13,17 @@ authors: ole
 
 # Chaos Day Summary
 
-We experimented with the first version of dynamic scaling in Zeebe, adding or removing brokers for a running cluster.
+We experimented with the first version of [dynamic scaling in Zeebe](https://docs.camunda.io/docs/next/self-managed/zeebe-deployment/operations/cluster-scaling/), adding or removing brokers for a running cluster.
+
+Scaling up and down is a high-level operation that consists of many steps that need to be carried co-operatively by all brokers in the cluster.
+For example, adding new brokers first adds them to the replication group of the assigned partitions and then removes some of the older brokers from the replication group.
+Additionally, [priorities](https://docs.camunda.io/docs/next/self-managed/zeebe-deployment/configuration/priority-election/) need to be reconfigured to ensure that the cluster approaches balanced leadership eventually.
+
+This orchestration over multiple steps ensures that all partitions are replicated by at least as many brokers as configured with the `replicationFactor`.
+As always, when it comes to orchestrating distributed systems, there are many edge cases and failure modes to consider.
+
+The goal of this experiment was to verify that the operation is resilient to broker restarts.
+We can accept that operations take longer than usual to complete, but we need to make sure that the operation eventually succeeds with the expected cluster topology as result.
 
 **TL;DR;** Both scaling up and down is resilient to broker restarts, with the only effect that the operation takes longer than usual to complete.
 
@@ -21,12 +31,16 @@ We experimented with the first version of dynamic scaling in Zeebe, adding or re
 
 ## Scaling up should be resilient to broker restarts
 
-Scaling up is a high-level operation that consists of many steps that need to be carried out by all brokers in the cluster.
-New brokers need to join the replication group of the assigned partitions and then catch up with the leader.
+We start with a cluster of 3 brokers, 6 partitions and replication factor 3.
+If leadership is balanced, each broker should be leader for 2 partitions and follower for 4 partitions.
+Using more partitions than brokers allows us to scale up to more brokers, distributing the partitions such that each broker has less work to do.
+
+For this experiment, we introduce chaos by letting a random broker restart every 30 seconds.
 
 ### Expected
 
-Even when brokers are restarting, the scale operation should eventually succeed with the expected cluster topology as result.
+Even when brokers are restarting, the scale operation should eventually succeed.
+The expected cluster topology after scaling up is 6 brokers, 6 partitions and replication factor 3, leading to 3 partitions for each broker instead of 6.
 
 ### Actual
 
@@ -36,132 +50,42 @@ The current cluster topology queried with `zbchaos cluster status` shows 6 parti
 
 ```json
 {
-  "Version": 13,
   "Brokers": [
     {
       "Id": 1,
-      "State": "ACTIVE",
-      "Version": 40,
-      "LastUpdatedAt": "2023-12-18T11:16:56.452114035Z",
       "Partitions": [
         {
           "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 2
         },
         {
           "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 1
         },
         {
           "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 1
         },
         {
           "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 2
         }
       ]
     },
     {
       "Id": 2,
-      "State": "ACTIVE",
-      "Version": 34,
-      "LastUpdatedAt": "2023-12-18T11:16:35.399362365Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 0,
-      "State": "ACTIVE",
-      "Version": 44,
-      "LastUpdatedAt": "2023-12-18T11:17:22.000373993Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 1
-        }
-      ]
+      ...
     }
   ],
-  "LastChange": {
-    "Id": 12,
-    "Status": "COMPLETED",
-    "StartedAt": "2023-12-18T11:13:47.548696276Z",
-    "CompletedAt": "2023-12-18T11:17:44.207162216Z"
-  },
-  "PendingChange": null
 }
 ```
+The above is an abbreviated version of the actual output, which contains more information.
 
 All partitions are reported as healthy and leadership is balanced::
 
@@ -190,145 +114,40 @@ The scale operation succeeds and the newly reported cluster topology shows us 6 
 
 ```json
 {
-  "Version": 15,
   "Brokers": [
     {
       "Id": 1,
-      "State": "ACTIVE",
-      "Version": 47,
-      "LastUpdatedAt": "2023-12-18T15:30:19.184655204Z",
       "Partitions": [
         {
           "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 2
         },
         {
           "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 1
         }
       ]
     },
     {
       "Id": 2,
-      "State": "ACTIVE",
-      "Version": 40,
-      "LastUpdatedAt": "2023-12-18T15:30:19.111616286Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 3,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:25:07.484956052Z",
-      "Partitions": [
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 4,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:25:50.616089815Z",
-      "Partitions": [
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 5,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:30:16.949863252Z",
-      "Partitions": [
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 0,
-      "State": "ACTIVE",
-      "Version": 52,
-      "LastUpdatedAt": "2023-12-18T15:30:20.920293674Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 2
-        }
-      ]
+      ...
     }
   ],
   "LastChange": {
@@ -337,7 +156,6 @@ The scale operation succeeds and the newly reported cluster topology shows us 6 
     "StartedAt": "2023-12-18T15:12:57.790824149Z",
     "CompletedAt": "2023-12-18T15:30:20.920657536Z"
   },
-  "PendingChange": null
 }
 ```
 
@@ -376,145 +194,40 @@ We start with the cluster topology that we got as result of the previous experim
 
 ```json
 {
-  "Version": 15,
   "Brokers": [
     {
       "Id": 1,
-      "State": "ACTIVE",
-      "Version": 47,
-      "LastUpdatedAt": "2023-12-18T15:30:19.184655204Z",
       "Partitions": [
         {
           "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 2
         },
         {
           "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 1
         }
       ]
     },
     {
       "Id": 2,
-      "State": "ACTIVE",
-      "Version": 40,
-      "LastUpdatedAt": "2023-12-18T15:30:19.111616286Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 3,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:25:07.484956052Z",
-      "Partitions": [
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 4,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:25:50.616089815Z",
-      "Partitions": [
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 5,
-      "State": "ACTIVE",
-      "Version": 8,
-      "LastUpdatedAt": "2023-12-18T15:30:16.949863252Z",
-      "Partitions": [
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 0,
-      "State": "ACTIVE",
-      "Version": 52,
-      "LastUpdatedAt": "2023-12-18T15:30:20.920293674Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 2
-        }
-      ]
+      ...
     }
   ],
   "LastChange": {
@@ -523,7 +236,6 @@ We start with the cluster topology that we got as result of the previous experim
     "StartedAt": "2023-12-18T15:12:57.790824149Z",
     "CompletedAt": "2023-12-18T15:30:20.920657536Z"
   },
-  "PendingChange": null
 }
 ```
 
@@ -552,125 +264,41 @@ $ while true; do sleep 30; zbchaos restart broker --nodeId $(shuf -i 0-5 -n 1); 
 
 ### Result
 
-All 6 partitions with 3 replicas each are evenly distributed across 3 brokers:
+All 6 partitions with 3 replicas each are evenly distributed across 3 brokers, leading to 6 partitions for each broker again.
 
 ```json
 {
-  "Version": 17,
   "Brokers": [
     {
       "Id": 1,
-      "State": "ACTIVE",
-      "Version": 54,
-      "LastUpdatedAt": "2023-12-18T16:24:24.619548623Z",
       "Partitions": [
         {
           "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 2
         },
         {
           "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 1
         },
         {
           "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 1
         },
         {
           "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 3
         },
         {
           "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 2
         }
       ]
     },
     {
       "Id": 2,
-      "State": "ACTIVE",
-      "Version": 46,
-      "LastUpdatedAt": "2023-12-18T16:24:16.029577221Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 3
-        }
-      ]
+      ...
     },
     {
       "Id": 0,
-      "State": "ACTIVE",
-      "Version": 60,
-      "LastUpdatedAt": "2023-12-18T16:28:35.518105574Z",
-      "Partitions": [
-        {
-          "Id": 1,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 2,
-          "State": "ACTIVE",
-          "Priority": 1
-        },
-        {
-          "Id": 3,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 4,
-          "State": "ACTIVE",
-          "Priority": 3
-        },
-        {
-          "Id": 5,
-          "State": "ACTIVE",
-          "Priority": 2
-        },
-        {
-          "Id": 6,
-          "State": "ACTIVE",
-          "Priority": 1
-        }
-      ]
+      ...
     }
   ],
   "LastChange": {
