@@ -78,7 +78,8 @@ type Flags struct {
 	jobType        string
 
 	// cluster
-	changeId int
+	changeId int64
+	brokers  int
 }
 
 var Version = "development"
