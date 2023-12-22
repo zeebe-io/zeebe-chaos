@@ -12,7 +12,7 @@ authors: ole
 
 # Chaos Day Summary
 
-We continue our [previous expirements](../2023-12-18-Dynamically-scaling-brokers/index.md) with dynamically scaling by now also testing whether
+We continue our [previous experiments](../2023-12-18-Dynamically-scaling-brokers/index.md) with dynamically scaling by now also testing whether
 the cluster survives dataloss during the process.
 
 One goal is to verify that we haven't accidentally introduced a single point of failure in the cluster.
@@ -33,6 +33,7 @@ When the coordinator restarts without any data, it should be able to recover the
 
 To test this, we use the `zbchaos dataloss delete` and `zeebe dataloss recover` commands.
 After deleting, the broker will not restart directly, instead waiting for the `zbchaos dataloss recover` command to be executed.
+The `zbchaos dataloss recover` command only unblocks the broker and allows it to start, it does not restore any data and we rely on normal replication for that.
 
 Shortly after triggering a scale up with `zbchaos cluster scale --brokers 6`, we trigger dataloss on the coordinator with `zbchaos broker dataloss delete --nodeId 0`.
 After observing the system for a while, we then restore the coordinator with `zbchaos dataloss recover --nodeId 0`.
@@ -45,7 +46,13 @@ The scaling operation should make progress while the coordinator is down.
 
 ### Actual
 
-After starting the operation with `zbchaos cluster scale --brokers 6` we see that the operation has started.
+After starting the operation with `zbchaos cluster scale --brokers 6` we see that the operation has started:
+```
+$ zbchaos cluster scale --brokers 6
+Change 18 is IN_PROGRESS with 0/24 operations complete
+...
+```
+
 We then trigger dataloss on the coordinator with `zbchaos broker dataloss delete --nodeId 0`.
 
 After this, the operations do not make progress anymore and broker 5 is stuck trying to join partition 5:
@@ -133,11 +140,11 @@ In our example, the new set of members has size 4, one of which is the coordinat
 With 4 members, the quorum is 3, meaning that the partition can only elect a leader and process if at least 3 members are available.
 In our experiment, we made the coordinator unavailable, so we were already down to 3 members.
 Additionally, the newly joining member did not start yet because it was waiting for a successful join response from the leader.
-The newly joining member never received such a response because we took down the coordinator which was the leader of the partition.
+The newly joining member never received such a response because the joint-consensus phase was not completed.
 This resulted in only 2 out of 4 members being available, which is not enough to elect a leader.
 
-We want to improve this behavior in the future by allowing responding earlier to join requests.
-Currently, a response is only sent after leaving the joint consensus phase.
-To reduce the likelihood that the newly joining member is unavailable because it waits for a response, we can send the join response earlier, right after entering the joint consensus phase.
+We want to improve this behavior in the future but likely can't prevent it completely.
+That means that there is an increased risk of unavailable partitions during scaling.
+However, this only occurs if another broker becomes unavailable with an unfortunate timing and resolves itself automatically once the broker is available again.
 
 Zeebe issue: https://github.com/camunda/zeebe/issues/15679
