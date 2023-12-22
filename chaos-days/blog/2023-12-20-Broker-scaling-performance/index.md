@@ -128,7 +128,7 @@ This stresses the 3 brokers and we see backpressure on all partitions.
 We also see a few jobs timing out, indicating that the cluster is unable to handle this load consistency:
 ![](./perf_initial_timeouts.png)
 
-We also see that many jobs are active for much longer than 1 second, even though the workers could complete them immediately.
+We also see that many jobs are active for much longer than 1 second, even though the workers only delay completion by 50ms.
 ![](./perf_initial_job_lifetime.png)
 
 As hinted at before, much of this performance limit can be attributed to the limited IOPS of the small SSDs.
@@ -149,7 +149,7 @@ As these things usually go, we don't expect a doubling in performance but aiming
 Shortly after scaling up and after partition leadership has balanced, we see a significant improvement in backpressure.
 ![](./perf_after_backpressure.png)
 
-The job lifetime decreases dramatically, with most jobs now taking < 5ms from creation until completion.
+The job lifetime decreases dramatically, with most jobs now taking < 50ms from creation until completion.
 ![](./perf_after_job_lifetime.png)
 
 Overall processing latency improves similarly.
