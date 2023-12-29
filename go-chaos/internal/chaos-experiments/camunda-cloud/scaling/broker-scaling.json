@@ -1,0 +1,89 @@
+{
+    "version": "0.1.0",
+    "title": "Zeebe scaling brokers experiment",
+    "description": "Brokers can be scaled up and Zeebe can continue processing after scaling up.",
+    "contributions": {
+        "reliability": "high"
+    },
+    "steady-state-hypothesis": {
+        "title": "Zeebe is alive",
+        "probes": [
+            {
+                "name": "All pods should be ready",
+                "type": "probe",
+                "tolerance": 0,
+                "provider": {
+                    "type": "process",
+                    "path": "zbchaos",
+                    "arguments": ["verify", "readiness"],
+                    "timeout": 900
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "Deploy process model with catch event",
+            "type": "action",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["deploy", "process", "--processModelPath", "bpmn/msg-catch.bpmn"]
+            }
+        },
+        {
+            "type": "action",
+            "name": "Publish message to partition three",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["publish", "--partitionId", "3"]
+            }
+        },
+        {
+            "type": "action",
+            "name": "Scale up brokers",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["cluster", "scale", "--brokers", "5"]
+            }
+        },
+        {
+            "name": "All pods should be ready",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "readiness"],
+                "timeout": 900
+            }
+        },
+        {
+            "name": "Should be able to create a process instance and await the message correlation that was published before scaling.",
+            "type": "probe",
+            "tolerance": 0,
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["verify", "instance-creation",
+                    "--awaitResult",
+                    "--bpmnProcessId", "oneReceiveMsgEvent",
+                    "--variables", "{\"key\": \"2\"}"]
+            }
+        },
+        {
+            "type": "action",
+            "name": "Scale down brokers (rollback)",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["cluster", "scale", "--brokers", "3"]
+            }
+        }
+    ],
+    "rollbacks": []
+}
