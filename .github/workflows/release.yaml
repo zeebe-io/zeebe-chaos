@@ -18,10 +18,10 @@ jobs:
       run:
         working-directory: go-chaos
     permissions:
-      contents: 'read'
+      contents: 'write'
       id-token: 'write'
     env:
-      GITHUB_TOKEN: ${{ secrets.GHA_RELEASE }}
+      # GITHUB_TOKEN: ${{ secrets.GHA_RELEASE }} We use the built-in token
       RELEASE_VERSION: ${{ github.event.inputs.release }}
     steps:
     - uses: actions/checkout@v2
