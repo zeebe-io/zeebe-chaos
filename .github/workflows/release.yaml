@@ -21,6 +21,7 @@ jobs:
       contents: 'write'
       id-token: 'write'
     env:
+      GH_TOKEN: ${{ github.token }}
       # GITHUB_TOKEN: ${{ secrets.GHA_RELEASE }} We use the built-in token
       RELEASE_VERSION: ${{ github.event.inputs.release }}
     steps:
