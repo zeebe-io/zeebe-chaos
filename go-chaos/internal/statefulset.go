@@ -55,6 +55,7 @@ func (c K8Client) ScaleZeebeCluster(replicas int) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
 	err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		currentScale, err := statefulSets.GetScale(ctx, sfs.Name, meta.GetOptions{})
