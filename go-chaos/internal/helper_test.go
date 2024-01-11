@@ -123,10 +123,13 @@ func (c *K8Client) createSaaSCRD(t *testing.T) {
 }
 
 func (c K8Client) CreateStatefulSetWithLabelsAndName(t *testing.T, selector *metav1.LabelSelector, name string) {
+	replicas := int32(1)
 	_, err := c.Clientset.AppsV1().StatefulSets(c.GetCurrentNamespace()).Create(context.TODO(), &v12.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{Labels: selector.MatchLabels, Name: name},
-		Spec:       v12.StatefulSetSpec{},
-		Status:     v12.StatefulSetStatus{},
+		Spec: v12.StatefulSetSpec{
+			Replicas: &replicas,
+		},
+		Status: v12.StatefulSetStatus{Replicas: replicas, AvailableReplicas: replicas, CurrentReplicas: replicas},
 	}, metav1.CreateOptions{})
 
 	require.NoError(t, err)
