@@ -55,32 +55,31 @@ func (c K8Client) ScaleZeebeCluster(replicas int) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	statefulSets := c.Clientset.AppsV1().StatefulSets(namespace)
+	initialReplicas = int(*sfs.Spec.Replicas)
+	newReplicas := int32(replicas)
+	sfs.Spec.Replicas = &newReplicas
 	err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		currentScale, err := statefulSets.GetScale(ctx, sfs.Name, meta.GetOptions{})
-		initialReplicas = int(currentScale.Spec.Replicas)
-		if err != nil {
-			return err
-		}
-		currentScale.Spec.Replicas = int32(replicas)
-		_, err = statefulSets.UpdateScale(ctx, sfs.Name, currentScale, meta.UpdateOptions{})
+		_, err := c.Clientset.AppsV1().StatefulSets(namespace).Update(ctx, sfs, meta.UpdateOptions{})
 		return err
 	})
 	if err != nil {
 		return 0, err
 	}
-	err = wait.PollImmediateUntilWithContext(
-		ctx,
+
+	return initialReplicas, err
+}
+
+func (c K8Client) AwaitStatefulSetHasReplicasAvailable(replicas int32) error {
+	return wait.PollImmediateUntilWithContext(
+		context.TODO(),
 		1*time.Second,
 		func(ctx context.Context) (done bool, err error) {
-			scale, err := c.Clientset.AppsV1().StatefulSets(namespace).GetScale(ctx, sfs.Name, meta.GetOptions{})
+			sfs, err := c.GetZeebeStatefulSet()
 			if err != nil {
 				return false, err
 			}
-			LogInfo("Waiting for %d replicas, currently at %d ", replicas, scale.Status.Replicas)
-			return scale.Status.Replicas == int32(replicas), nil
+			LogInfo("Waiting for %d replicas, currently at %d ", replicas, sfs.Status.AvailableReplicas)
+			return sfs.Status.AvailableReplicas == replicas, nil
 		},
 	)
-
-	return initialReplicas, err
 }
