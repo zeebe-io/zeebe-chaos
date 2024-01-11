@@ -79,3 +79,21 @@ func Test_ShouldReturnErrorForNonExistingStatefulSetInSaaS(t *testing.T) {
 	require.Contains(t, err.Error(), "statefulsets.apps \"zeebe\" not found")
 	assert.Nil(t, statefulset)
 }
+
+func Test_ShouldPauseReconciliationBeforeScaling(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+	k8Client.CreateStatefulSetWithLabelsAndName(t, &metav1.LabelSelector{}, "zeebe")
+	replicas := int32(3)
+
+	// when
+	_, err := k8Client.ScaleZeebeCluster(3)
+	require.NoError(t, err)
+	statefulset, err := k8Client.GetZeebeStatefulSet()
+
+	// then
+	require.NoError(t, err)
+	assert.NotNil(t, statefulset)
+	assert.Equal(t, &replicas, statefulset.Spec.Replicas)
+}
