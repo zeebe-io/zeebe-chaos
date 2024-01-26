@@ -4,10 +4,159 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Wed, 20 Dec 2023 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 19 Jan 2024 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency</link>
+            <guid>https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency</guid>
+            <pubDate>Fri, 19 Jan 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[With the addition of end-to-end job streaming capabilities in Zeebe, we wanted to measure the improvements in job activation latency:]]></description>
+            <content:encoded><![CDATA[<p>With the addition of end-to-end job streaming capabilities in Zeebe, we wanted to measure the improvements in job activation latency:</p>
+<ul>
+<li>How much is a single job activation latency reduced?</li>
+<li>How much is the activation latency reduced between each task of the same process instance?</li>
+<li>How much is the activation latency reduced on large clusters with a high broker and partition count?</li>
+</ul>
+<p>Additionally, we wanted to guarantee that every component involved in streaming, including clients, would remain resilient in the face of load surges.</p>
+<p><strong>TL;DR;</strong> Job activation latency is greatly reduced, with task based workloads seeing up to 50% reduced overall execution latency. Completing a task now immediately triggers pushing out the next one, meaning the latency to activate the next task in a sequence is bounded by how much time it takes to process its completion in Zeebe. Activation latency is unaffected by how many partitions or brokers there in a cluster, as opposed to job polling, thus ensuring scalability of the system. Finally, reuse of gRPC's flow control mechanism ensure clients cannot be overloaded even in the face of load surges, without impacting other workloads in the cluster.</p>
+<p><a href="https://docs.camunda.io/docs/components/concepts/job-workers/#job-streaming" target="_blank" rel="noopener noreferrer">Head over to the documentation to learn how to start using job push!</a></p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="why-job-activation-latency-matters">Why job activation latency matters<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#why-job-activation-latency-matters" class="hash-link" aria-label="Direct link to Why job activation latency matters" title="Direct link to Why job activation latency matters">​</a></h2>
+<p>Jobs are one of the fundamental building blocks of Zeebe, representing primarily all tasks (e.g. service, send, user), as well as some less obvious symbols (e.g. intermediate message throw event). In essence, they represent the actual unit of work in a process, the part users will implement, i.e. the actual application code. To reduce the likelihood of a job being worked on by multiple clients at the same time, it first goes through an activation process, where it is soft-locked for a specific amount of time. Soft-locked here means anyone can still interact with it - they can complete the job, fail it, etc. Only the activation is locked out, meaning no one else can activate the job until it's timed out.</p>
+<p>This means that most workloads will consist mostly of job interactions: creation, activation, completion, etc. As such, it's critical to ensure clients receive jobs as fast as possible in order to make progress.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="polling-a-first-implementation">Polling: a first implementation<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#polling-a-first-implementation" class="hash-link" aria-label="Direct link to Polling: a first implementation" title="Direct link to Polling: a first implementation">​</a></h2>
+<p>Back in 2018, Zeebe introduced the <code>ActivateJobs</code> RPC for its gRPC clients, analogous to fetching and locking <a href="https://docs.camunda.org/manual/7.20/user-guide/process-engine/external-tasks/" target="_blank" rel="noopener noreferrer">external tasks in Camunda 7.x</a>. This endpoint allowed clients to activate fetch and activate a specific number of available jobs. In other words, it allowed them to <em>poll</em> for jobs.</p>
+<p>This was the first implementation to activate and work on jobs in Zeebe for multiple reason:</p>
+<ul>
+<li>It follows a simple request/response pattern</li>
+<li>Flow control is delegated to the client/user</li>
+<li>Most other approaches will build onto the building blocks used by polling</li>
+<li>You will likely implement polling anyway as a fallback for other approaches (e.g. pushing)</li>
+</ul>
+<p>Grossly simplified, the implementation worked like this:</p>
+<p><img loading="lazy" alt="Job polling" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/job-poll-fbf0a5b11cac5467c5daba1424bc9230.png" width="784" height="554" class="img_ev3q"></p>
+<ul>
+<li>A client initiates an <code>ActivateJobs</code> call by sending an initial request</li>
+<li>The gateway receives the request and validates it</li>
+<li>The gateway starts polling each partition synchronously one by one</li>
+<li>Whenever jobs are received from a partition, it forwards them to the client</li>
+<li>When all partitions are exhausted, or the maximum number of jobs have been activated, the request is closed</li>
+</ul>
+<p>Already we can infer certain performance bottle necks based on the following:</p>
+<ul>
+<li>Every request - whether client to gateway, or gateway to broker - adds delay to the activation latency</li>
+<li>In the worst case scenario, we have to poll <em>every</em> partition.</li>
+<li>The gateway does not know in advance which partitions have jobs available.</li>
+<li>Scaling out your clients may have adverse effects by sending out too many requests which all have to be processed independently</li>
+<li><a href="https://github.com/camunda/zeebe/issues/11813" target="_blank" rel="noopener noreferrer">If you have a lot of jobs, you can run into major performance issues when accessing the set of available jobs</a></li>
+</ul>
+<p>So if we have, say, 30 partitions, and each gateway-to-broker request takes 100ms, fetching the jobs on the last partition will take up to 3 seconds, even though the actual activation time on that partition was only 100ms.</p>
+<p>Furthermore, if we have a sequence of tasks, fetching the next task in the sequence requires, in the worst case scenario, another complete round of polling through all the partitions, even though the task may already be available.</p>
+<p>One would think a workaround to this issue would simply be to poll more often, but this can have an adverse impact: each polling request has to be processed by the brokers, and sending too many will simply flood your brokers and slow down all processing, further compounding the problem.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="long-polling-a-second-implementation">Long polling: a second implementation<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#long-polling-a-second-implementation" class="hash-link" aria-label="Direct link to Long polling: a second implementation" title="Direct link to Long polling: a second implementation">​</a></h3>
+<p>To simplify things, the Zeebe team introduced <a href="https://github.com/camunda/zeebe/issues/2825" target="_blank" rel="noopener noreferrer">long polling in 2019</a>. <a href="https://en.wikipedia.org/wiki/Push_technology#Long_polling" target="_blank" rel="noopener noreferrer">Long polling</a> is a fairly common technique to emulate a push or streaming approach while maintaing the request-response pattern of polling. Essentially, if the server has nothing to send to the client, instead of completing the request it will hold it until content is available, or a timeout is reached.</p>
+<p>In Zeebe, this means that if we did not reach the maximum number of jobs to activate after polling all partitions, the request is parked but not closed. Eventually when jobs are available, the brokers will make this information known to the gateways, who will then unpark the oldest request and start a new polling round.</p>
+<p><img loading="lazy" alt="Job polling" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/job-long-poll-87a951a59369f8452d9a3e2f36421d8e.png" width="784" height="835" class="img_ev3q"></p>
+<p>This solved certain problems:</p>
+<ul>
+<li>We reduced the amount of requests sent by clients, thus reducing load on the cluster.</li>
+<li>In some cases, we reduced the latency when activating the next task in sequence.</li>
+</ul>
+<p>However, there are still some issues:</p>
+<ul>
+<li>When receiving the notification we <em>still</em> have to poll all partitions.</li>
+<li>If you have multiple gateways, all gateways will start polling if they have parked requests. Some of them may not get any jobs, but they will still have sent requests to brokers which still all have to be processed.</li>
+<li>In high load cases, you still need another client request/poll cycle to fetch the next task in a sequence.</li>
+<li>Scaling out your clients still add more load on the system, even if the poll less often</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="job-push-third-times-the-charm">Job push: third time's the charm<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#job-push-third-times-the-charm" class="hash-link" aria-label="Direct link to Job push: third time's the charm" title="Direct link to Job push: third time's the charm">​</a></h2>
+<p>In order to solve these issues, the team decided to implement <a href="https://github.com/camunda/zeebe/issues/11231" target="_blank" rel="noopener noreferrer">a push-based approach to job activation</a>.</p>
+<p>Essentially, we added a new <code>StreamActivatedJobs</code> RPC to our gRPC protocol, a so-called <a href="https://grpc.io/docs/what-is-grpc/core-concepts/#server-streaming-rpc" target="_blank" rel="noopener noreferrer">server streaming RPC</a>. In our case, this is meant to be a long-lived stream, such that the call is completed only if the client terminates it, or if the server is shutting down.</p>
+<p>The stream itself has the following lifecycle:</p>
+<p><img loading="lazy" alt="Job push" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/job-push-a314bcca5464ddee542b00633cc58d1b.png" width="784" height="612" class="img_ev3q"></p>
+<ul>
+<li>The client initiates the stream by sending a job activation request much like with the <code>ActivateJobs</code> RPC.<!-- -->
+<ul>
+<li>Since the stream is meant to be long lived, however, there is no upper bound on the number of jobs to activate.</li>
+</ul>
+</li>
+<li>The gateway registers the new stream with all brokers in the cluster<!-- -->
+<ul>
+<li>Note that there is no direct connection between brokers and client; the gateway acts as a proxy for the client.</li>
+</ul>
+</li>
+<li>When jobs are available for activation (e.g. on creation, on timeout, on backoff, etc.), the broker activates the job and pushes it to the gateway.</li>
+<li>The gateway forwards the job to the client.</li>
+</ul>
+<p><a href="https://docs.camunda.io/docs/components/concepts/job-workers/#how-it-works" target="_blank" rel="noopener noreferrer">You can read more about the implementation as part of our docs.</a></p>
+<blockquote>
+<p>Experienced readers will immediately spot that push-based approaches run the risk of overloading the client. Thanks to the built-in flow control facilities of gRPC, we can still ensure clients are resilient in the face of load surges. See <a href="https://docs.camunda.io/docs/components/concepts/job-workers/#backpressure" target="_blank" rel="noopener noreferrer">here for an explanation</a>.</p>
+</blockquote>
+<p>This solved most, if not all, of the problems listed above:</p>
+<ul>
+<li>Brokers push jobs out immediately as they become available, removing the need for a gateway-to-broker request.</li>
+<li>Since the stream is long lived, there are almost no client requests required after the initial one.</li>
+<li>No need to poll every partition anymore.</li>
+<li>No thundering herd issues if you have many gateways all polling at the same time due to a notification.</li>
+<li>Scaling out your clients adds little to no load to the system, as idle clients simply do nothing.</li>
+<li>Even if you have a lot of jobs, in the average case, you never have to iterate over them and instead the broker pushes the job out on creation.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="tests-results-and-comparisons">Tests, results, and comparisons<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#tests-results-and-comparisons" class="hash-link" aria-label="Direct link to Tests, results, and comparisons" title="Direct link to Tests, results, and comparisons">​</a></h3>
+<p>In order to compare the advantages of pushing to polling, we did three different experiments.</p>
+<blockquote>
+<p>Note that all throughput measurements are in process instances executed per second, shortened to PI/s. Additionally, in the results shown below, dotted lines in graphs always refer to job polling measurements, and filled lines to job pushing.</p>
+</blockquote>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="cluster-specifications">Cluster specifications<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#cluster-specifications" class="hash-link" aria-label="Direct link to Cluster specifications" title="Direct link to Cluster specifications">​</a></h4>
+<p>Note that, unless specificed otherwise, we used the following clusters to run the tests: 3 brokers, 2 gateways, 3 partitions, replication factor 3.</p>
+<h5 class="anchor anchorWithStickyNavbar_LWe7" id="brokers">Brokers<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#brokers" class="hash-link" aria-label="Direct link to Brokers" title="Direct link to Brokers">​</a></h5>
+<table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>CPU request</td><td>1350m</td></tr><tr><td>Memory request</td><td>4Gi</td></tr><tr><td>CPU thread count</td><td>3</td></tr><tr><td>IO thread count</td><td>3</td></tr><tr><td>Disk type</td><td><a href="https://cloud.google.com/compute/docs/disks#disk-types" target="_blank" rel="noopener noreferrer">pd-ssd</a></td></tr><tr><td>Disk size</td><td>32Gi</td></tr></tbody></table>
+<blockquote>
+<p>Disk type, size, and vCPU count in GCP is used to determine your maximum IOPS.</p>
+</blockquote>
+<h5 class="anchor anchorWithStickyNavbar_LWe7" id="gateways">Gateways<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#gateways" class="hash-link" aria-label="Direct link to Gateways" title="Direct link to Gateways">​</a></h5>
+<table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>CPU request</td><td>450m</td></tr><tr><td>Kubernetes memory request</td><td>1Gi</td></tr><tr><td>Management thread count</td><td>2</td></tr></tbody></table>
+<h5 class="anchor anchorWithStickyNavbar_LWe7" id="workers">Workers<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#workers" class="hash-link" aria-label="Direct link to Workers" title="Direct link to Workers">​</a></h5>
+<p>To simulate work, whenever workers receive an activated job, they will wait 50ms before completing it.</p>
+<table><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody><tr><td>CPU request</td><td>500m</td></tr><tr><td>Kubernetes memory request</td><td>256Mi</td></tr><tr><td>Thread count</td><td>10</td></tr><tr><td>Max jobs active</td><td>60</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="one-task">One task<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#one-task" class="hash-link" aria-label="Direct link to One task" title="Direct link to One task">​</a></h4>
+<p>As our baseline test, we ran a constant throughput of 150 PI/s of a single task process workload:</p>
+<p><img loading="lazy" alt="A single task BPMN process: start -&amp;gt; task -&amp;gt; end" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/single-task-bpmn-99ed3a15761cf3fbe8bfdc20807d4c7e.png" width="999" height="276" class="img_ev3q"></p>
+<p>Since each job takes at least 50ms of work, the lower bound execution latency for this process is 50ms.</p>
+<p><img loading="lazy" alt="Results of 150 PI/s single task process" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/single-task-benchmark-4ef8a419140fd42094f359a54a74000b.png" width="1907" height="867" class="img_ev3q"></p>
+<p>The results show a sharp decrease in both the p50 and p99 of the job lifetime (i.e. the time between creation and completion). Since this workload only consists of a single task, this is mirrored in the overall process execution latency. Overall, we see that switching to a push approach yields a p50 latency improvement of 50%, and a p99 improvement of 75%!</p>
+<p>Additionally, we can see with job push that the Zeebe the p50 processing overhead is ~14ms, and the p99 ~390ms. For job polling, the p50 overhead is ~70ms, and the p99 overhead is ~1.7s.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="ten-tasks">Ten tasks<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#ten-tasks" class="hash-link" aria-label="Direct link to Ten tasks" title="Direct link to Ten tasks">​</a></h4>
+<p>For our next test, we ran a constant throughput of 150 PI/s of a ten tasks sequence process:</p>
+<p><img loading="lazy" alt="A ten tasks sequence BPMN process: start -&amp;gt; task_1 -&amp;gt; task_2 -&amp;gt; ... -&amp;gt; task_10 -&amp;gt; end" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/ten-tasks-bpmn-2617d2c0ddb0a87947bd2019efb66e74.png" width="2247" height="1137" class="img_ev3q"></p>
+<p>Since each job takes at least 50ms of work, the lower bound execution latency for this process is 500ms.</p>
+<p><img loading="lazy" alt="Results of 150 PI/s single task process" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/ten-tasks-benchmark-bdae0ac5942ee080b193dbe7294ced1f.png" width="1901" height="864" class="img_ev3q"></p>
+<p>The results show a sharp decrease in both the p50 and p99 of the job lifetime (i.e. the time between creation and completion). In this case, the process consists of several tasks, so the process execution latency is noticeably higher. But we can see that the p50 latency for job push is ~640ms. Overall, we see that switching to a push approach yields a p50 latency improvement of 30%, and a p99 improvement of 50%!</p>
+<p>Additionally, we can see with job push that the Zeebe the p50 processing overhead is ~140ms, and the p99 ~1.8s. For job polling, the p50 overhead is ~1.4s, and the p99 overhead is ~4.3s.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="large-cluster">Large cluster<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#large-cluster" class="hash-link" aria-label="Direct link to Large cluster" title="Direct link to Large cluster">​</a></h4>
+<p>In order to verify that the approach will scale along with the cluster size, we next compared polling and pushing with a cluster of 30 brokers and 30 partitions. Again, we tested with the single task process as above, and a constant throughput of 150 PI/s.</p>
+<p><img loading="lazy" alt="Results of 150 PI/s against a large cluster" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/thirty-partitions-benchmark-63cde3904d51c5b209efc0a1e9aad02e.png" width="1905" height="859" class="img_ev3q"></p>
+<p>For job push, we see a greatly improved p99 - since each partition is doing less work than before with 3 partitions, we can achieve much more stable performance, with the p99 being quite close to the p50.</p>
+<p>For job poll however, we see the downside of having to poll each partition in turn: the p50 is worse than before, and even though the p99 is greatly improved, we can see a wave pattern where it will spike up to 3s, so a decrease compared to the smaller cluster.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="client-backpressure--load-surges">Client backpressure &amp; load surges<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#client-backpressure--load-surges" class="hash-link" aria-label="Direct link to Client backpressure &amp; load surges" title="Direct link to Client backpressure &amp; load surges">​</a></h4>
+<p>One of the downsides of switching to a push approach, unfortunately, is that the client is now at risk of receiving more work than it can safely handle.</p>
+<p>Thankfully, HTTP/2 and gRPC both have mechanisms to ensure flow control for server streaming RPCs.</p>
+<p><a href="https://zeebe-io.github.io/zeebe-chaos/2023/11/30/Job-push-overloading" target="_blank" rel="noopener noreferrer">You can find our tests results in a separate blog post</a>.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="further-reading">Further reading<a href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency#further-reading" class="hash-link" aria-label="Direct link to Further reading" title="Direct link to Further reading">​</a></h2>
+<p>You can read more about job push here:</p>
+<ul>
+<li><a href="https://docs.camunda.io/docs/components/concepts/job-workers/#job-streaming" target="_blank" rel="noopener noreferrer">Streaming job workers</a></li>
+<li><a href="https://docs.camunda.io/docs/apis-tools/java-client/job-worker/#job-streaming" target="_blank" rel="noopener noreferrer">Job push for the Java client</a></li>
+<li><a href="https://docs.camunda.io/docs/apis-tools/go-client/job-worker/#job-streaming" target="_blank" rel="noopener noreferrer">Job push for the Go client</a></li>
+<li><a href="https://github.com/camunda-community-hub/spring-zeebe#enable-job-streaming" target="_blank" rel="noopener noreferrer">Job push for spring-zeebe</a></li>
+</ul>
+<p>Additionally, we've already written two other blog posts:</p>
+<ul>
+<li><a href="https://zeebe-io.github.io/zeebe-chaos/2023/11/30/Job-push-overloading" target="_blank" rel="noopener noreferrer">Client backpressure resilience</a></li>
+<li><a href="https://zeebe-io.github.io/zeebe-chaos/2023/12/06/Job-Push-resiliency" target="_blank" rel="noopener noreferrer">Job stream fault tolerance</a></li>
+</ul>]]></content:encoded>
+            <category>availability</category>
+        </item>
         <item>
             <title><![CDATA[Broker Scaling and Performance]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2023/12/20/Broker-scaling-performance</link>
@@ -1450,98 +1599,6 @@ Keys are assigned for other types of entities as well, like process instance cre
 <p>It might be just a trigger to get the system into stumblling, which means: after one thing takes a bit longer the processing queue gets longer and the processor is not able to catch up any more. This causes then backpressure to kick in etc.</p>
 <p>I think we need to further investigate this.</p>]]></content:encoded>
             <category>performance</category>
-        </item>
-        <item>
-            <title><![CDATA[Recovery (Fail Over) time]]></title>
-            <link>https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time</link>
-            <guid>https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time</guid>
-            <pubDate>Tue, 05 Oct 2021 00:00:00 GMT</pubDate>
-            <description><![CDATA[In the last quarter we worked on a new "feature" which is called "building state on followers". In short,]]></description>
-            <content:encoded><![CDATA[<p>In the last quarter we worked on a new "feature" which is called "building state on followers". In short,
-it means that the followers apply the events to build there state, which makes regular snapshot
-replication unnecessary and allows faster role transition between Follower-to-Leader. In this chaos
-day I wanted to experiment a bit with this property, we already did some benchmarks <a href="https://github.com/camunda-cloud/zeebe/issues/7515" target="_blank" rel="noopener noreferrer">here</a>.
-Today, I want to see how it behaves with larger state (bigger snapshots), since this needed to be
-copied in previous versions of Zeebe, and the broker had to replay more than with the newest version.</p>
-<p>If you want to now more about build state on followers check out the <a href="https://github.com/zeebe-io/enhancements/blob/master/ZEP007-build-state-on-followers.md" target="_blank" rel="noopener noreferrer">ZEP</a></p>
-<p><strong>TL;DR;</strong> In our experiment we had almost no downtime, with version 1.2, the new leader was very fast able to pick up the next work (accept new commands).</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="first-chaos-experiment">First Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#first-chaos-experiment" class="hash-link" aria-label="Direct link to First Chaos Experiment" title="Direct link to First Chaos Experiment">​</a></h2>
-<p>We will run two benchmarks one with 1.1 version and one with 1.2, to compare the differences between
-the versions. We will run three brokers, with one partition and replication factor three.</p>
-<p>In order to build up state we run the <code>starter</code> with a <code>durationLimit</code>, example cfg:</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">            value: &gt;-</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              -Dapp.brokerUrl=zell-chaos-12-zeebe-gateway:26500</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              -Dapp.starter.rate=100</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              -Dapp.starter.durationLimit=1000</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              -Dzeebe.client.requestTimeout=62000</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">              -XX:+HeapDumpOnOutOfMemoryError</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>This means that we run a rate of 100 PI/s creations over 1000 seconds. We expect at the end around
-100.000 PI, which should be enough to simulate a "big state".</p>
-<p>After executing the starters we can see in the metrics the running instances:</p>
-<p><img loading="lazy" alt="instances" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/instances-8b991c2d040baa3627ded5a001ef43d1.png" width="1187" height="191" class="img_ev3q"></p>
-<p>And that the snapshot is around 600 to 700 MB.</p>
-<p><img loading="lazy" alt="snapshot" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/snapshot-73e2affb2bb52e3c38343994b6b7bf7f.png" width="591" height="304" class="img_ev3q"></p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>We expect that if we restart the current leader that a new leader is fast (under seconds) able to
-take over and continues the work. The version 1.2 should perform here much better than 1.1.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<p>Just normal bootstrap takes some time, on version 1.1:</p>
-<p><img loading="lazy" alt="base-start-up" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-start-up-990e2a69500f27068362d59e86bedbdc.png" width="2468" height="501" class="img_ev3q"></p>
-<p>For version 1.2:</p>
-<p><img loading="lazy" alt="12-start-up" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-start-up-04e2050bd718b765993f07dc097b7678.png" width="2477" height="494" class="img_ev3q"></p>
-<p>After running the starters for a certain duration and restarting the leader we can see that
-the processor recovery takes by <em>factor 10</em> longer on version 1.1. Unfortunately, we have not the
-leader transition metric in that version to compare against.</p>
-<table><thead><tr><th><strong>Version</strong></th><th><strong>1.1</strong></th><th><strong>1.2</strong></th></tr></thead><tbody><tr><td>Recovery</td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/base-recovery-bee7a028446f8d3ee578efdcfb0ce458.png"><img loading="lazy" alt="base-recovery" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-recovery-bee7a028446f8d3ee578efdcfb0ce458.png" width="1198" height="490" class="img_ev3q"></a></td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/12-recovery-fadf67de59709ef23de1048730aa1fa6.png"><img loading="lazy" alt="12-recovery" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-recovery-fadf67de59709ef23de1048730aa1fa6.png" width="1191" height="495" class="img_ev3q"></a></td></tr><tr><td>General</td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/base-recovery-general-71b7de7df76b17ee89efd539b6a3b5b3.png"><img loading="lazy" alt="base-recovery-general" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-recovery-general-71b7de7df76b17ee89efd539b6a3b5b3.png" width="1188" height="957" class="img_ev3q"></a></td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/12-recovery-general-fa5b6920c1d994b36be40ee7130c86b0.png"><img loading="lazy" alt="12-recovery-general" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-recovery-general-fa5b6920c1d994b36be40ee7130c86b0.png" width="1191" height="948" class="img_ev3q"></a></td></tr></tbody></table>
-<p><em>Sorry for the small pictures</em></p>
-<p>In general what we have seen is that it is not so easy to compare if there is no longer load on the
-system, which is the reason I did a second experiment with: A) "big state" and B) steady load.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="second-chaos-experiment">Second Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#second-chaos-experiment" class="hash-link" aria-label="Direct link to Second Chaos Experiment" title="Direct link to Second Chaos Experiment">​</a></h2>
-<p>Similar setup to the first experiment, but additionally after the "big state" is reached a steady
-load is put on the system. One starter with a rate of 100 PI/s and one worker completing some jobs.</p>
-<p>With that setup we want to verify how it affects the system if now a leader change happens.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected-1">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#expected-1" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>Similar to above expect that if we restart the current leader that a new leader is fast
-(under seconds) able to take over and continues the work. The version 1.2 should perform here much
-better than 1.1.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual-1">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#actual-1" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<table><thead><tr><th><strong>Version</strong></th><th><strong>1.1</strong></th><th><strong>1.2</strong></th></tr></thead><tbody><tr><td>Recovery</td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/base-general-state-and-throughput-recover-time-b9c20296a6c02ab22b64a90c8e5b0f3a.png"><img loading="lazy" alt="base-general-state-and-throughput-recover-time.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-general-state-and-throughput-recover-time-b9c20296a6c02ab22b64a90c8e5b0f3a.png" width="1192" height="489" class="img_ev3q"></a></td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/12-general-state-and-throughput-recovery-time-25934f696f3d76a60017fd5c85dda9ea.png"><img loading="lazy" alt="12-general-state-and-throughput-recover-time.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-general-state-and-throughput-recovery-time-25934f696f3d76a60017fd5c85dda9ea.png" width="1195" height="487" class="img_ev3q"></a></td></tr><tr><td>General</td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/base-general-state-and-throughput-recover-general-494ebfac74f239ed6ab1e40c424e6719.png"><img loading="lazy" alt="base-general-state-and-throughput-recover-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-general-state-and-throughput-recover-general-494ebfac74f239ed6ab1e40c424e6719.png" width="1187" height="953" class="img_ev3q"></a></td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/12-general-state-and-throughput-recovery-general-803fd268a252c919fb75fd5a0368a6a7.png"><img loading="lazy" alt="12-general-state-and-throughput-recover-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-general-state-and-throughput-recovery-general-803fd268a252c919fb75fd5a0368a6a7.png" width="1194" height="970" class="img_ev3q"></a></td></tr></tbody></table>
-<p>After running the experiment again, this time with load, we can see that the version 1.1 took almost
-2 minutes! The newest Zeebe version (1.2), with building state on followers, took ~80 milliseconds!</p>
-<p>We can see this much better also in the processing and throughput metrics on version 1.1 we have ~2
-minutes gap.</p>
-<p><img loading="lazy" alt="base-general-state-and-throughput-recover-general-zoom.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-general-state-and-throughput-recover-general-zoom-346e51e9a7d1c8fd37a995dcf13ec030.png" width="1185" height="650" class="img_ev3q"></p>
-<p>The exporters can recover a bit faster than the processing, but we are for a while not able to accept
-any commands.</p>
-<p>In version 1.2 on the other hand we are able to almost immediately continue with the processing, some
-metrics are not even able to show a gap in between, like the current events.</p>
-<p><img loading="lazy" alt="12-general-state-and-throughput-recover-general-zoom.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-general-state-and-throughput-recovery-general-zoom-cbb1fd991e637f0f84eded0bcb33ba3f.png" width="1191" height="680" class="img_ev3q"></p>
-<h1>Result</h1>
-<p>In general, we were able to show that the new approach of building state on followers, gives us an
-excellent benefit in transitioning between Follower and Leader. Furthermore, it allows us to handle
-much larger state, since this doesn't need to be replicated on a regular basis.</p>
-<h1>Found Bugs</h1>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="running-instances">Running Instances<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#running-instances" class="hash-link" aria-label="Direct link to Running Instances" title="Direct link to Running Instances">​</a></h2>
-<p>When experimenting with the clusters, building the state and deploying the steady load I
-accidentally deployed to many workers. This caused to complete all existing running instances. The
-issues here is that on the new leader the metric is zero, which results in a negative metric.</p>
-<p><img loading="lazy" alt="broken-metric" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/broken-metric-11b08dba5d36a8392efda2c2ebe5580d.png" width="1193" height="196" class="img_ev3q"></p>
-<p>More problematic is actually that if you than build state again, you might reach the zero and if you
-observe the cluster you can't be sure what the actual count of instances are. This makes the metric
-kind of useless.</p>
-<p><img loading="lazy" alt="broken-metric" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/broken-metric-zero-5d8e95304f288e82921bf536402882d5.png" width="1191" height="825" class="img_ev3q"></p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="performance">Performance<a href="https://zeebe-io.github.io/zeebe-chaos/2021/10/05/recovery-time#performance" class="hash-link" aria-label="Direct link to Performance" title="Direct link to Performance">​</a></h2>
-<p>During the experimenting it looked like that the performance of 1.2 degraded compared to 1.1. At the
-end I had on each benchmark one starter with 100 PI/s and one worker with capacity 12.</p>
-<p>With version 1.1 it looked like we reached ~100 PI/s created/completed
-<img loading="lazy" alt="base-general-state-and-throughput-recovery-general-perf.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-general-state-and-throughput-recovery-general-perf-cfb3b2c8bfa21e6c6499cda6b58d19f0.png" width="1193" height="928" class="img_ev3q"></p>
-<p>With version 1.2 we just reached ~30, which means it reduced by factor 3.
-<img loading="lazy" alt="12-general-state-and-throughput-recovery-general-perf.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/12-general-state-and-throughput-recovery-general-perf-2e3b08a10dd42bd106818643de200518.png" width="1188" height="912" class="img_ev3q"></p>
-<p>I think we need to verify whether this is really the case.</p>
-<p><strong>Update:</strong></p>
-<p>I run again a benchmark for both versions, with one worker and one starter. It showed no significant
-difference on throughput.</p>
-<table><thead><tr><th><strong>Version</strong></th><th><strong>1.1</strong></th><th><strong>1.2</strong></th></tr></thead><tbody><tr><td>Performance</td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/perf-11-a3343c029716f6f663f5b3d93db133bc.png"><img loading="lazy" alt="perf-11" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/perf-11-a3343c029716f6f663f5b3d93db133bc.png" width="2468" height="789" class="img_ev3q"></a></td><td><a target="_blank" href="https://zeebe-io.github.io/zeebe-chaos/assets/files/perf-12-92bc1dfd1a0442252e1541a3bd41b310.png"><img loading="lazy" alt="perf-12" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/perf-12-92bc1dfd1a0442252e1541a3bd41b310.png" width="2483" height="786" class="img_ev3q"></a></td></tr></tbody></table>
-<p>My current assumption is that it was related to the previous build up state and switching between
-different worker configurations etc. Let us see whether we can observe this again.</p>
-<p><strong>Update 2:</strong></p>
-<p>The second benchmark failed several days again, without any intervention. I investigated that issue further and it seem to be related to frequent install requests, which are sent by the leader. See for more information the related issue <a href="https://github.com/camunda-cloud/zeebe/issues/7955" target="_blank" rel="noopener noreferrer">https://github.com/camunda-cloud/zeebe/issues/7955</a></p>]]></content:encoded>
-            <category>availability</category>
         </item>
     </channel>
 </rss>
