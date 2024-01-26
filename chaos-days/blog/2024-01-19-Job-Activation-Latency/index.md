@@ -120,7 +120,7 @@ This solved most, if not all, of the problems listed above:
 
 ### Tests, results, and comparisons
 
-In order to compare the advantages of pushing to polling, we three different experiments. 
+In order to compare the advantages of pushing to polling, we did three different experiments. 
 
 > Note that all throughput measurements are in process instances executed per second, shortened to PI/s. Additionally, in the results shown below, dotted lines in graphs always refer to job polling measurements, and filled lines to job pushing.
 
