@@ -139,7 +139,7 @@ Note that, unless specificed otherwise, we used the following clusters to run th
 | Disk type | [pd-ssd](https://cloud.google.com/compute/docs/disks#disk-types) |
 | Disk size | 32Gi |
 
-> Disk type, size, and vCPU count in GCP is used to determin your maximum IOPS.
+> Disk type, size, and vCPU count in GCP is used to determine your maximum IOPS.
 
 ##### Gateways
 
