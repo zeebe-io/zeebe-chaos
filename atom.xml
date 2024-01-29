@@ -8,7 +8,7 @@
     <subtitle>Zeebe Chaos Blog</subtitle>
     <icon>https://zeebe-io.github.io/zeebe-chaos/img/zeebe-logo.png</icon>
     <entry>
-        <title type="html"><![CDATA[]]></title>
+        <title type="html"><![CDATA[Reducing the job activation delay]]></title>
         <id>https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency"/>
         <updated>2024-01-19T00:00:00.000Z</updated>

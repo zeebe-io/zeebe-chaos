@@ -9,6 +9,7 @@
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <item>
+            <title><![CDATA[Reducing the job activation delay]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency</link>
             <guid>https://zeebe-io.github.io/zeebe-chaos/2024/01/19/Job-Activation-Latency</guid>
             <pubDate>Fri, 19 Jan 2024 00:00:00 GMT</pubDate>
