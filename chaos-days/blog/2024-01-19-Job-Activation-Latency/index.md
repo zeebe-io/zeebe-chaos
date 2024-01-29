@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  ""
+title:  "Reducing the job activation delay"
 date:   2024-01-19
 categories: 
   - performance 
