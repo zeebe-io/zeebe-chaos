@@ -16,6 +16,7 @@ package internal
 
 import (
 	"context"
+	v1 "k8s.io/api/core/v1"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -222,4 +223,43 @@ func Test_ShouldDeployWorkerWithDefaults(t *testing.T) {
 	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.brokerUrl=zeebe-service:26500")
 	assert.Equal(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Image, "gcr.io/zeebe-io/worker:zeebe")
 	assert.Contains(t, deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value, "-Dapp.worker.pollingDelay=1ms")
+}
+
+func Test_ShouldDeployWorkerWithTolerationsForSaaS(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSCRD(t)
+
+	// when
+	err := k8Client.CreateWorkerDeploymentDefault()
+
+	// then
+	require.NoError(t, err)
+	deploymentList, err := k8Client.Clientset.AppsV1().Deployments(k8Client.GetCurrentNamespace()).List(context.TODO(), metav1.ListOptions{})
+	require.NoError(t, err)
+
+	podSpec := deploymentList.Items[0].Spec.Template.Spec
+	assert.Equal(t, 1, len(podSpec.Tolerations))
+	toleration := podSpec.Tolerations[0]
+
+	assert.Equal(t, v1.TolerationOpEqual, toleration.Operator)
+	assert.Equal(t, v1.TaintEffectNoSchedule, toleration.Effect)
+	assert.Equal(t, "components.gke.io/camunda-managed-components", toleration.Key)
+	assert.Equal(t, "true", toleration.Value)
+}
+
+func Test_ShouldDeployWorkerWithoutTolerationsForSM(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+
+	// when
+	err := k8Client.CreateWorkerDeploymentDefault()
+
+	// then
+	require.NoError(t, err)
+	deploymentList, err := k8Client.Clientset.AppsV1().Deployments(k8Client.GetCurrentNamespace()).List(context.TODO(), metav1.ListOptions{})
+	require.NoError(t, err)
+
+	podSpec := deploymentList.Items[0].Spec.Template.Spec
+	assert.Equal(t, 0, len(podSpec.Tolerations))
 }

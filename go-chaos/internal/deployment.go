@@ -77,7 +77,25 @@ func (c K8Client) CreateWorkerDeployment(dockerImageTag string, pollingDelayMs i
 		// We have to update the service url such that our workers can connect
 		// We expect that the used helm release name is == to the namespace name
 		replaceJavaOptions(container, "zeebe-service:26500", fmt.Sprintf("%s-zeebe-gateway:26500", c.GetCurrentNamespace()))
+	} else {
+		// Required to schedule a pod on SaaS
+		// https://github.com/camunda-cloud/team-sre/blob/main/docs/gke_taints_tolerations.md
+		//
+		// tolerations:
+		//	 - effect: NoSchedule
+		//	   key: components.gke.io/camunda-managed-components
+		//	   operator: Equal
+		//	   value: "true"
+		deployment.Spec.Template.Spec.Tolerations = []v1.Toleration{
+			{
+				Effect:   v1.TaintEffectNoSchedule,
+				Operator: v1.TolerationOpEqual,
+				Key:      "components.gke.io/camunda-managed-components",
+				Value:    "true",
+			},
+		}
 	}
+
 	container.Image = strings.Replace(container.Image, "{{ imageTag }}", dockerImageTag, 1)
 	replaceJavaOptions(container, "{{ pollingDelay }}", strconv.FormatInt(int64(pollingDelayMs), 10)+"ms")
 
