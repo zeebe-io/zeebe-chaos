@@ -21,7 +21,10 @@ import (
 
 func getSelfManagedZeebeStatefulSetLabels() string {
 	labelSelector := metav1.LabelSelector{
-		MatchLabels: map[string]string{"app.kubernetes.io/name": "zeebe"},
+		MatchLabels: map[string]string{
+			"app.kubernetes.io/component": "zeebe-broker",
+			"app.kubernetes.io/name":      "camunda-platform",
+		},
 	}
 	return labels.Set(labelSelector.MatchLabels).String()
 }
