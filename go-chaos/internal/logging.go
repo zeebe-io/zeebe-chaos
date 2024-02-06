@@ -47,3 +47,16 @@ func LogInfo(text string, a ...any) {
 		fmt.Println()
 	}
 }
+
+func LogError(text string, a ...any) {
+	if JsonLogging {
+		err := JsonLogger.Error()
+		if LoggingContext != nil {
+			err.Fields(LoggingContext)
+		}
+		err.Msgf(text, a...)
+	} else {
+		fmt.Printf(text, a...)
+		fmt.Println()
+	}
+}
