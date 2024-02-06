@@ -19,7 +19,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cenkalti/backoff/v4"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
@@ -59,11 +61,13 @@ func (c K8Client) isSaaSEnvironment() bool {
 	namespace := c.GetCurrentNamespace()
 	clusterId := strings.TrimSuffix(namespace, "-zeebe")
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
-	resource, err := c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
+	resource, err := backoff.RetryWithData(func() (*unstructured.Unstructured, error) {
+		return c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
+	}, backoff.NewExponentialBackOff())
 
 	if err != nil {
-		LogInfo("Failed to retrieve SaaS CRD, fallback to self-managed mode. %v", err)
-		return false
+		LogError("Failed to check for SaaS CRD, can't proceed without knowing if this is SaaS or Self-Managed: %v", err)
+		panic(err)
 	}
 	return resource != nil
 }
