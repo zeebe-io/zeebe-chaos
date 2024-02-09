@@ -17,6 +17,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"strings"
 
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,15 +56,15 @@ func (c K8Client) setPauseFlag(pauseEnabled bool) error {
 	return err
 }
 
-func (c K8Client) isSaaSEnvironment() bool {
+func (c K8Client) isSaaSEnvironment() (bool, error) {
 	namespace := c.GetCurrentNamespace()
 	clusterId := strings.TrimSuffix(namespace, "-zeebe")
 	zeebeCrd := schema.GroupVersionResource{Group: "cloud.camunda.io", Version: "v1alpha1", Resource: "zeebeclusters"}
 	resource, err := c.DynamicClient.Resource(zeebeCrd).Get(context.TODO(), clusterId, meta.GetOptions{})
 
-	if err != nil {
-		LogInfo("Failed to retrieve SaaS CRD, fallback to self-managed mode. %v", err)
-		return false
+	if errors.IsNotFound(err) {
+		return false, nil
 	}
-	return resource != nil
+
+	return resource != nil, err
 }
