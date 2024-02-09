@@ -15,9 +15,16 @@
 package internal
 
 import (
+	"errors"
+	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamicFake "k8s.io/client-go/dynamic/fake"
+	k8testing "k8s.io/client-go/testing"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	k8errors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func Test_ShouldReturnTrueWhenCRDDeployed(t *testing.T) {
@@ -26,8 +33,9 @@ func Test_ShouldReturnTrueWhenCRDDeployed(t *testing.T) {
 	k8Client.createSaaSCRD(t)
 
 	// when
-	isSaaSEnvironment := k8Client.isSaaSEnvironment()
+	isSaaSEnvironment, err := k8Client.isSaaSEnvironment()
 
+	require.NoError(t, err)
 	assert.True(t, isSaaSEnvironment)
 }
 
@@ -36,7 +44,40 @@ func Test_ShouldReturnFalseWhenNoCRDDeployed(t *testing.T) {
 	k8Client := CreateFakeClient()
 
 	// when
-	isSaaSEnvironment := k8Client.isSaaSEnvironment()
+	isSaaSEnvironment, err := k8Client.isSaaSEnvironment()
 
+	require.NoError(t, err)
+	assert.False(t, isSaaSEnvironment)
+}
+
+func Test_ShouldThrowErrorWhenNoCRDDeployed(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.DynamicClient.(*dynamicFake.FakeDynamicClient).Fake.PrependReactor("get", "zeebeclusters", func(action k8testing.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("timeout")
+	})
+
+	// when
+	isSaaSEnvironment, err := k8Client.isSaaSEnvironment()
+
+	require.Error(t, err)
+	assert.False(t, isSaaSEnvironment)
+}
+
+func Test_ShouldReturnFalseOnNotFound(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.DynamicClient.(*dynamicFake.FakeDynamicClient).Fake.PrependReactor("get", "zeebeclusters", func(action k8testing.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, k8errors.NewNotFound(
+			schema.GroupResource{
+				Group:    "cloud.camunda.io",
+				Resource: "zeebeclusters"},
+			"test")
+	})
+
+	// when
+	isSaaSEnvironment, err := k8Client.isSaaSEnvironment()
+
+	require.NoError(t, err)
 	assert.False(t, isSaaSEnvironment)
 }
