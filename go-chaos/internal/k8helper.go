@@ -73,7 +73,10 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	}
 
 	client := K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}
-	client.SaaSEnv = client.isSaaSEnvironment()
+	client.SaaSEnv, err = client.isSaaSEnvironment()
+	if err != nil {
+		return client, err
+	}
 
 	if client.SaaSEnv {
 		LogVerbose("Running experiment in SaaS environment.")
