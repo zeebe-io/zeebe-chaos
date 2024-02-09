@@ -49,6 +49,26 @@ func CreateK8Client(kubeConfigPath string, namespace string) (K8Client, error) {
 }
 
 func createK8Client(settings KubernetesSettings) (K8Client, error) {
+	client, err := internalCreateClient(settings)
+	if err != nil {
+		return client, err
+	}
+
+	client.SaaSEnv, err = client.isSaaSEnvironment()
+	if err != nil {
+		return client, err
+	}
+
+	if client.SaaSEnv {
+		LogVerbose("Running experiment in SaaS environment.")
+	} else {
+		LogVerbose("Running experiment in self-managed environment.")
+	}
+
+	return client, nil
+}
+
+func internalCreateClient(settings KubernetesSettings) (K8Client, error) {
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: settings.kubeConfigPath},
 		&clientcmd.ConfigOverrides{Context: api.Context{Namespace: settings.namespace}})
@@ -73,17 +93,6 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 	}
 
 	client := K8Client{Clientset: clientset, ClientConfig: clientConfig, DynamicClient: dynamicClient}
-	client.SaaSEnv, err = client.isSaaSEnvironment()
-	if err != nil {
-		return client, err
-	}
-
-	if client.SaaSEnv {
-		LogVerbose("Running experiment in SaaS environment.")
-	} else {
-		LogVerbose("Running experiment in self-managed environment.")
-	}
-
 	return client, nil
 }
 

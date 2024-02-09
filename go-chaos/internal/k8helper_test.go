@@ -28,7 +28,7 @@ func Test_CreateK8ClientWithPath(t *testing.T) {
 	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml"}
 
 	// when
-	client, err := createK8Client(settings)
+	client, err := internalCreateClient(settings)
 
 	// then
 	assert.NoError(t, err)
@@ -40,7 +40,7 @@ func Test_CreateK8ClientWithPath(t *testing.T) {
 func Test_ShouldReturnNamespace(t *testing.T) {
 	// given
 	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml"}
-	client, err := createK8Client(settings)
+	client, err := internalCreateClient(settings)
 	require.NoError(t, err)
 
 	// when
@@ -57,7 +57,7 @@ func Test_ShouldReturnNamespace(t *testing.T) {
 func Test_ShouldReturnNamespaceOverride(t *testing.T) {
 	// given
 	settings := KubernetesSettings{kubeConfigPath: "kubeconfigtest.yml", namespace: "namespace-override"}
-	client, err := createK8Client(settings)
+	client, err := internalCreateClient(settings)
 	require.NoError(t, err)
 
 	// when
