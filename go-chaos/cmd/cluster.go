@@ -81,9 +81,6 @@ func scaleCluster(flags *Flags) error {
 	k8Client, err := createK8ClientWithFlags(flags)
 	ensureNoError(err)
 
-	err = k8Client.AwaitReadiness()
-	ensureNoError(err)
-
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 	currentTopology, err := QueryTopology(port)
