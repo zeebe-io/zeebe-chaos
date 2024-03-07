@@ -80,6 +80,8 @@ type Flags struct {
 	// cluster
 	changeId int64
 	brokers  int
+	regionId int32
+	regions  int32
 }
 
 var Version = "development"

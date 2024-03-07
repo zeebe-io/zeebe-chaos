@@ -53,15 +53,27 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 			return scaleCluster(flags)
 		},
 	}
+	var forceFailoverCommand = &cobra.Command{
+		Use:   "forceFailover",
+		Short: "Force scale down the cluster",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return forceFailover(flags)
+		},
+	}
 
 	rootCmd.AddCommand(clusterCommand)
 	clusterCommand.AddCommand(statusCommand)
 	clusterCommand.AddCommand(waitCommand)
+	clusterCommand.AddCommand(forceFailoverCommand)
 	waitCommand.Flags().Int64Var(&flags.changeId, "changeId", 0, "The id of the change to wait for")
 	waitCommand.MarkFlagRequired("changeId")
 	clusterCommand.AddCommand(scaleCommand)
 	scaleCommand.Flags().IntVar(&flags.brokers, "brokers", 0, "The amount of brokers to scale to")
 	scaleCommand.MarkFlagRequired("brokers")
+	forceFailoverCommand.Flags().Int32Var(&flags.regions, "regions", 1, "The number of regions in the cluster")
+	forceFailoverCommand.Flags().Int32Var(&flags.regionId, "regionId", 0, "The id of the region to failover to")
+	forceFailoverCommand.MarkFlagRequired("regions")
+	forceFailoverCommand.MarkFlagRequired("regionId")
 }
 
 func scaleCluster(flags *Flags) error {
@@ -123,11 +135,20 @@ func requestBrokerScaling(port int, brokers int) (*ChangeResponse, error) {
 	for i := 0; i < brokers; i++ {
 		brokerIds[i] = int32(i)
 	}
-	url := fmt.Sprintf("http://localhost:%d/actuator/cluster/brokers", port)
+	return sendScaleRequest(port, brokerIds, false)
+}
+
+func sendScaleRequest(port int, brokerIds []int32, force bool) (*ChangeResponse, error) {
+	forceParam := "false"
+	if force {
+		forceParam = "true"
+	}
+	url := fmt.Sprintf("http://localhost:%d/actuator/cluster/brokers?force=%s", port, forceParam)
 	request, err := json.Marshal(brokerIds)
 	if err != nil {
 		return nil, err
 	}
+	internal.LogInfo("Requesting scaling %s with input  %s", url, request)
 	resp, err := http.Post(url, "application/json", bytes.NewReader(request))
 	if err != nil {
 		return nil, err
@@ -220,6 +241,40 @@ func waitForChange(port int, changeId int64) error {
 	}
 
 	return fmt.Errorf("change %d did not complete within 25 minutes", changeId)
+}
+
+func forceFailover(flags *Flags) error {
+	k8Client, err := createK8ClientWithFlags(flags)
+	ensureNoError(err)
+
+	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
+	defer closePortForward()
+	currentTopology, err := QueryTopology(port)
+	ensureNoError(err)
+	if currentTopology.PendingChange != nil {
+		return fmt.Errorf("cluster is already scaling")
+	}
+
+	brokersInRegion := getBrokers(currentTopology, flags.regions, flags.regionId)
+
+	changeResponse, err := sendScaleRequest(port, brokersInRegion, true)
+	ensureNoError(err)
+
+	err = waitForChange(port, changeResponse.ChangeId)
+	ensureNoError(err)
+
+	return nil
+}
+
+func getBrokers(topology *CurrentTopology, regions int32, regionId int32) []int32 {
+	brokersInRegion := make([]int32, 0)
+	for _, b := range topology.Brokers {
+		if b.Id%regions == regionId {
+			brokersInRegion = append(brokersInRegion, b.Id)
+		}
+	}
+
+	return brokersInRegion
 }
 
 type ChangeStatus string
