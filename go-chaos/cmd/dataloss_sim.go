@@ -104,14 +104,16 @@ func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags *Flags) {
 				panic(err)
 			}
 
-			// The pod is restarting after dataloss, so it takes longer to be ready
-			err = k8Client.AwaitPodReadiness(pod.Name, 10*time.Minute)
+			if flags.awaitReadiness {
+				// The pod is restarting after dataloss, so it takes longer to be ready
+				err = k8Client.AwaitPodReadiness(pod.Name, 10*time.Minute)
 
-			if err != nil {
-				internal.LogInfo("%s", err)
-				panic(err)
+				if err != nil {
+					internal.LogInfo("%s", err)
+					panic(err)
+				}
+				internal.LogInfo("Broker %d is recovered", flags.nodeId)
 			}
-			internal.LogInfo("Broker %d is recovered", flags.nodeId)
 		},
 	}
 
@@ -122,4 +124,5 @@ func AddDatalossSimulationCmd(rootCmd *cobra.Command, flags *Flags) {
 
 	datalossDelete.Flags().IntVar(&flags.nodeId, "nodeId", 1, "Specify the id of the broker")
 	datalossRecover.Flags().IntVar(&flags.nodeId, "nodeId", 1, "Specify the id of the broker")
+	datalossRecover.Flags().BoolVar(&flags.awaitReadiness, "awaitReadiness", true, "If true wait until the recovered pod is ready")
 }

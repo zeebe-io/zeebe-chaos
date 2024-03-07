@@ -83,6 +83,9 @@ type Flags struct {
 	regionId          int32
 	regions           int32
 	replicationFactor int32
+
+	// dataloss
+	awaitReadiness bool
 }
 
 var Version = "development"
