@@ -69,6 +69,7 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 	waitCommand.MarkFlagRequired("changeId")
 	clusterCommand.AddCommand(scaleCommand)
 	scaleCommand.Flags().IntVar(&flags.brokers, "brokers", 0, "The amount of brokers to scale to")
+	scaleCommand.Flags().Int32Var(&flags.replicationFactor, "replicationFactor", -1, "The new replication factor")
 	scaleCommand.MarkFlagRequired("brokers")
 	forceFailoverCommand.Flags().Int32Var(&flags.regions, "regions", 1, "The number of regions in the cluster")
 	forceFailoverCommand.Flags().Int32Var(&flags.regionId, "regionId", 0, "The id of the region to failover to")
@@ -97,9 +98,9 @@ func scaleCluster(flags *Flags) error {
 	}
 
 	if len(currentTopology.Brokers) > flags.brokers {
-		_, err = scaleDownBrokers(k8Client, port, flags.brokers)
+		_, err = scaleDownBrokers(k8Client, port, flags.brokers, flags.replicationFactor)
 	} else if len(currentTopology.Brokers) < flags.brokers {
-		_, err = scaleUpBrokers(k8Client, port, flags.brokers)
+		_, err = scaleUpBrokers(k8Client, port, flags.brokers, flags.replicationFactor)
 	} else {
 		return fmt.Errorf("cluster is already at size %d", flags.brokers)
 	}
@@ -108,8 +109,8 @@ func scaleCluster(flags *Flags) error {
 	return nil
 }
 
-func scaleUpBrokers(k8Client internal.K8Client, port int, brokers int) (*ChangeResponse, error) {
-	changeResponse, err := requestBrokerScaling(port, brokers)
+func scaleUpBrokers(k8Client internal.K8Client, port int, brokers int, replicationFactor int32) (*ChangeResponse, error) {
+	changeResponse, err := requestBrokerScaling(port, brokers, replicationFactor)
 	ensureNoError(err)
 	_, err = k8Client.ScaleZeebeCluster(brokers)
 	ensureNoError(err)
@@ -117,8 +118,8 @@ func scaleUpBrokers(k8Client internal.K8Client, port int, brokers int) (*ChangeR
 	return changeResponse, nil
 }
 
-func scaleDownBrokers(k8Client internal.K8Client, port int, brokers int) (*ChangeResponse, error) {
-	changeResponse, err := requestBrokerScaling(port, brokers)
+func scaleDownBrokers(k8Client internal.K8Client, port int, brokers int, replicationFactor int32) (*ChangeResponse, error) {
+	changeResponse, err := requestBrokerScaling(port, brokers, replicationFactor)
 	ensureNoError(err)
 
 	// Wait for brokers to leave before scaling down
@@ -130,20 +131,23 @@ func scaleDownBrokers(k8Client internal.K8Client, port int, brokers int) (*Chang
 	return changeResponse, nil
 }
 
-func requestBrokerScaling(port int, brokers int) (*ChangeResponse, error) {
+func requestBrokerScaling(port int, brokers int, replicationFactor int32) (*ChangeResponse, error) {
 	brokerIds := make([]int32, brokers)
 	for i := 0; i < brokers; i++ {
 		brokerIds[i] = int32(i)
 	}
-	return sendScaleRequest(port, brokerIds, false)
+	return sendScaleRequest(port, brokerIds, false, replicationFactor)
 }
 
-func sendScaleRequest(port int, brokerIds []int32, force bool) (*ChangeResponse, error) {
+func sendScaleRequest(port int, brokerIds []int32, force bool, replicationFactor int32) (*ChangeResponse, error) {
 	forceParam := "false"
 	if force {
 		forceParam = "true"
 	}
 	url := fmt.Sprintf("http://localhost:%d/actuator/cluster/brokers?force=%s", port, forceParam)
+	if replicationFactor > 0 {
+		url = url + fmt.Sprintf("&replicationFactor=%d", replicationFactor)
+	}
 	request, err := json.Marshal(brokerIds)
 	if err != nil {
 		return nil, err
@@ -257,7 +261,7 @@ func forceFailover(flags *Flags) error {
 
 	brokersInRegion := getBrokers(currentTopology, flags.regions, flags.regionId)
 
-	changeResponse, err := sendScaleRequest(port, brokersInRegion, true)
+	changeResponse, err := sendScaleRequest(port, brokersInRegion, true, -1)
 	ensureNoError(err)
 
 	err = waitForChange(port, changeResponse.ChangeId)
