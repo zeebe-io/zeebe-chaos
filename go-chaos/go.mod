@@ -3,7 +3,7 @@ module github.com/zeebe-io/zeebe-chaos/go-chaos
 go 1.19
 
 require (
-	github.com/camunda/zeebe/clients/go/v8 v8.4.4
+	github.com/camunda/zeebe/clients/go/v8 v8.4.5
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
