@@ -39,7 +39,7 @@ The init container exits and the zeebe container will be started.
 func (c K8Client) ApplyInitContainerPatch() error {
 	busyBoxImage := "busybox:latest"
 	if c.SaaSEnv {
-		busyBoxImage = "gcr.io/camunda-saas-registry/busybox:1.36.1"
+		busyBoxImage = "europe-docker.pkg.dev/camunda-saas-registry/vendor/busybox:1.36.1"
 	}
 	// apply config map
 	err := createConfigMapForInitContainer(c)
