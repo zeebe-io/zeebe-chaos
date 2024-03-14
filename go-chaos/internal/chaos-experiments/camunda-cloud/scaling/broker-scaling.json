@@ -52,6 +52,16 @@
             }
         },
         {
+            "type": "action",
+            "name": "Wait for scale up to complete",
+            "provider": {
+                "type": "process",
+                "path": "zbchaos",
+                "arguments": ["cluster", "wait"],
+                "timeout": 900
+            }
+        },
+        {
             "name": "All pods should be ready",
             "type": "probe",
             "tolerance": 0,

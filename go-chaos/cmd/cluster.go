@@ -111,7 +111,6 @@ func scaleUpBrokers(k8Client internal.K8Client, port int, brokers int, replicati
 	ensureNoError(err)
 	_, err = k8Client.ScaleZeebeCluster(brokers)
 	ensureNoError(err)
-	waitForChange(port, changeResponse.ChangeId)
 	return changeResponse, nil
 }
 
