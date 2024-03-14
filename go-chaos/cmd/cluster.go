@@ -99,7 +99,8 @@ func scaleCluster(flags *Flags) error {
 	} else if len(currentTopology.Brokers) < flags.brokers {
 		_, err = scaleUpBrokers(k8Client, port, flags.brokers, flags.replicationFactor)
 	} else {
-		return fmt.Errorf("cluster is already at size %d", flags.brokers)
+		internal.LogInfo("cluster is already at size %d", flags.brokers)
+		return nil
 	}
 	ensureNoError(err)
 
