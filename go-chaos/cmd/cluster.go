@@ -66,7 +66,6 @@ func AddClusterCommands(rootCmd *cobra.Command, flags *Flags) {
 	clusterCommand.AddCommand(waitCommand)
 	clusterCommand.AddCommand(forceFailoverCommand)
 	waitCommand.Flags().Int64Var(&flags.changeId, "changeId", 0, "The id of the change to wait for")
-	waitCommand.MarkFlagRequired("changeId")
 	clusterCommand.AddCommand(scaleCommand)
 	scaleCommand.Flags().IntVar(&flags.brokers, "brokers", 0, "The amount of brokers to scale to")
 	scaleCommand.Flags().Int32Var(&flags.replicationFactor, "replicationFactor", -1, "The new replication factor")
@@ -218,6 +217,16 @@ func waitForChange(port int, changeId int64) error {
 		if err != nil {
 			internal.LogInfo("Failed to query topology: %s", err)
 			continue
+		}
+		if changeId <= 0 {
+			if topology.PendingChange != nil {
+				changeId = topology.PendingChange.Id
+			} else if topology.LastChange != nil {
+				changeId = topology.LastChange.Id
+			} else {
+				internal.LogInfo("No change exists")
+				return nil
+			}
 		}
 		changeStatus := describeChangeStatus(topology, int64(changeId))
 		switch changeStatus {
