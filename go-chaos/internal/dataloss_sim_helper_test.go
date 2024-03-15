@@ -35,7 +35,7 @@ func Test_ShouldApplyPatchInSaaS(t *testing.T) {
 	require.NoError(t, result)
 	statefulset, _ := k8Client.GetZeebeStatefulSet()
 	busyBoxImageName := statefulset.Spec.Template.Spec.InitContainers[0].Image
-	assert.Equal(t, "gcr.io/camunda-saas-registry/busybox:1.36.1", busyBoxImageName)
+	assert.Equal(t, "europe-docker.pkg.dev/camunda-saas-registry/vendor/busybox:1.36.1", busyBoxImageName)
 }
 
 func Test_ShouldApplyPatchInSelfManaged(t *testing.T) {
