@@ -99,7 +99,7 @@ func (c K8Client) SetUserToRoot() error {
 						{
 							"name": "zeebe",
 							"securityContext":{
-								"runAsUser": 0
+								"runAsUser": 1000
 							}
 						}]
 				}

@@ -41,7 +41,7 @@ func (c K8Client) ApplyNetworkPatch() error {
 						{
 							"name": "zeebe",
 							"securityContext":{
-								"runAsUser": 0,
+								"runAsUser": 1000,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
@@ -72,7 +72,7 @@ func (c K8Client) ApplyNetworkPatchOnGateway() error {
 						{
 							"name": "zeebe-gateway",
 							"securityContext":{
-								"runAsUser": 0,
+								"runAsUser": 1000,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
