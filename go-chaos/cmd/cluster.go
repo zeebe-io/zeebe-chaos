@@ -272,7 +272,7 @@ func forceFailover(flags *Flags) error {
 	changeResponse, err := sendScaleRequest(port, brokersInRegion, true, -1)
 	ensureNoError(err)
 
-	timeout := time.Minute * 25
+	timeout := time.Minute * 5
 	err = waitForChange(port, changeResponse.ChangeId, timeout)
 	ensureNoError(err)
 
