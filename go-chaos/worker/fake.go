@@ -16,6 +16,7 @@ package worker
 
 import (
 	"context"
+	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/commands"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
@@ -25,12 +26,13 @@ import (
 type FakeJobClient struct {
 	worker.JobClient
 
-	Key        int
-	RetriesVal int
-	ErrorMsg   string
-	Failed     bool
-	Succeeded  bool
-	Variables  interface{}
+	Key          int
+	RetriesVal   int
+	RetryBackoff time.Duration
+	ErrorMsg     string
+	Failed       bool
+	Succeeded    bool
+	Variables    interface{}
 }
 
 type FakeCompleteClient struct {
@@ -81,6 +83,11 @@ func (f *FakeFailClient) JobKey(key int64) commands.FailJobCommandStep2 {
 
 func (f *FakeFailClient) Retries(retries int32) commands.FailJobCommandStep3 {
 	f.JobClient.RetriesVal = int(retries)
+	return f
+}
+
+func (f *FakeFailClient) RetryBackoff(retryBackoff time.Duration) commands.FailJobCommandStep3 {
+	f.JobClient.RetryBackoff = retryBackoff
 	return f
 }
 
