@@ -107,7 +107,9 @@ func HandleZbChaosJob(client worker.JobClient, job entities.Job, commandRunner C
 	err = commandRunner(commandArgs, commandCtx)
 	if err != nil {
 		internal.LogInfo("Error on running command. [key: %d, args: %s]. Error: %s", job.Key, commandArgs, err.Error())
-		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries - 1).Send(ctx)
+		backoffDuration := time.Duration(10) * time.Second
+		// Do not reduce number of retries. The failed job can be retried several times until the configured timeout in chaos action provider
+		_, _ = client.NewFailJobCommand().JobKey(job.Key).Retries(job.Retries).RetryBackoff(backoffDuration).Send(ctx)
 		return
 	}
 

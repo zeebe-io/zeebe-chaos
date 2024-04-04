@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
 	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
@@ -237,7 +238,9 @@ func Test_ShouldFailJobWhenHandleFails(t *testing.T) {
 	// then
 	assert.True(t, fakeJobClient.Failed)
 	assert.Equal(t, 123, fakeJobClient.Key)
-	assert.Equal(t, 2, fakeJobClient.RetriesVal)
+	// retry count is not decreased
+	assert.Equal(t, 3, fakeJobClient.RetriesVal)
+	assert.Equal(t, time.Duration(10)*time.Second, fakeJobClient.RetryBackoff)
 	var expectedArgs = []string{
 		"--namespace", "clusterId-zeebe",
 		"disconnect", "gateway",
@@ -254,7 +257,6 @@ func createVariablesAsJson() (string, error) {
 
 	marshal, err := json.Marshal(variables)
 	return string(marshal), err
-
 }
 
 func createZbChaosVariables() ZbChaosVariables {

@@ -119,7 +119,8 @@ func scaleDownBrokers(k8Client internal.K8Client, port int, brokers int, replica
 	ensureNoError(err)
 
 	// Wait for brokers to leave before scaling down
-	err = waitForChange(port, changeResponse.ChangeId)
+	timeout := time.Minute * 25
+	err = waitForChange(port, changeResponse.ChangeId, timeout)
 	ensureNoError(err)
 	_, err = k8Client.ScaleZeebeCluster(brokers)
 
@@ -204,12 +205,13 @@ func portForwardAndWaitForChange(flags *Flags) error {
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
-	return waitForChange(port, flags.changeId)
+	// Wait for shorter time. Retry and longer timeout can be configured in the chaos experiment description
+	timeout := time.Minute * 5
+	return waitForChange(port, flags.changeId, timeout)
 }
 
-func waitForChange(port int, changeId int64) error {
+func waitForChange(port int, changeId int64, timeout time.Duration) error {
 	interval := time.Second * 5
-	timeout := (time.Minute * 25)
 	iterations := int(timeout / interval)
 	for i := 0; i < int(iterations); i++ {
 		topology, err := QueryTopology(port)
@@ -270,7 +272,8 @@ func forceFailover(flags *Flags) error {
 	changeResponse, err := sendScaleRequest(port, brokersInRegion, true, -1)
 	ensureNoError(err)
 
-	err = waitForChange(port, changeResponse.ChangeId)
+	timeout := time.Minute * 5
+	err = waitForChange(port, changeResponse.ChangeId, timeout)
 	ensureNoError(err)
 
 	return nil
