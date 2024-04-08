@@ -95,11 +95,18 @@ func (c K8Client) SetUserToRoot() error {
 		"spec":{
 			"template":{
 				"spec":{
+					"securityContext":{
+						"runAsUser": 0,
+						"runAsGroup": 0,
+						"runAsNonRoot": false
+					},
 					"containers":[
 						{
 							"name": "zeebe",
 							"securityContext":{
-								"runAsUser": 0
+								"runAsUser": 0,
+								"runAsGroup": 0,
+								"runAsNonRoot": false
 							}
 						}]
 				}

@@ -37,11 +37,18 @@ func (c K8Client) ApplyNetworkPatch() error {
 		"spec":{
 			"template":{
 				"spec":{
+					"securityContext":{
+						"runAsUser": 0,
+						"runAsGroup": 0,
+						"runAsNonRoot": false
+					},
 					"containers":[
 						{
 							"name": "zeebe",
 							"securityContext":{
 								"runAsUser": 0,
+								"runAsGroup": 0,
+								"runAsNonRoot": false,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
@@ -68,11 +75,18 @@ func (c K8Client) ApplyNetworkPatchOnGateway() error {
 		"spec":{
 			"template":{
 				"spec":{
+					"securityContext":{
+						"runAsUser": 0,
+						"runAsGroup": 0,
+						"runAsNonRoot": false
+					},
 					"containers":[
 						{
 							"name": "zeebe-gateway",
 							"securityContext":{
 								"runAsUser": 0,
+								"runAsGroup": 0,
+								"runAsNonRoot": false,
 								"capabilities":{
 									"add":["NET_ADMIN"]
 								}
