@@ -26,16 +26,12 @@ func Test_DescribeChangeStatusWithPending(t *testing.T) {
 		Version: 1,
 		Brokers: []BrokerState{},
 		LastChange: &LastChange{
-			Id:          2,
-			Status:      "COMPLETED",
-			StartedAt:   "2021-09-01T12:00:00.000Z",
-			CompletedAt: "2021-09-01T12:00:00.000Z",
+			Id:     2,
+			Status: "COMPLETED",
 		},
 		PendingChange: &TopologyChange{
 			Id:              3,
 			Status:          "IN_PROGRESS",
-			StartedAt:       "2021-09-01T12:00:00.000Z",
-			CompletedAt:     "2021-09-01T12:00:00.000Z",
 			InternalVersion: 1,
 			Completed: []Operation{
 				{
@@ -82,8 +78,6 @@ func Test_DescribeChangeStatusWithoutCompleted(t *testing.T) {
 		PendingChange: &TopologyChange{
 			Id:              3,
 			Status:          "IN_PROGRESS",
-			StartedAt:       "2021-09-01T12:00:00.000Z",
-			CompletedAt:     "2021-09-01T12:00:00.000Z",
 			InternalVersion: 1,
 			Completed: []Operation{
 				{

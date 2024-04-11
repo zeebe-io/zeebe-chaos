@@ -356,11 +356,10 @@ type CurrentTopology struct {
 }
 
 type BrokerState struct {
-	Id            int32
-	State         string
-	Version       int64
-	LastUpdatedAt string
-	Partitions    []PartitionState
+	Id         int32
+	State      string
+	Version    int64
+	Partitions []PartitionState
 }
 
 type PartitionState struct {
@@ -370,17 +369,13 @@ type PartitionState struct {
 }
 
 type LastChange struct {
-	Id          int64
-	Status      string
-	StartedAt   string
-	CompletedAt string
+	Id     int64
+	Status string
 }
 
 type TopologyChange struct {
 	Id              int64
 	Status          string
-	StartedAt       string
-	CompletedAt     string
 	InternalVersion int64
 	Completed       []Operation
 	Pending         []Operation
