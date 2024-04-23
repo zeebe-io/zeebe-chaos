@@ -179,11 +179,6 @@ func prepareGatewayDisconnect(kubeConfigPath string, namespace string) (internal
 		return k8Client, nil, nil, err
 	}
 
-	err = k8Client.ApplyNetworkPatchOnGateway()
-	if err != nil {
-		return internal.K8Client{}, nil, nil, err
-	}
-
 	internal.LogVerbose("Patched deployment")
 
 	err = k8Client.AwaitReadiness()
@@ -206,11 +201,6 @@ func prepareBrokerDisconnect(kubeConfigPath string, namespace string) (internal.
 	}
 
 	err = k8Client.PauseReconciliation()
-	if err != nil {
-		return internal.K8Client{}, err
-	}
-
-	err = k8Client.ApplyNetworkPatch()
 	if err != nil {
 		return internal.K8Client{}, err
 	}

@@ -51,7 +51,7 @@ func AddStressCmd(rootCmd *cobra.Command, flags *Flags) {
 			internal.LogInfo("Put stress on %s", pod.Name)
 
 			stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
-			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
+			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, "zeebe", stressType)
 			ensureNoError(err)
 		},
 	}
@@ -69,7 +69,7 @@ func AddStressCmd(rootCmd *cobra.Command, flags *Flags) {
 			internal.LogInfo("Put stress on %s", pod.Name)
 
 			stressType := internal.StressType{CpuStress: flags.cpuStress, IoStress: flags.ioStress, MemStress: flags.memoryStress}
-			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, stressType)
+			err = internal.PutStressOnPod(k8Client, flags.timeoutSec, pod.Name, "zeebe-gateway", stressType)
 			ensureNoError(err)
 		},
 	}

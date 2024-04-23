@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"k8s.io/utils/ptr"
 	"net/http"
 	"net/url"
 	"os"
@@ -300,6 +301,35 @@ func (c K8Client) createPortForwardUrl(names []string) *url.URL {
 		SubResource("portforward").
 		URL()
 	return portForwardCreateURL
+}
+
+func (c K8Client) ExecuteCommandViaDebugContainer(podName string, containerName string, debugImage string, cmd []string) error {
+	pod, err := c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).Get(context.TODO(), podName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	name := "debug-" + rand.String(6)
+	debugContainer := v1.EphemeralContainer{
+		EphemeralContainerCommon: v1.EphemeralContainerCommon{
+			Name:    name,
+			Image:   debugImage,
+			Command: cmd,
+			SecurityContext: &v1.SecurityContext{
+				RunAsNonRoot: ptr.To(false),
+				RunAsUser:    ptr.To(int64(0)),
+				RunAsGroup:   ptr.To(int64(0)),
+				Privileged:   ptr.To(true),
+			},
+		},
+		TargetContainerName: containerName,
+	}
+	pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers, debugContainer)
+	_, err = c.Clientset.CoreV1().Pods(c.GetCurrentNamespace()).UpdateEphemeralContainers(context.TODO(), pod.Name, pod, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	LogVerbose("Debug container %s is running command %v", name, cmd)
+	return nil
 }
 
 func (c K8Client) ExecuteCmdOnPod(cmd []string, pod string) error {
