@@ -15,6 +15,9 @@
 package internal
 
 import (
+	"context"
+	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,4 +65,19 @@ func Test_shouldGetSaasGatewayLabels(t *testing.T) {
 
 	// then
 	assert.Equal(t, expected, actual, "Labels should be equal")
+}
+
+func Test_shouldRemoveNamespaceLabel(t *testing.T) {
+	// given
+	k8Client := CreateFakeClient()
+	k8Client.createSaaSNamespace(t)
+
+	// when
+	err := k8Client.disableSaaSNamespaceSecurityLabel()
+
+	// then
+	require.NoError(t, err)
+	namespace, err := k8Client.Clientset.CoreV1().Namespaces().Get(context.TODO(), k8Client.GetCurrentNamespace(), metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Empty(t, namespace.Labels)
 }
