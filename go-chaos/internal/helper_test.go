@@ -133,3 +133,14 @@ func (c K8Client) CreateStatefulSetWithLabelsAndName(t *testing.T, selector *met
 
 	require.NoError(t, err)
 }
+
+func (c *K8Client) createSaaSNamespace(t *testing.T) {
+	namespace := v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   c.GetCurrentNamespace(),
+			Labels: map[string]string{"pod-security.kubernetes.io/enforce": "true"},
+		},
+	}
+	_, err := c.Clientset.CoreV1().Namespaces().Create(context.TODO(), &namespace, metav1.CreateOptions{})
+	require.NoError(t, err)
+}

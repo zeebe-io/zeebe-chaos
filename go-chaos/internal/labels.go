@@ -15,6 +15,7 @@
 package internal
 
 import (
+	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -83,4 +84,17 @@ func (c K8Client) getWorkerLabels() string {
 		MatchLabels: map[string]string{"app": "worker"},
 	}
 	return labels.Set(labelSelector.MatchLabels).String()
+}
+
+func (c K8Client) disableSaaSNamespaceSecurityLabel() error {
+	ns, err := c.Clientset.CoreV1().Namespaces().Get(context.TODO(), c.GetCurrentNamespace(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	LogVerbose("Removing namespace label: 'pod-security.kubernetes.io/enforce' to allow further privileges.")
+	delete(ns.Labels, "pod-security.kubernetes.io/enforce")
+
+	_, err = c.Clientset.CoreV1().Namespaces().Update(context.TODO(), ns, metav1.UpdateOptions{})
+	return err
 }
