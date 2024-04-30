@@ -61,11 +61,29 @@ func createK8Client(settings KubernetesSettings) (K8Client, error) {
 
 	if client.SaaSEnv {
 		LogVerbose("Running experiment in SaaS environment.")
+		err = prepareSaaSTargetCluster(client)
+		if err != nil {
+			return K8Client{}, err
+		}
 	} else {
 		LogVerbose("Running experiment in self-managed environment.")
 	}
 
 	return client, nil
+}
+
+func prepareSaaSTargetCluster(client K8Client) error {
+	LogVerbose("Pausing reconciliation preventive.")
+	err := client.PauseReconciliation()
+	if err != nil {
+		return err
+	}
+
+	err = client.disableSaaSNamespaceSecurityLabel()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func internalCreateClient(settings KubernetesSettings) (K8Client, error) {
