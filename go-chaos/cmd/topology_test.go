@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/camunda/zeebe/clients/go/v8/pkg/pb"
+	"github.com/camunda/camunda/clients/go/v8/pkg/pb"
 	"github.com/stretchr/testify/assert"
 )
 

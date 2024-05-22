@@ -19,9 +19,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/camunda/zeebe/clients/go/v8/pkg/entities"
-	zbworker "github.com/camunda/zeebe/clients/go/v8/pkg/worker"
-	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
+	"github.com/camunda/camunda/clients/go/v8/pkg/entities"
+	zbworker "github.com/camunda/camunda/clients/go/v8/pkg/worker"
+	"github.com/camunda/camunda/clients/go/v8/pkg/zbc"
 	"github.com/spf13/cobra"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 	worker "github.com/zeebe-io/zeebe-chaos/go-chaos/worker"
