@@ -12,7 +12,7 @@ authors: zell
 
 # Chaos Day Summary
 
-Today, we want to experiment with hot backups in SaaS and a larger runtime state in Zeebe and how it impacts the ongoing processing in Zeebe (or not?). This is part of the investigation of a recently created bug issue we wanted to verify/reproduce [#14696](https://github.com/camunda/zeebe/issues/14696).
+Today, we want to experiment with hot backups in SaaS and a larger runtime state in Zeebe and how it impacts the ongoing processing in Zeebe (or not?). This is part of the investigation of a recently created bug issue we wanted to verify/reproduce [#14696](https://github.com/camunda/camunda/issues/14696).
 
 **TL;DR;** We were able to prove that hot backups are indeed not impacting overall processing throughput in Zeebe. We found that having a full Elasticsearch disk might impact or even fail your backups, which is intransparent to the user.
 
@@ -20,7 +20,7 @@ Today, we want to experiment with hot backups in SaaS and a larger runtime state
 
 ## Chaos Experiment
 
-For the experiment, we have set up a Camunda SaaS cluster (G3-M configuration), and run the [cloud benchmark](https://github.com/camunda/zeebe/tree/main/benchmarks/setup/cloud-default) workload against it. During the experiment, we will run a stable load, which will cause to increase in the runtime state. We will create/initiate in different stages backups to verify the impact on processing depending on state size.
+For the experiment, we have set up a Camunda SaaS cluster (G3-M configuration), and run the [cloud benchmark](https://github.com/camunda/camunda/tree/main/benchmarks/setup/cloud-default) workload against it. During the experiment, we will run a stable load, which will cause to increase in the runtime state. We will create/initiate in different stages backups to verify the impact on processing depending on state size.
 
 We kept the starter rate (creation of process instance 100 PI/s) but reduced the worker capacity and replicas.
 

@@ -13,7 +13,7 @@ authors: zell
 # Chaos Day Summary
 
 Long time no see. Happy to do my first chaos day this year. In the last week have implemented interesting features, which I would like to experiment with.
-[Batch processing](https://github.com/camunda/zeebe/issues/11416) was one of them.
+[Batch processing](https://github.com/camunda/camunda/issues/11416) was one of them.
 
 **TL;DR;** Chaos experiment failed. :boom: Batch processing doesn't seem to respect the configured limit, which causes issues with processing and influences the health of the system. We found a bug :muscle:
 
@@ -21,19 +21,19 @@ Long time no see. Happy to do my first chaos day this year. In the last week hav
 
 ## Chaos Experiment
 
-In today's chaos experiment, we want to experiment with [Batch processing](https://github.com/camunda/zeebe/issues/11416) and how it can handle error conditions, like deploying an endless recursive process model.
+In today's chaos experiment, we want to experiment with [Batch processing](https://github.com/camunda/camunda/issues/11416) and how it can handle error conditions, like deploying an endless recursive process model.
 
 ![recursive process](call.png)
 
 ### Expected
 
-When we deploy such a process model and create an instance of it, we expect that the execution is done endlessly. In normal process models with batch processing, the execution of a process instance is done until a wait state is reached. In this process model, there exists no wait state. To handle such cases, we have implemented a batch limit, which can be configured via [maxCommandsInBatch](https://github.com/camunda/zeebe/blob/main/dist/src/main/config/broker.standalone.yaml.template#L695). This configuration is by default set to 100 commands. Meaning the stream processor will process 100 commands until it stops, to make room for other things.
+When we deploy such a process model and create an instance of it, we expect that the execution is done endlessly. In normal process models with batch processing, the execution of a process instance is done until a wait state is reached. In this process model, there exists no wait state. To handle such cases, we have implemented a batch limit, which can be configured via [maxCommandsInBatch](https://github.com/camunda/camunda/blob/main/dist/src/main/config/broker.standalone.yaml.template#L695). This configuration is by default set to 100 commands. Meaning the stream processor will process 100 commands until it stops, to make room for other things.
 
 We expect that our limit handling steps in during the execution and we can execute also other instances or, cancel the problematic process instance. Furthermore, we expect to stay healthy, we should be able to update our health check continuously.
 
 ### Actual
 
-Before we can start with our experiment we need to start our benchmark Zeebe cluster. This has become easier now since I have written the last post. Previously we had to use the scripts and Makefile in the [zeebe/benchmark sub-directory](https://github.com/camunda/zeebe/tree/main/benchmarks/setup).
+Before we can start with our experiment we need to start our benchmark Zeebe cluster. This has become easier now since I have written the last post. Previously we had to use the scripts and Makefile in the [zeebe/benchmark sub-directory](https://github.com/camunda/camunda/tree/main/benchmarks/setup).
 
 We have now provided new [Benchmark Helm charts](https://github.com/zeebe-io/benchmark-helm), based on our Camunda Platform Helm charts. They allow us to deploy a new zeebe benchmark setup via:
 
@@ -75,7 +75,7 @@ We can see that the processing starts immediately quite high and is continuously
 
 **We have two instances running, one on partition three and one on partition one.**
 
-_One interesting fact is that the topology request rate is also up to 0.400 per second, so potentially every 2.5 seconds we send a topology request to the gateway. But there is no application deployed that does this. [I have recently found out again](https://github.com/camunda/zeebe/pull/11599#discussion_r1109846523), that we have the Zeebe client usage in the gateway to request the topology. Might be worth investigating whether this is an issue._
+_One interesting fact is that the topology request rate is also up to 0.400 per second, so potentially every 2.5 seconds we send a topology request to the gateway. But there is no application deployed that does this. [I have recently found out again](https://github.com/camunda/camunda/pull/11599#discussion_r1109846523), that we have the Zeebe client usage in the gateway to request the topology. Might be worth investigating whether this is an issue._
 
 After observing this cluster for a while we can see that after around five minutes the cluster fails. The processing for the partitions breaks down to 1/10 of what was processed before. A bit later it looks like it tries to come back but, failed again.
 
@@ -103,5 +103,5 @@ With this, I mark this chaos experiment as failed. We need to investigate this f
 ## Found Bugs
 
 * [zbchaos logs debug message on normal usage](https://github.com/zeebe-io/zeebe-chaos/issues/323)
-* [Every 2.5 seconds we send a topology request, which is shown in the metrics](https://github.com/camunda/zeebe/issues/11799)
-* [Batch processing doesn't respect the limit](https://github.com/camunda/zeebe/issues/11798)
+* [Every 2.5 seconds we send a topology request, which is shown in the metrics](https://github.com/camunda/camunda/issues/11799)
+* [Batch processing doesn't respect the limit](https://github.com/camunda/camunda/issues/11798)

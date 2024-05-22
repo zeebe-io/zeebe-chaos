@@ -29,7 +29,7 @@ We expect that if the workers are slowing down, the load is distributed to other
 ### Actual
 
 
-We deployed a normal benchmark, with [default configurations](https://github.com/camunda/zeebe/blob/main/benchmarks/setup/default/values.yaml).
+We deployed a normal benchmark, with [default configurations](https://github.com/camunda/camunda/blob/main/benchmarks/setup/default/values.yaml).
 
 
 We slowed the workers down, in the sense that we changed [the completionDelay to 1250 ms](https://github.com/zeebe-io/benchmark-helm/blob/main/charts/zeebe-benchmark/templates/worker.yaml#L30)
@@ -56,7 +56,7 @@ So far so good, first experiment worked as expected :white_check_mark:
 The normal scenario when something is slow is for a user to scale up. This is what we did in the next experiment, we scaled the workers to 10 replicas (from 3), to verify how the system behaves in this case.
 
 
-Something to keep in mind when the completion delay is 1250ms, we [multiply the activation timeout by 6 in our workers](https://github.com/camunda/zeebe/blob/7002d53a079c06ab3a94f5485f022681a41dc9ed/benchmarks/project/src/main/java/io/camunda/zeebe/Worker.java#L113). This means completionDelay: 1250 -> job timeout 7.5s
+Something to keep in mind when the completion delay is 1250ms, we [multiply the activation timeout by 6 in our workers](https://github.com/camunda/camunda/blob/7002d53a079c06ab3a94f5485f022681a41dc9ed/benchmarks/project/src/main/java/io/camunda/zeebe/Worker.java#L113). This means completionDelay: 1250 -> job timeout 7.5s
 
 ### Expected
 
@@ -145,7 +145,7 @@ We wanted to understand and experiment with the impact of a slow worker on diffe
 
 To see such an impact in our metrics we had to patch our current execution metrics, such that includes the BPMN processId, so we can differentiate between execution times of different processes.
 
-See the related branch for more details [ck-latency-metrics](https://github.com/camunda/zeebe/tree/ck-latency-metrics)
+See the related branch for more details [ck-latency-metrics](https://github.com/camunda/camunda/tree/ck-latency-metrics)
 
 
 Furthermore, a new process model was added `slow-task.bpm` and new deployments to create such instances and work on them. The process model was similar to the benchmark model, only the job type has been changed.

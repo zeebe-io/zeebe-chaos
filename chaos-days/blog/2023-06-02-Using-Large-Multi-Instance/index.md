@@ -14,7 +14,7 @@ authors: zell
 
 New day new chaos. :skull: In today's chaos day I want to pick up a topic, which had bothered people for long time. I created a [chaos day three years ago](https://zeebe-io.github.io/zeebe-chaos/2020/07/16/big-multi-instance/) around this topic as well. 
 
-Today, we experiment with large multi-instances again. In the recent patch release [8.2.5](https://github.com/camunda/zeebe/releases/tag/8.2.5) we fixed an issue with spawning larger multi instances. Previously if you have created a process instance with a large multi-instance it was likely that this caused to blacklist the process instance, since the multi-instance spawning ran into `maxMessageSize` limitations. 
+Today, we experiment with large multi-instances again. In the recent patch release [8.2.5](https://github.com/camunda/camunda/releases/tag/8.2.5) we fixed an issue with spawning larger multi instances. Previously if you have created a process instance with a large multi-instance it was likely that this caused to blacklist the process instance, since the multi-instance spawning ran into `maxMessageSize` limitations. 
 
 This means the process instance was stuck and was no longer executable. In Operate this was not shown and caused a lot of friction or confusion to users. With the recent fix, Zeebe should chunk even large collections into smaller batches to spawn/execute the multi-instance without any issues.
 
@@ -197,6 +197,6 @@ When reaching a certain limit (maxMessageSize) we get a described rejection by t
 
 ## Found Bugs
 
-  * in a previous test I run into https://github.com/camunda/zeebe/issues/12918
-  * Related bug regarding the input collection https://github.com/camunda/zeebe/issues/12873
+  * in a previous test I run into https://github.com/camunda/camunda/issues/12918
+  * Related bug regarding the input collection https://github.com/camunda/camunda/issues/12873
 

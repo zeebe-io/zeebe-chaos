@@ -16,7 +16,7 @@ authors: zell
 In today's chaos day, we wanted to experiment with the gateway and resiliency of workers.
 
 We have seen in recent weeks some issues within our benchmarks when gateways have been restarted,
-see [zeebe#11975](https://github.com/camunda/zeebe/issues/11975).
+see [zeebe#11975](https://github.com/camunda/camunda/issues/11975).
 
 We did a similar experiment [in the past](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md),
 today we want to focus on self-managed ([benchmarks with our helm charts](https://helm.camunda.io/)).
@@ -25,14 +25,14 @@ Ideally, we can automate this as well soon.
 Today [Nicolas](https://github.com/npepinpe) joined me on the chaos day :tada: 
 
 **TL;DR;** We were able to show that the workers (clients) can reconnect after a gateway is shutdown :white_check_mark:
-Furthermore, we have discovered a potential performance issue on lower load, which impacts process execution latency ([zeebe#12311](https://github.com/camunda/zeebe/issues/12311)). 
+Furthermore, we have discovered a potential performance issue on lower load, which impacts process execution latency ([zeebe#12311](https://github.com/camunda/camunda/issues/12311)). 
 
 <!--truncate-->
 
 ## Chaos Experiment
 
 We will use our [Zeebe benchmark helm charts](https://github.com/zeebe-io/benchmark-helm) to set up the test cluster, and
-our helper scripts [here](https://github.com/camunda/zeebe/tree/main/benchmarks/setup).
+our helper scripts [here](https://github.com/camunda/camunda/tree/main/benchmarks/setup).
 
 ### Setup:
 
@@ -47,7 +47,7 @@ We will run the benchmark with a low load, 10 process instances per second creat
 we deploy one starter and worker. This reduces the blast radius and allows us to observe more easily how the workers
 behave when a gateway is restarted.
 
-During the experiment, we will use our [grafana dashboard](https://github.com/camunda/zeebe/tree/main/monitor/grafana) to
+During the experiment, we will use our [grafana dashboard](https://github.com/camunda/camunda/tree/main/monitor/grafana) to
 observe to which gateway the worker will connect and which gateway we need to stop/restart.
 
 
@@ -299,6 +299,6 @@ We first expected that to be related to snapshotting, but snapshots happen much 
 ![snapshot](snapshot-count.png)
 
 Interestingly is that it seems to be related to our segment creation (again), even if we have 
-async segment creation in our journal built recently. We need to investigate this further within [zeebe#12311](https://github.com/camunda/zeebe/issues/12311).
+async segment creation in our journal built recently. We need to investigate this further within [zeebe#12311](https://github.com/camunda/camunda/issues/12311).
 
 ![segment](segment.png)

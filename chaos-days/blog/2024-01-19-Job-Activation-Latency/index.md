@@ -60,7 +60,7 @@ Already we can infer certain performance bottle necks based on the following:
 - In the worst case scenario, we have to poll _every_ partition.
 - The gateway does not know in advance which partitions have jobs available.
 - Scaling out your clients may have adverse effects by sending out too many requests which all have to be processed independently
-- [If you have a lot of jobs, you can run into major performance issues when accessing the set of available jobs](https://github.com/camunda/zeebe/issues/11813)
+- [If you have a lot of jobs, you can run into major performance issues when accessing the set of available jobs](https://github.com/camunda/camunda/issues/11813)
 
 So if we have, say, 30 partitions, and each gateway-to-broker request takes 100ms, fetching the jobs on the last partition will take up to 3 seconds, even though the actual activation time on that partition was only 100ms.
 
@@ -70,7 +70,7 @@ One would think a workaround to this issue would simply be to poll more often, b
 
 ### Long polling: a second implementation
 
-To simplify things, the Zeebe team introduced [long polling in 2019](https://github.com/camunda/zeebe/issues/2825). [Long polling](https://en.wikipedia.org/wiki/Push_technology#Long_polling) is a fairly common technique to emulate a push or streaming approach while maintaing the request-response pattern of polling. Essentially, if the server has nothing to send to the client, instead of completing the request it will hold it until content is available, or a timeout is reached.
+To simplify things, the Zeebe team introduced [long polling in 2019](https://github.com/camunda/camunda/issues/2825). [Long polling](https://en.wikipedia.org/wiki/Push_technology#Long_polling) is a fairly common technique to emulate a push or streaming approach while maintaing the request-response pattern of polling. Essentially, if the server has nothing to send to the client, instead of completing the request it will hold it until content is available, or a timeout is reached.
 
 In Zeebe, this means that if we did not reach the maximum number of jobs to activate after polling all partitions, the request is parked but not closed. Eventually when jobs are available, the brokers will make this information known to the gateways, who will then unpark the oldest request and start a new polling round.
 
@@ -90,7 +90,7 @@ However, there are still some issues:
 
 ## Job push: third time's the charm
 
-In order to solve these issues, the team decided to implement [a push-based approach to job activation](https://github.com/camunda/zeebe/issues/11231).
+In order to solve these issues, the team decided to implement [a push-based approach to job activation](https://github.com/camunda/camunda/issues/11231).
 
 Essentially, we added a new `StreamActivatedJobs` RPC to our gRPC protocol, a so-called [server streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#server-streaming-rpc). In our case, this is meant to be a long-lived stream, such that the call is completed only if the client terminates it, or if the server is shutting down.
 

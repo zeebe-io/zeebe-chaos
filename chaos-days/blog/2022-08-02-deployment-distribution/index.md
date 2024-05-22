@@ -14,14 +14,14 @@ authors: zell
 # Chaos Day Summary
 
 
-We encountered recently a severe bug [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) and I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:
+We encountered recently a severe bug [zeebe#9877](https://github.com/camunda/camunda/issues/9877) and I was wondering why we haven't spotted it earlier, since we have chaos experiments for it. I realized two things:
 
  1. The experiments only check for parts of it (BPMN resource only). The production code has changed, and a new feature has been added (DMN) but the experiments/tests haven't been adjusted.
  2. More importantly we disabled the automated execution of the deployment distribution experiment because it was flaky due to a missing standalone gateway in Camunda Cloud SaaS [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). This is no longer the case, see [Standalone Gateway in CCSaaS](../2022-02-15-Standalone-Gateway-in-CCSaaS/index.md)
 
 On this chaos day I want to bring the automation of this chaos experiment back to life. If I have still time I want to enhance the experiment. 
 
-**TL;DR;** The experiment still worked, and our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again, and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). Unfortunately, we were not able to reproduce [zeebe#9877](https://github.com/camunda/zeebe/issues/9877) but we did some good preparation work for it.
+**TL;DR;** The experiment still worked, and our deployment distribution is still resilient against network partitions. It also works with DMN resources. I can enable the experiment again, and we can close [zeebe-io/zeebe-chaos#61](https://github.com/zeebe-io/zeebe-chaos/issues/61). Unfortunately, we were not able to reproduce [zeebe#9877](https://github.com/camunda/camunda/issues/9877) but we did some good preparation work for it.
 
 <!--truncate-->
 
@@ -190,7 +190,7 @@ We can adjust the experiment further to await the result of the process executio
 
 #### Reproduce our bug
 
-The current experiment didn't reproduce the bug in [zeebe#9877](https://github.com/camunda/zeebe/issues/9877), since the DMN resource has to be distributed multiple times. Currently, we create a network partition such that the distribution doesn't work at all. 
+The current experiment didn't reproduce the bug in [zeebe#9877](https://github.com/camunda/camunda/issues/9877), since the DMN resource has to be distributed multiple times. Currently, we create a network partition such that the distribution doesn't work at all. 
 
 ![](deploymentDistributionExperimentV2.png)
 
