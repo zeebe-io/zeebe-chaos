@@ -15,7 +15,7 @@
 package backend
 
 import (
-	"github.com/camunda/camunda/clients/go/v8/pkg/zbc"
+	"github.com/camunda/zeebe/clients/go/v8/pkg/zbc"
 	"github.com/zeebe-io/zeebe-chaos/go-chaos/internal"
 )
 
