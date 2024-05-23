@@ -54,7 +54,7 @@ In our second experiment, we will disable the SST partitioning again.
 
 ### Actual
 
-As linked above I used again our [benchmark/setup](https://github.com/camunda/zeebe/tree/main/benchmarks/setup) scripts to set up a cluster.
+As linked above I used again our [benchmark/setup](https://github.com/camunda/camunda/tree/main/benchmarks/setup) scripts to set up a cluster.
 
 ```shell
 $ diff ../default/values.yaml values.yaml 

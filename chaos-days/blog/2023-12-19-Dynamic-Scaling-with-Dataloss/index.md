@@ -147,4 +147,4 @@ We want to improve this behavior in the future but likely can't prevent it compl
 That means that there is an increased risk of unavailable partitions during scaling.
 However, this only occurs if another broker becomes unavailable with an unfortunate timing and resolves itself automatically once the broker is available again.
 
-Zeebe issue: https://github.com/camunda/zeebe/issues/15679
+Zeebe issue: https://github.com/camunda/camunda/issues/15679

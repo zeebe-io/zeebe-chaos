@@ -13,7 +13,7 @@ authors: zell
 
 # Chaos Day Summary
 
-On this chaos day I wanted to experiment with a new experimental feature we have released recently. The [enablement of the partitioning of the SST files in RocksDB](https://github.com/camunda/zeebe/pull/12483). This is an experimental feature from RocksDb, which we made available now for our users as well, since we have seen great benefits in performance, especially with larger runtime data.
+On this chaos day I wanted to experiment with a new experimental feature we have released recently. The [enablement of the partitioning of the SST files in RocksDB](https://github.com/camunda/camunda/pull/12483). This is an experimental feature from RocksDb, which we made available now for our users as well, since we have seen great benefits in performance, especially with larger runtime data.
 
 I wanted to experiment a bit with the SST partitioning and find out whether it would be possible to enable and disable the flag/configuration without issues.
 
@@ -23,7 +23,7 @@ I wanted to experiment a bit with the SST partitioning and find out whether it w
 
 ## Chaos Experiment
 
-For our chaos experiment we set up again our [normal benchmark cluster](https://github.com/camunda/zeebe/tree/main/benchmarks/setup), this time without any clients (no workers/starters).
+For our chaos experiment we set up again our [normal benchmark cluster](https://github.com/camunda/camunda/tree/main/benchmarks/setup), this time without any clients (no workers/starters).
 
 Setting all client replicas to zero:
 ```diff
@@ -70,7 +70,7 @@ When operating a cluster, I can enable the SST partitioning without an impact on
 
 ### Actual
 
-As linked above I used again our [benchmark/setup](https://github.com/camunda/zeebe/tree/main/benchmarks/setup) scripts to set up a cluster.
+As linked above I used again our [benchmark/setup](https://github.com/camunda/camunda/tree/main/benchmarks/setup) scripts to set up a cluster.
 
 #### First Part: Verify Steady state
 To verify the readiness and run all actions I used the [zbchaos](https://github.com/zeebe-io/zeebe-chaos/tree/zbchaos-v1.0.0) tool.
