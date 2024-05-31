@@ -7,7 +7,7 @@ categories:
   - bpmn
 tags:
   - availability
-authors: ole
+authors: lena
 ---
 
 # Chaos Day Summary
