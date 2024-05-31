@@ -274,8 +274,8 @@ This is a 1.6x improvement over the initial load while achieving similar backpre
 <img loading="lazy" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/perf_increased_load_processing_latency-629f9fc40962d34a30a3a51c2b62c7ba.png" width="1688" height="258" class="img_ev3q"></p>
 <p>Overall, this shows that scaling up can improve processing performance significantly, especially when the initial cluster setup is resource limited and vertical scaling is not possible.</p>]]></content>
         <author>
-            <name>Ole Schönburg</name>
-            <uri>https://github.com/oleschoenburg</uri>
+            <name>Lena Schönburg</name>
+            <uri>https://github.com/lenaschoenburg</uri>
         </author>
         <author>
             <name>Deepthi Akkoorath</name>
@@ -344,8 +344,8 @@ That means that there is an increased risk of unavailable partitions during scal
 However, this only occurs if another broker becomes unavailable with an unfortunate timing and resolves itself automatically once the broker is available again.</p>
 <p>Zeebe issue: <a href="https://github.com/camunda/camunda/issues/15679" target="_blank" rel="noopener noreferrer">https://github.com/camunda/camunda/issues/15679</a></p>]]></content>
         <author>
-            <name>Ole Schönburg</name>
-            <uri>https://github.com/oleschoenburg</uri>
+            <name>Lena Schönburg</name>
+            <uri>https://github.com/lenaschoenburg</uri>
         </author>
         <category label="availability" term="availability"/>
     </entry>
@@ -413,8 +413,8 @@ Before a broker can leave, another broker first needs to join the replication gr
 <p>The operation completes in 21 minutes, longer than usual because of the restarts:
 <img loading="lazy" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/scaledown-completed-5e14c6c4d0bd0ef621e64b075c1620ab.png" width="840" height="296" class="img_ev3q"></p>]]></content>
         <author>
-            <name>Ole Schönburg</name>
-            <uri>https://github.com/oleschoenburg</uri>
+            <name>Lena Schönburg</name>
+            <uri>https://github.com/lenaschoenburg</uri>
         </author>
         <category label="availability" term="availability"/>
         <category label="performance" term="performance"/>
