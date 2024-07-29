@@ -33,6 +33,34 @@ This single-loop process will hoard the processing resources and never complete 
 
 On the other hand, this dual loop process during its run will always create more records than can be processed since it doubles in the last step. This will create a steady increase in records not processed even if no other processes or requests are competing for processing time.
 
+To reduce the rate write limit we will use the unified control endpoint and configure write limit to be significantly lower than the processing speed.
+
+To fetch the current configuration we can port forward to one of the zeebe pods and use the command:
+```Shell
+GET /actuator/flowControl
+```
+
+![original-configurtion](original-configuration.png)
+
+To configure the write rate limit we use the same endpoint:
+
+```
+POST /actuator/flowControl
+{
+   "write": {
+        "rampUp": 0,
+        "enabled": true,
+        "limit": 3000,
+        "throttling":{
+          "enabled": true,
+          "acceptableBacklog": 100000,
+          "minimumLimit": 100,
+          "resolution": 15
+        }
+  }
+}
+```
+
 # Expected results:
 
 When deploying processes that contain straight-through loops, the lowering of the write rate limits does not fix the underlying problem, but should give us more time to act, and to bring the cluster closer to a balance.

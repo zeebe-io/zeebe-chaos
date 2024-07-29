@@ -23,7 +23,33 @@ The new unified flow control introduces a mechanism that rate limits all writes 
 
 To test this, we will construct a cluster under normal utilization and then artificially degrade the exporting process. After this we will configure the the flow control to rate limit all writes to be on par with the exported records.
 
-For this, we have two possibilities we can enable a static write rate limit or enable throttling that keeps the writes bounded by the exporter backlog.
+For this, we have two possibilities we can enable a static write rate limit or enable throttling that keeps the writes bounded by the exporter backlog. For this we will use the unified control endpoint and configure write rate limit.
+
+To fetch the current configuration we can port forward to one of the zeebe pods and use the command:
+```Shell
+GET /actuator/flowControl
+```
+
+![original-configurtion](original-configuration.png)
+
+To configure the write rate limit we use the same endpoint, for example:
+
+```
+POST /actuator/flowControl
+{
+   "write": {
+        "rampUp": 0,
+        "enabled": true,
+        "limit": 400,
+        "throttling":{
+          "enabled": true,
+          "acceptableBacklog": 100000,
+          "minimumLimit": 100,
+          "resolution": 15
+        }
+  }
+}
+```
 
 ## Expected
 
