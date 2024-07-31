@@ -18,7 +18,7 @@ In these experiments, we will test both ways of limiting the write rate and obse
 
 **TL;DR;**
 Both setting a static write rate limit and enabling throttling of the write rate can be used to prevent building up an excessive exporting backlog.
-For users, this will be seen as backpressur because processing speed is limited by the rate at which it can write processing results.
+For users, this will be seen as backpressure because processing speed is limited by the rate at which it can write processing results.
 
 ## Static write limit
 
@@ -33,7 +33,7 @@ To fetch the current configuration we can port forward to one of the zeebe pods 
 GET /actuator/flowControl
 ```
 
-![original-configurtion](original-configuration.png)
+![original-configuration](original-configuration.png)
 
 To configure the write rate limit we use the same endpoint, for example:
 
@@ -110,7 +110,7 @@ The reduced write rate should show up as backpressure.
 Eventually, the exporting backlog settles at the configured acceptable backlog.
 
 ### Actual
-Re-running the same setup, but using the throttling of writes with an acceptable backlog at 100,000  of not exported records, and a limit higher than our processing speed (so has to not impact the this experience), we get the following results:
+Re-running the same setup, but using the throttling of writes with an acceptable backlog at 100,000  of not exported records, and a limit higher than our processing speed (so has to not impact the experience), we get the following results:
 
 ![number-of-records-not-exported-post-throttling](number-of-records-not-exported-post-throttling.png)
 
