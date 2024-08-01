@@ -15,23 +15,25 @@ Zeebe 8.6 introduces a new unified flow control mechanism that is able to limit 
 
 Limiting the write rate is a new feature that can be used to prevent building up an excessive exporting backlog.
 
-In these experiments, we will test situations where endless loops models are deployed in the cluster, which hordes processing, and how to configure 
-the rate limits for writes to bring the cluster back to a balanced/safe state.
+In these experiments we will test what happens with the deployment of endless 
+loops that result in high processing load, and how we can use the new 
+flow control to keep the cluster stable. 
+
+
 
 **TL;DR;**
 
 Enabling the write rate limiting can help mitigate the effects caused by 
 process instances that contain uncontrolled loops by preventing building up an 
-excessive exporting or processing backlog. 
+excessive exporting backlog. 
 
 ## Mitigating the performance impacts of deployed loops:
 
 When an uncontrolled loop is accidentally deployed this tends to use of 
 most of the 
-processing resources of the partitions where the instance is running.
+processing resources of the partitions where instances are running.
 
-This leads not only the partition to start processing at close to max speed 
-but also slows its response to any other incoming requests.
+Such instances completely occupies its partition, starves other instances and results in slow response times.
 
 Usually, these problems should be addressed before other issues arise, such as full disk due to a large backlog of not exported records (max exporting speed tends to be slower than max processing speed).
 
@@ -73,9 +75,10 @@ This means that the number of records not processed will only grow if many other
 ### Expected results:
 
 When deploying a process instance with a single loop we should see the 
-processing rate in the partition increase significantly, this can lead to 
-processing speed to overtake the exporting speed that leads to increase in 
-the backlog of exported records.
+processing rate in the partition increases significantly. 
+
+This can lead to processing speed to surpass the exporting speed, which 
+results in increase in the backlog of exported records.
 
 Using the rate write limits to restrict the processing speed enables us to 
 reduce the backlog size and give more time for the user to fix the 
@@ -149,7 +152,8 @@ The backpressure had already reached at 100% which means that the dual loop proc
 
 ![dual-loop-backpressure](dual-loop-backpressure.png)
 
-Observing the number of records not processed we observe as expected that limiting the write rate cannot stop the records backlog from continuing to increase, but we can see that the slope of the curve is smaller after configuring the limit.
+Observing the number of records not processed we conclude as expected that 
+limiting the write rate cannot stop the records backlog from continuing to increase, but we can see that the slope of the curve is smaller after configuring the limit.
 
 ![dual-loop-records-not-exported](dual-loop-number-of-records-not-processed.png)
 
