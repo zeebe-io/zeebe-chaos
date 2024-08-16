@@ -6,7 +6,7 @@ on:
   pull_request:
     paths: 
       - go-chaos/**
-      - .github/go-ci.yml
+      - .github/workflows/go-ci.yml
 
 env:
   GO_VERSION: 1.19
