@@ -7,7 +7,9 @@ categories:
   - bpmn
 tags:
   - availability
-authors: zell
+authors:
+ - zell
+ - nicolas
 ---
 
 # Chaos Day Summary
