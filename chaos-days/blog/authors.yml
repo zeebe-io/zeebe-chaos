@@ -2,6 +2,7 @@ zell:
   name: Christopher Kujawa
   title: Chaos Engineer @ Zeebe
   url: https://github.com/zelldon
+  page: true
   image_url: https://github.com/zelldon.png
 nicolas:
   name: Nicolas Pepin-Perreault
