@@ -18,8 +18,8 @@ In the past Chaos days we often had a close look (or concentrated mostly) at Zee
 Today, we will look at the Operate import performance and how Zeebe processing throughput might affect (or not?) the throughput and latency of the Operate import. Is it decoupled as we thought?
 
 The import time is an important metric, representing the time until data from Zeebe processing is 
-visible to the User (excluding Elasticsearch's indexing). It is measured from when the record is written to log, by the Zeebe processor, until Operate reads/imports it from Elasticsearch and converts it into its data model. We got much feedback (and experienced this on our own) that
-Operate is often lagging behind or too slow, and of course we want to tackle and investigate this further.
+visible to the User (excluding Elasticsearch's indexing). It is measured from when the record is written to the log, by the Zeebe processor, until Operate reads/imports it from Elasticsearch and converts it into its data model. We got much feedback (and experienced this on our own) that
+Operate is often lagging behind or is too slow, and of course we want to tackle and investigate this further.
 
 The results from this Chaos day and related benchmarks should allow us to better understand how the current importing 
 of Operate performs, and what its affects. Likely it will be a series of posts to investigate this further. In general,
@@ -74,9 +74,10 @@ The base looks like the following:
 | Worker  | 1 Replica |
 | Timer | 5  PI/s   |
 | Publisher| 5   PI/s  |
+| Variables | 46 Kb     |
 
 
-The "Starter" deploys a process model with one task and creates instances at a rate of 5 process instances per second (PI/s). The "Worker" is handling such related tasks. The "Timer" deploys a process model with one timer catch event, and creates instances in a rate of 5 PI/s. The "Publisher" deploys a process model with a message catch event, and publishes messages at a rate of 5 per second.
+The "Starter" deploys a process model with one task and creates instances at a rate of 5 process instances per second (PI/s). The "Worker" is handling such related tasks. The "Timer" deploys a process model with one timer catch event, and creates instances in a rate of 5 PI/s. The "Publisher" deploys a process model with a message catch event, and publishes messages at a rate of 5 per second. On each process instance variables of the size of 46 kilobytes are sent as payload, to mimic a more realistic scenario.
 
 Going out of the base configuration we are adjusting the rate to a higher value (multiplied by 10), and to a lower value (divided by 5). This means for the high load benchmark we will have a rate of 50 PI/s per application (~150 PI/s), and for the lower load, we will have a rate of 1 PI/s per application (~3 PI/s). 
 
