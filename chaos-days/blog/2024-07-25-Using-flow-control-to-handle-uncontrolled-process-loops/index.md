@@ -27,6 +27,7 @@ Enabling the write rate limiting can help mitigate the effects caused by
 process instances that contain uncontrolled loops by preventing building up an 
 excessive exporting backlog. 
 
+<!--truncate-->
 ## Mitigating the performance impacts of deployed loops:
 
 When an uncontrolled loop is accidentally deployed this tends to use of 

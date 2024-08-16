@@ -20,6 +20,7 @@ In these experiments, we will test both ways of limiting the write rate and obse
 Both setting a static write rate limit and enabling throttling of the write rate can be used to prevent building up an excessive exporting backlog.
 For users, this will be seen as backpressure because processing speed is limited by the rate at which it can write processing results.
 
+<!--truncate-->
 ## Static write limit
 
 We will construct a cluster under normal utilization and then artificially degrade the exporting process.
