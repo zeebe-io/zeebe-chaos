@@ -60,6 +60,9 @@ All defaults from the helm charts are used, if not other specified. The most imp
 |ES CPU|2|
 |ES Mem|6G|
 |ES Disk|128g|
+| Operate replicas | 1 |
+| Operate Memory | 2g |
+| Operate CPU | 2 |
 
 With the base, we should see how the import performs normally. As base, we will use the same configuration as we use in our weekly benchmarks, see
 [here](https://github.com/camunda/camunda/blob/main/.github/workflows/zeebe-medic-benchmarks.yml#L78-L89).
