@@ -925,6 +925,10 @@ Before a broker can leave, another broker first needs to join the replication gr
             <name>Christopher Kujawa</name>
             <uri>https://github.com/zelldon</uri>
         </author>
+        <author>
+            <name>Nicolas Pepin-Perreault</name>
+            <uri>https://github.com/npepinpe</uri>
+        </author>
         <category label="availability" term="availability"/>
     </entry>
     <entry>
