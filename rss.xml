@@ -4,10 +4,131 @@
         <title>Zeebe Chaos Blog</title>
         <link>https://zeebe-io.github.io/zeebe-chaos/</link>
         <description>Zeebe Chaos Blog</description>
-        <lastBuildDate>Thu, 25 Jul 2024 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 16 Aug 2024 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[Operate load handling]]></title>
+            <link>https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling</link>
+            <guid>https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling</guid>
+            <pubDate>Fri, 16 Aug 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[Happy to announce that we are broadening the scope of our Chaos days, to look holistically at the whole Camunda Platform, starting today.]]></description>
+            <content:encoded><![CDATA[<p>🎉<!-- --> Happy to announce that we are broadening the scope of our Chaos days, to look holistically at the whole Camunda Platform, starting today.
+In the past Chaos days we often had a close look (or concentrated mostly) at Zeebe performance and stability.</p>
+<p>Today, we will look at the Operate import performance and how Zeebe processing throughput might affect (or not?) the throughput and latency of the Operate import. Is it decoupled as we thought?</p>
+<p>The import time is an important metric, representing the time until data from Zeebe processing is
+visible to the User (excluding Elasticsearch's indexing). It is measured from when the record is written to log, by the Zeebe processor, until Operate reads/imports it from Elasticsearch and converts it into its data model. We got much feedback (and experienced this on our own) that
+Operate is often lagging behind or too slow, and of course we want to tackle and investigate this further.</p>
+<p>The results from this Chaos day and related benchmarks should allow us to better understand how the current importing
+of Operate performs, and what its affects. Likely it will be a series of posts to investigate this further. In general,
+the data will give us some guidance and comparable numbers for the future to improve the importing time. See also related GitHub issue <a href="https://github.com/camunda/camunda/issues/16912" target="_blank" rel="noopener noreferrer">#16912</a> which targets to improve such.</p>
+<p><strong>TL;DR;</strong> We were not able to show that Zeebe throughput doesn't affect Operate importing time. We have seen that Operate can be positively affected by the throughput of Zeebe. Surprisingly, Operate was faster to
+import if Zeebe produced more data (with a higher throughput). One explanation of this might be that Operate was then less idle.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="chaos-experiment">Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment">​</a></h2>
+<p>As previously mentioned we will today look at the Operate's import latency and throughput. For that, I have created a
+new Benchmark dashboard. That allows us to see Zeebe and Operate performance together, at once.</p>
+<p><img decoding="async" loading="lazy" alt="default-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/default-latency-42bb59a3c0e41198245a39881eb5efe6.png" width="1898" height="344" class="img_ev3q">
+<img decoding="async" loading="lazy" alt="default-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/default-throughput-633e5b518b1315340f16824249676ad4.png" width="1897" height="486" class="img_ev3q"></p>
+<p>During building that dashboard I realized that we missed some detail metrics. For example, the latency of writing and then exporting a record,
+is currently not measured. Furthermore, we have operating limited metrics, thus allowing us only to see the average
+latency, not p99 nor p90. This needs to be enhanced in the future.</p>
+<p>We will run three benchmarks (base, high load, and low load), and use again our <a href="https://github.com/zeebe-io/benchmark-helm" target="_blank" rel="noopener noreferrer">benchmark helm chart</a> for such.
+All defaults from the helm charts are used, if not other specified. The most important ones, which are static over all benchmarks are listed below.</p>
+<table><thead><tr><th>Config</th><th>Value</th></tr></thead><tbody><tr><td>Broker</td><td>3</td></tr><tr><td>Partitions</td><td>3</td></tr><tr><td>Replication</td><td>3</td></tr><tr><td>Broker Mem</td><td>4G</td></tr><tr><td>Broker CPU</td><td>1350m</td></tr><tr><td>Broker Disk</td><td>32g</td></tr><tr><td>Gateways</td><td>2</td></tr><tr><td>Gateway Mem</td><td>1G</td></tr><tr><td>Gateway CPU</td><td>450m</td></tr><tr><td>ES nodes</td><td>3</td></tr><tr><td>ES CPU</td><td>2</td></tr><tr><td>ES Mem</td><td>6G</td></tr><tr><td>ES Disk</td><td>128g</td></tr></tbody></table>
+<p>With the base, we should see how the import performs normally. As base, we will use the same configuration as we use in our weekly benchmarks, see
+<a href="https://github.com/camunda/camunda/blob/main/.github/workflows/zeebe-medic-benchmarks.yml#L78-L89" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<p>We use the same applications that we use for our other benchmarks, the code can be found <a href="https://github.com/camunda/camunda/tree/main/zeebe/benchmarks/project" target="_blank" rel="noopener noreferrer">here</a></p>
+<p>The base looks like the following:</p>
+<table><thead><tr><th>Config</th><th>Value</th></tr></thead><tbody><tr><td>Starter</td><td>5 PI/s</td></tr><tr><td>Worker</td><td>1 Replica</td></tr><tr><td>Timer</td><td>5  PI/s</td></tr><tr><td>Publisher</td><td>5   PI/s</td></tr></tbody></table>
+<p>The "Starter" deploys a process model with one task and creates instances at a rate of 5 process instances per second (PI/s). The "Worker" is handling such related tasks. The "Timer" deploys a process model with one timer catch event, and creates instances in a rate of 5 PI/s. The "Publisher" deploys a process model with a message catch event, and publishes messages at a rate of 5 per second.</p>
+<p>Going out of the base configuration we are adjusting the rate to a higher value (multiplied by 10), and to a lower value (divided by 5). This means for the high load benchmark we will have a rate of 50 PI/s per application (~150 PI/s), and for the lower load, we will have a rate of 1 PI/s per application (~3 PI/s).</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
+<p>With the base benchmark, we will see how Operate is performing on a moderate load. As the importing of Operate is decoupled the higher load nor the lower load should have a significant impact on the importing time. It might be that due to a higher load on Zeebe, and a slightly bigger backlog the import time might be a bit higher for Operate.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="base">Base<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#base" class="hash-link" aria-label="Direct link to Base" title="Direct link to Base">​</a></h4>
+<details class="details_lb9f alert alert--info details_b_Ee" data-collapsed="true"><summary>Helm install command</summary><div><div class="collapsibleContent_i85q"><pre><p>helm install $(releaseName) $(chartPath) --render-subchart-notes <br>
+<!-- -->--set global.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebe.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebe.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set starter.rate=5 <br>
+<!-- -->--set worker.replicas=1 <br>
+<!-- -->--set timer.replicas=1 <br>
+<!-- -->--set timer.rate=5 <br>
+<!-- -->--set publisher.replicas=1 <br>
+<!-- -->--set publisher.rate=5 <br>
+<!-- -->--set camunda-platform.operate.enabled=true <br>
+<!-- -->--set camunda-platform.operate.image.repository=gcr.io/zeebe-io/operate <br>
+<!-- -->--set camunda-platform.operate.image.tag=ck-operate-benchmark <br>
+<!-- -->--set camunda-platform.elasticsearch.master.persistence.size=128Gi <br>
+<!-- -->--set camunda-platform.zeebe.retention.minimumAge=1d \</p></pre></div></div></details>
+<p>With a moderate load (as described above) we can see how large the import delay already is.</p>
+<p><img decoding="async" loading="lazy" alt="base-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/default-latency-42bb59a3c0e41198245a39881eb5efe6.png" width="1898" height="344" class="img_ev3q"></p>
+<p>The import latency from Operate is above 5 seconds.</p>
+<p>As expected we can see that we complete 15 process instances per second. We process around 145 records per second, and export 415 records per second. Operate is only reading 370 records per second because not all records are consumed by Operate.</p>
+<p><img decoding="async" loading="lazy" alt="base-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/default-throughput-633e5b518b1315340f16824249676ad4.png" width="1897" height="486" class="img_ev3q"></p>
+<p>Here it might make sense to configure the exporter, to only export the important ones.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="high-load">High load<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#high-load" class="hash-link" aria-label="Direct link to High load" title="Direct link to High load">​</a></h4>
+<details class="details_lb9f alert alert--info details_b_Ee" data-collapsed="true"><summary>Helm install command</summary><div><div class="collapsibleContent_i85q"><pre><p>helm install $(releaseName) $(chartPath) --render-subchart-notes <br>
+<!-- -->--set global.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebe.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebe.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set starter.rate=50 <br>
+<!-- -->--set worker.replicas=3 <br>
+<!-- -->--set timer.replicas=1 <br>
+<!-- -->--set timer.rate=50 <br>
+<!-- -->--set publisher.replicas=1 <br>
+<!-- -->--set publisher.rate=50 <br>
+<!-- -->--set camunda-platform.operate.enabled=true <br>
+<!-- -->--set camunda-platform.operate.image.repository=gcr.io/zeebe-io/operate <br>
+<!-- -->--set camunda-platform.operate.image.tag=ck-operate-benchmark <br>
+<!-- -->--set camunda-platform.elasticsearch.master.persistence.size=128Gi <br>
+<!-- -->--set camunda-platform.zeebe.retention.minimumAge=1d \</p></pre></div></div></details>
+<p>Looking at the high load benchmark, we can see something surprising. The Operate import latency has been decreased. From ~5.7 to 4.4 seconds, which is a 30% improvement. The Zeebe processing latency has been increased due to the higher load.</p>
+<p><img decoding="async" loading="lazy" alt="high-load-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/high-load-latency-e3e962e93add61bbff99b5bb718735f7.png" width="1904" height="346" class="img_ev3q"></p>
+<p>We can see that Zeebe is not able to handle ~150 instances, this can have multiple causes, too few workers, or other configurations, but this is irrelevant for today's benchmark.</p>
+<p><img decoding="async" loading="lazy" alt="high-load-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/high-load-throughput-a7467757d779975bc0daa55c7214a683.png" width="1904" height="493" class="img_ev3q"></p>
+<p>A huge amount of records (3158) are imported by Operate per second, with the same configuration as for the base benchmark. It looks like there is still room (we might investigate this further next time).</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="low-load">Low load<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#low-load" class="hash-link" aria-label="Direct link to Low load" title="Direct link to Low load">​</a></h4>
+<details class="details_lb9f alert alert--info details_b_Ee" data-collapsed="true"><summary>Helm install command</summary><div><div class="collapsibleContent_i85q"><pre><p>helm install $(releaseName) $(chartPath) --render-subchart-notes <br>
+<!-- -->--set global.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebe.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebe.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.repository=gcr.io/zeebe-io/zeebe <br>
+<!-- -->--set camunda-platform.zeebeGateway.image.tag=ck-operate-benchmark-1ad8f375 <br>
+<!-- -->--set starter.rate=1 <br>
+<!-- -->--set worker.replicas=1 <br>
+<!-- -->--set timer.replicas=1 <br>
+<!-- -->--set timer.rate=1 <br>
+<!-- -->--set publisher.replicas=1 <br>
+<!-- -->--set publisher.rate=1 <br>
+<!-- -->--set camunda-platform.operate.enabled=true <br>
+<!-- -->--set camunda-platform.operate.image.repository=gcr.io/zeebe-io/operate <br>
+<!-- -->--set camunda-platform.operate.image.tag=ck-operate-benchmark <br>
+<!-- -->--set camunda-platform.elasticsearch.master.persistence.size=128Gi <br>
+<!-- -->--set camunda-platform.zeebe.retention.minimumAge=1d \</p></pre></div></div></details>
+<p><img decoding="async" loading="lazy" alt="low-load-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/low-load-latency-c26a6962a6679f059431e24501a86518.png" width="1897" height="343" class="img_ev3q"></p>
+<p>Unexpected or even counterintuitive is that on a lower load the import time went up again or is similar to the base benchmark ~5.7 seconds to import a record.</p>
+<p><img decoding="async" loading="lazy" alt="low-load-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/low-load-throughput-87a6f32932cbb31cea39dc24a4f2af8c.png" width="1905" height="494" class="img_ev3q"></p>
+<p>Zeebe is reaching the 3 PI/s and exporting again a bit more than Operate is importing, as described before likely to some filters.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="result">Result<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#result" class="hash-link" aria-label="Direct link to Result" title="Direct link to Result">​</a></h3>
+<p>We were not able to prove that Zeebe throughput doesn't affect Operate's import time. What we have seen is that higher throughput on the Zeebe side positively affects Operate's import time (import delay decreases from 5.7 seconds to 4.4 seconds). This was not just a short outlier, it was shown over a long period.</p>
+<p>It is likely related to how Zeebe exporting and Operate importing work together. Zeebe exporting collects several data before it is sent to Elasticsearch. Either if a certain time is due or a certain amount is reached. Operate might be idle from time to time and "sleep" and wake up every certain seconds to import again.</p>
+<p>We have to investigate this further to understand all the details, but I think this as already an interesting learning.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="next">Next<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling#next" class="hash-link" aria-label="Direct link to Next" title="Direct link to Next">​</a></h2>
+<p>In the following, I listed some potential improvements and investigations we might want to do next:</p>
+<ul>
+<li>We need better metrics in Operate, e.g. histograms to have p99, and p90 for import latency</li>
+<li>We need the measure the export latency, to better understand and compare how long the import time really is</li>
+<li>Investigate whether we can better configure exporting and importing, to reduce delays.</li>
+<li>Can we filter more records and this affects positively the importing?</li>
+</ul>]]></content:encoded>
+            <category>performance</category>
+        </item>
         <item>
             <title><![CDATA[Using flow control to handle bottleneck on exporting]]></title>
             <link>https://zeebe-io.github.io/zeebe-chaos/2024/07/25/Using-flow-control-to-handle-bottlenecked-exporting</link>
@@ -1605,61 +1726,6 @@ Furthermore, we can scale the gateways independently.</p>
 </ul>
 <p>So be aware don't use <code>"</code> and no <code>/</code> in front, otherwise you might get a <code>java.io.FileNotFoundException: "bpmn/small_payload.json" (No such file or directory)</code> in your starter deployment and wonder why you see no progress.</p>]]></content:encoded>
             <category>availability</category>
-        </item>
-        <item>
-            <title><![CDATA[Worker count should not impact performance]]></title>
-            <link>https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance</link>
-            <guid>https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance</guid>
-            <pubDate>Wed, 24 Nov 2021 00:00:00 GMT</pubDate>
-            <description><![CDATA[In this chaos day we experimented with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to #7955 and #8244.]]></description>
-            <content:encoded><![CDATA[<p>In this chaos day we experimented with the worker count, since we saw recently that it might affect the performance (throughput) negatively if there are more workers deployed. This is related to <a href="https://github.com/camunda-cloud/zeebe/issues/7955" target="_blank" rel="noopener noreferrer">#7955</a> and <a href="https://github.com/camunda-cloud/zeebe/issues/8244" target="_blank" rel="noopener noreferrer">#8244</a>.</p>
-<p>We wanted to prove, that even if we have more workers deployed the throughput of the process instance execution should not have an negative impact.</p>
-<p><strong>TL;DR;</strong> We were not able to prove our hypothesis. Scaling of workers can have a negative impact on performance. Check out the <a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#third-chaos-experiment">third chaos experiment</a>.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="first-chaos-experiment">First Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#first-chaos-experiment" class="hash-link" aria-label="Direct link to First Chaos Experiment" title="Direct link to First Chaos Experiment">​</a></h2>
-<p>We run the first experiment with one partition, three brokers, one standalone gateway and one starter which creates 100 PI/s. In this experiment we deployed different zeebe <a href="https://github.com/camunda-cloud/zeebe/tree/develop/benchmarks" target="_blank" rel="noopener noreferrer">benchmarks</a> with 4, 8 and 16 workers.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>The workers should be able to complete all created instances and if the workers are scaled the throughput should remain.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="4-worker">4 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#4-worker" class="hash-link" aria-label="Direct link to 4 Worker" title="Direct link to 4 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-4-p1-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-4-p1-general-62ffbfc05a0d98a217d628ea1c11dfe0.png" width="1828" height="902" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="8-worker">8 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#8-worker" class="hash-link" aria-label="Direct link to 8 Worker" title="Direct link to 8 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-8-p1-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-8-p1-general-d9a0c1f55aeb25f8a41b43f0caf44f47.png" width="1833" height="901" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="16-worker">16 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#16-worker" class="hash-link" aria-label="Direct link to 16 Worker" title="Direct link to 16 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-16-p1-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-16-p1-general-6af6d38ff8109ecc304b34fb149d24dc.png" width="1826" height="897" class="img_ev3q"></p>
-<h5 class="anchor anchorWithStickyNavbar_LWe7" id="result">Result<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#result" class="hash-link" aria-label="Direct link to Result" title="Direct link to Result">​</a></h5>
-<p>What we can see is that if we increase the worker number it will decrease the throughput, this might be explained with the case that we sent more activation requests / commands which need to be handled by the Brokers. We can see that the back pressure is higher with 16 workers.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="second-chaos-experiment">Second Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#second-chaos-experiment" class="hash-link" aria-label="Direct link to Second Chaos Experiment" title="Direct link to Second Chaos Experiment">​</a></h2>
-<p>We will repeat first experiment with some changes, to the partition count. We will now use three partitions.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected-1">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#expected-1" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>The workers should be able to complete all created instances and if the workers are scaled the throughput should remain or be better.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual-1">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#actual-1" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="4-worker-1">4 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#4-worker-1" class="hash-link" aria-label="Direct link to 4 Worker" title="Direct link to 4 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-4-p3-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-4-p3-general-3e773f9f2734c854f579cf560474f558.png" width="1840" height="898" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="8-worker-1">8 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#8-worker-1" class="hash-link" aria-label="Direct link to 8 Worker" title="Direct link to 8 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-8-p3-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-8-p3-general-25f411adf3701877e4ab7a040b401434.png" width="1836" height="903" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="16-worker-1">16 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#16-worker-1" class="hash-link" aria-label="Direct link to 16 Worker" title="Direct link to 16 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-16-p3-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-16-p3-general-9e04e4d183f59d59573917fc264a04e0.png" width="1832" height="906" class="img_ev3q"></p>
-<h5 class="anchor anchorWithStickyNavbar_LWe7" id="result-1">Result<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#result-1" class="hash-link" aria-label="Direct link to Result" title="Direct link to Result">​</a></h5>
-<p>In this experiment we can see that all benchmarks reach almost the same throughput, since we not really stressing the system and have enough resources to work with. There is no backpressure at all. In the next experiment we will increase the load.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="third-chaos-experiment">Third Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#third-chaos-experiment" class="hash-link" aria-label="Direct link to Third Chaos Experiment" title="Direct link to Third Chaos Experiment">​</a></h2>
-<p>We will repeat second experiment with some changes to the instance creation count. We will now start 300 process instances per second, with one starter.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected-2">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#expected-2" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>The workers should be able to complete most of the instances, we would expect that with more workers we would be able to complete more instances and have no negative impact on the system.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual-2">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#actual-2" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="4-worker-2">4 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#4-worker-2" class="hash-link" aria-label="Direct link to 4 Worker" title="Direct link to 4 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-4-p3-300-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-4-p3-300-general-632f8cc19401a161b90ab68bef7978ed.png" width="1825" height="903" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="8-worker-2">8 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#8-worker-2" class="hash-link" aria-label="Direct link to 8 Worker" title="Direct link to 8 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-8-p3-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-8-p3-300-general-32b3a55b2d73fc15983195071742b18c.png" width="1832" height="911" class="img_ev3q"></p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="16-worker-2">16 Worker<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#16-worker-2" class="hash-link" aria-label="Direct link to 16 Worker" title="Direct link to 16 Worker">​</a></h4>
-<p><img decoding="async" loading="lazy" alt="worker-16-p3-general.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-16-p3-300-general-edb0fc05b8ef76f9991a26e215232366.png" width="1837" height="915" class="img_ev3q"></p>
-<h5 class="anchor anchorWithStickyNavbar_LWe7" id="result-2">Result<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#result-2" class="hash-link" aria-label="Direct link to Result" title="Direct link to Result">​</a></h5>
-<p>Between eight and four workers we see the expected difference, that more workers increases the throughput and we are able to complete more instances in a second. The result of 16 workers is completely unexpected. We observed that after short time frame the completion throughput completely droped, and only process instances are created.</p>
-<p>We were able to reproduce this behavior, which shows the weakness again.</p>
-<p><img decoding="async" loading="lazy" alt="worker-16-p3-general-reproduce.png" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/worker-16-p3-300-general-reproduce-23ede1412500950de080d9b90f080400.png" width="1827" height="886" class="img_ev3q"></p>
-<p>We were not able to prove our hypothesis, that scaling of workers has no negative impact on performance.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="further-analysis">Further Analysis<a href="https://zeebe-io.github.io/zeebe-chaos/2021/11/24/Worker-count-should-not-impact-performance#further-analysis" class="hash-link" aria-label="Direct link to Further Analysis" title="Direct link to Further Analysis">​</a></h2>
-<p>We created a bug issue to analyze and fix this weakness <a href="https://github.com/camunda-cloud/zeebe/issues/8267" target="_blank" rel="noopener noreferrer">#8267</a>.</p>]]></content:encoded>
-            <category>performance</category>
         </item>
     </channel>
 </rss>
