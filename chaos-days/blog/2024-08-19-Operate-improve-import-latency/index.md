@@ -58,7 +58,7 @@ Today, we will experiment with the Elasticsearch exporter configurations to impr
 
 ## Chaos Experiment
 
-As we have seen [before](../2024-08-16-Operate-load-handling) high load affects the importing latency positively. The thesis is that this is due to the export flush delay, which is mostly affecting the exporting on lower load.
+As we have seen [before](../2024-08-16-Operate-load-handling/index.md) high load affects the importing latency positively. The thesis is that this is due to the export flush delay, which is mostly affecting the exporting on lower load.
 
 Today we want to prove the following: 
 
@@ -79,7 +79,7 @@ We can define the following `unknowns`, that we want to explore further as well:
 
 ### Actual
 
-As always we set a base installation up to compare against. The load is moderate to low which we can already use for our next experiment. Furthermore, we can compare the data from the [last chaos day](../2024-08-16-Operate-load-handling).
+As always we set a base installation up to compare against. The load is moderate to low which we can already use for our next experiment. Furthermore, we can compare the data from the [last chaos day](../2024-08-16-Operate-load-handling/index.md).
 
 <details>
 <summary>Base: Helm install command</summary>
