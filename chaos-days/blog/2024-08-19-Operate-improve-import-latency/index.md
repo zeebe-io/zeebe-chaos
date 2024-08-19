@@ -12,7 +12,7 @@ authors: zell
 
 # Chaos Day Summary
 
-[In our last Chaos Day](../2024-08-16-Operate-load-handling/index.md) we experimented with Operate and different load (Zeebe throughput). We observed that higher load caused a lower latency in Operate. The conclusion was that it might be related to Zeebe's exporting, which is effected by a higher load.
+[In our last Chaos Day](../2024-08-16-Operate-load-handling/index.md) we experimented with Operate and different load (Zeebe throughput). We observed that higher load caused a lower import latency in Operate. The conclusion was that it might be related to Zeebe's exporting configuration, which is effected by a higher load.
 
 In today's chaos day we want to verify how different export and import configurations can effect the importing latency. 
 
@@ -22,7 +22,7 @@ In today's chaos day we want to verify how different export and import configura
 
 ## Background 
 
-_In the following I want to shortly explain a bit more of the background of the exporting and importing into Operate. If you are already aware feel free to jump to the [next section](#chaos-experiment)._
+_In the following I want to shortly explain a bit more the background of how the exporting and importing plays together. If you are already aware feel free to jump to the [next section](#chaos-experiment)._
 
 ---
 
@@ -32,7 +32,7 @@ Zeebe exports data to Elasticsearch via it's Elasticsearch Exporter. The exporte
 
 This explains also the results from [our last Chaos Day](../2024-08-16-Operate-load-handling/index.md), where the import latency was around 5 seconds on lower load. 
 
-In the following we have written down the sequence of steps (or lifecycle?) of a command, and it's resulting events, until it is visible to the user in Operate. This should allow us to better understand how the import latency is affected, and what we might want to tune and experiment further.
+In the following we have written down the sequence of steps a command has to take, and it's resulting events, until it is visible to the user in Operate. This should allow to better understand how and by what the import latency is affected, and what we might want to tune and experiment further.
 
 ```
 User Command is sent to Gateway 
@@ -45,7 +45,9 @@ User Command is sent to Gateway
 -------------->Operate can query the data -> User can see the data 
 ```
 
-This means we might have the following minimum delay: 
+About Elasticsearch and its default refresh configuration, etc. you can read [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-indexing-speed.html#_unset_or_increase_the_refresh_interval). 
+
+Based on this, we know we have the following minimum delay: 
 ```
 delay = 2 seconds (due to ES refresh)
       + (5 seconds from exporter on low load)
@@ -58,7 +60,7 @@ Today, we will experiment with the Elasticsearch exporter configurations to impr
 
 ## Chaos Experiment
 
-As we have seen [before](../2024-08-16-Operate-load-handling/index.md) high load affects the importing latency positively. The thesis is that this is due to the export flush delay, which is mostly affecting the exporting on lower load.
+As we have seen [in a previous chaos day](../2024-08-16-Operate-load-handling/index.md) high load affects the importing latency positively. The thesis is that this is due to the export flush delay, which is mostly affecting the exporting on lower load.
 
 Today we want to prove the following: 
 
@@ -79,7 +81,7 @@ We can define the following `unknowns`, that we want to explore further as well:
 
 ### Actual
 
-As always we set a base installation up to compare against. The load is moderate to low which we can already use for our next experiment. Furthermore, we can compare the data from the [last chaos day](../2024-08-16-Operate-load-handling/index.md).
+As always, we set a base installation up to compare against. The load is moderate-to-low (15 PI/s). We can compare the data from the [last chaos day](../2024-08-16-Operate-load-handling/index.md) here as well.
 
 <details>
 <summary>Base: Helm install command</summary>
@@ -127,7 +129,7 @@ exporters:
         delay: 1
 ```
 
-This can be set in our [benchmark-helm](https://github.com/zeebe-io/benchmark-helm) directly via: `--set zeebe.broker.exporters.elasticsearch.args.bulk.delay=1`
+This can be set in our [benchmark-helm](https://github.com/zeebe-io/benchmark-helm) directly via: `--set zeebe.config.zeebe.broker.exporters.elasticsearch.args.bulk.delay=1`
 
 <details>
 <summary>Lower flush delay: Helm install command</summary>
@@ -198,7 +200,7 @@ helm install $(releaseName) $(chartPath) --render-subchart-notes \
 ![higher-load-throughput](lower-delay-high-load-throughput.png)
 
 We can see that the latency has been increased a bit, versus the lower load benchmark, but it has improved compared to the
-benchmark [the last chaos day](../2024-08-16-Operate-load-handling/index.md#high-load). :i: Interesting factor is that it seems that the throughput from Zeebe has changed as well, that in consequence increased the import throughput.
+benchmark [the last chaos day](../2024-08-16-Operate-load-handling/index.md#high-load). :information: Interesting factor is that it seems that the throughput from Zeebe has changed as well, that in consequence increased the import throughput.
 
 Looking into it further, we can see that the job and process instance creation and completion has changed by ~13-18 percent. Before we had around 130 process instance completion per second.
 
@@ -208,20 +210,20 @@ In the recent benchmark we almost reach our target load (150 PI/s) with 147 proc
 
 ![backpressure-higher-load-lower-delay](backpressure-lower-delay-higher-load.png)
 
-The reason seem to be the different backpressure, which has been decrease from ~20 % to 5-10%. This might be because our backpressure strategy has recently changed and now takes exporting into account. See also [related chaos day about this topic](../2024-07-25-Using-flow-control-to-handle-bottlenecked-exporting/index.md).
+The reason seem to be the different backpressure. Backpressure has been decrease from ~20 % to 5-10%. This might be because our backpressure strategy has recently changed and now takes exporting into account. See also [related chaos day about this topic](../2024-07-25-Using-flow-control-to-handle-bottlenecked-exporting/index.md).
 
 ##### Additional finding
 
-A interesting additional observation finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
+A interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
 
 ![import-delay](import-delay.png)
 
-In our benchmark after failing import it took ~20 minutes until the backlog was processed and the import latency was back to normal.
+In our benchmark after the importer failed, it took ~20 minutes until the backlog was processed and the import latency was back to normal.
 
 ![recover-import-delay](import-delay-recover.png)
 
 This shows that Operate, especially the importer is quite sensitive to restarts. This is likely to be changed and improved when
-Operates importing mechanism is moved into Zeebe as separate exporter, see [related GH issue](https://github.com/camunda/camunda/issues/16912).
+Operates importing mechanism is moved into Zeebe, as separate exporter see [related GH issue](https://github.com/camunda/camunda/issues/16912).
 
 On lower load, the impact of an importer restart is negligible, as we can see below.
 
@@ -235,8 +237,8 @@ We were not able to set the `bulk.delay` to a smaller value then 1 second, as th
 
 ## Potential improvements
 
-* Allow to configure `bulk.delay` in non-second format (be able to specify the format)
-* Importing is highly affected by pod restarts, can cause issues on higher load, due to growing backlog. Making import idempotent, and scaling importers would help.
+* Allow to configure `bulk.delay` in non-second format (be able to specify the time/duration format)
+* Importing is highly affected by pod restarts, this can cause issues on higher load, due to a growing backlog. Making import idempotent, and scaling importers would help here.
 
 
 
