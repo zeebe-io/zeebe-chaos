@@ -138,8 +138,8 @@ benchmark <a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-loa
 <p><em><strong>Update</strong></em>:</p>
 <p>Looking into it further, the backpressure is not affected by the newest feature (as it was not enabled by default). This was discussed internally with the Zeebe team.</p>
 <p><img decoding="async" loading="lazy" alt="higher-load-less-throughput-commit-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/higher-load-less-throughput-commit-latency-9c60c6c92511ef060343e3628b6ff144.png" width="1906" height="519" class="img_ev3q"></p>
-<p>The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, which this is.</p>
-<p>The fast benchmark, with the configured exporting, has a much better commit latency. It is unlikely that this configuration affected this part of the system. We will have to retry the both benchmarks.</p>
+<p>The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, why this is.</p>
+<p>The faster benchmark, with the configured exporting, has a much better commit latency. It is unlikely that the exporter configuration affected this part of the system. We will have to retry the both benchmarks.</p>
 <p><img decoding="async" loading="lazy" alt="higher-load-higher-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/higher-load-higher-throughput-commit-latency-fe734971e6c84fd5fcc91f0be184c03b.png" width="1909" height="525" class="img_ev3q"></p>
 <h5 class="anchor anchorWithStickyNavbar_LWe7" id="additional-finding">Additional finding<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency#additional-finding" class="hash-link" aria-label="Direct link to Additional finding" title="Direct link to Additional finding">​</a></h5>
 <p>An interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.</p>
