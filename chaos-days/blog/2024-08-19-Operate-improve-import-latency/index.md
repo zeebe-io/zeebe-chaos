@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "Operate improve import latency"
+title:  "Import Operate import latency"
 date:   2024-08-19
 categories: 
   - chaos_experiment 
