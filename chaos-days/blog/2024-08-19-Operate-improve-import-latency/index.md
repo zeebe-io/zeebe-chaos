@@ -12,31 +12,31 @@ authors: zell
 
 # Chaos Day Summary
 
-[In our last Chaos Day](../2024-08-16-Operate-load-handling/index.md) we experimented with Operate and different load (Zeebe throughput). We observed that higher load caused a lower import latency in Operate. The conclusion was that it might be related to Zeebe's exporting configuration, which is effected by a higher load.
+[In our last Chaos Day](../2024-08-16-Operate-load-handling/index.md) we experimented with Operate and different load (Zeebe throughput). We observed that a higher load caused a lower import latency in Operate. The conclusion was that it might be related to Zeebe's exporting configuration, which is affected by a higher load.
 
-In today's chaos day we want to verify how different export and import configurations can effect the importing latency. 
+In today's chaos day we want to verify how different export and import configurations can affect the importing latency. 
 
-**TL;DR;** We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply reducing the `bulk.delay` configuration. This worked on load and even higher load, whereas on higher load we were even able to improve Zeebe's throughput by ~13%.
+**TL;DR;** We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply reducing the `bulk.delay` configuration. This worked on load and even higher load, whereas on higher load we have even improved Zeebe's throughput by ~13%.
 
 <!--truncate-->
 
 ## Background 
 
-_In the following I want to shortly explain a bit more the background of how the exporting and importing plays together. If you are already aware feel free to jump to the [next section](#chaos-experiment)._
+_In the following I want to briefly explain a bit more the background of how exporting and importing play together. If you are already aware feel free to jump to the [next section](#chaos-experiment)._
 
 ---
 
 To understand how the importing of Operate is affected and works, we first have to take a look at Zeebe.
 
-Zeebe exports data to Elasticsearch via it's Elasticsearch Exporter. The exporter collects data before sending it to Elasticsearch in bulk requests. The amount of data, which is collected in the exporter, is configurable and per default set to 1000 records per batch/bulk. Additionally, there is an memory limit which is taken into account that is set to 10 MB. When the bulk request is reaching that size, the request is sent as well. To cover cases of low load, there is a delay option, which is per default set to 5 seconds. This means, every 5 seconds the bulk request is sent, even if it is not full.
+Zeebe exports data to Elasticsearch via its Elasticsearch Exporter. The exporter collects data before sending it to Elasticsearch in bulk requests. The amount of data, which is collected in the exporter, is configurable and by default set to 1000 records per batch/bulk. Additionally, there is a memory limit which is taken into account that is set to 10 MB. When the bulk request is reaching that size, the request is sent as well. To cover cases of low load, there is a delay option, which is per default set to 5 seconds. This means, that every 5 seconds the bulk request is sent, even if it is not full.
 
-This explains also the results from [our last Chaos Day](../2024-08-16-Operate-load-handling/index.md), where the import latency was around 5 seconds on lower load. 
+This explains also the results from [our last Chaos Day](../2024-08-16-Operate-load-handling/index.md), where the import latency was around 5 seconds on a lower load. 
 
-In the following we have written down the sequence of steps a command has to take, and it's resulting events, until it is visible to the user in Operate. This should allow to better understand how and by what the import latency is affected, and what we might want to tune and experiment further.
+In the following, we have written down the sequence of steps a command has to take, and its resulting events until it is visible to the user in Operate. This should allow to better understand how and by what the import latency is affected, and what we might want to tune and experiment further.
 
 ```
 User Command is sent to Gateway 
--->Gateway sents Command to right Broker
+-->Gateway sents Command to the right Broker
 ---->Broker processes command and produces events
 ------>Events are exported by Broker to ES (worst case: 5s flush) 
 -------->ES refreshes after one second
@@ -66,17 +66,17 @@ Today we want to prove the following:
 
 > **Hypothesis**
 > 
-> When we set the exporting/flush delay to a lower value (fex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
+> When we set the exporting/flush delay to a lower value (ex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
 
 We can define the following `unknowns`, that we want to explore further as well:
 
- * It is not clear how lower flush delay affects the system on higher load. 
- * It is not clear how smaller values (under 1 seconds) for the flush delay affects the system, no matter of high or low load.
+ * It is not clear how lower flush delay affects the system on higher loads. 
+ * It is not clear how smaller values (under 1 second) for the flush delay affect the system, no matter of high or low load.
 
 ### Expected
 
-1. When we set the exporting/flush delay to a lower value (fex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
-2. When we set the exporting/flush delay to a lower value (fex. 1 second), we are improving the import latency for higher load scenarios, **but decreasing the import throughput**
+1. When we set the exporting/flush delay to a lower value (ex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
+2. When we set the exporting/flush delay to a lower value (ex. 1 second), we are improving the import latency for higher load scenarios, **but decreasing the import throughput**
 3. When we set the exporting/flush delay to a small value (under 1 second), we are affecting the import throughput negatively
 
 ### Actual
@@ -112,12 +112,12 @@ We see similar results as on the [last Chaos day](../2024-08-16-Operate-load-han
 ![base-throughput](base-throughput.png)
 
 We are able to import around 360 records per second, while Zeebe exports 413. Be aware that some are ignored by Operate.
-A record has on average a delay of 5.69 seconds from written by Zeebe to imported by Operate (and written into the
+A record has on average a delay of 5.69 seconds from being written by Zeebe to being imported by Operate (and written into the
 end Elasticsearch index).
 
 #### First experiment: Lower flush delay
 
-> When we set the exporting/flush delay to a lower value (fex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
+> When we set the exporting/flush delay to a lower value (ex. 1 second), we are improving the import latency for lower load scenarios without affecting the system negatively.
 
 To reduce the exporter flush delay we use the following configuration:
 
@@ -160,15 +160,15 @@ helm install $(releaseName) $(chartPath) --render-subchart-notes \
 ![lower-delay-throughput](lower-delay-base-load-throughput.png)
 
 With setting the `bulk.delay` to one second, we were able to reduce the import latency by ~2 seconds, from 5.69 to 3.68 seconds.
-That is a 35% decrease, while other factors are stay the same. We can observe that the throughput stays the same (while of course the load is rather moderate-to-low).
+That is a 35% decrease, while other factors stay the same. We can observe that the throughput stays the same (while of course, the load is rather moderate-to-low).
 
 This proved our first hypothesis from above. :white_check_mark:
 
 #### Second Experiment: Lower delay with higher load
 
-> When we set the exporting/flush delay to a lower value (fex. 1 second), we are improving the import latency for higher load scenarios, **but decreasing the import throughput**
+> When we set the exporting/flush delay to a lower value (ex. 1 second), we are improving the import latency for higher load scenarios, **but decreasing the import throughput**
 
-Similar to the first experiment we set the delay to one second, and increase the load in the same way as we did
+Similar to the first experiment we set the delay to one second, and increased the load in the same way as we did
 [here](../2024-08-16-Operate-load-handling/index.md#high-load) before.
 
 <details>
@@ -200,21 +200,21 @@ helm install $(releaseName) $(chartPath) --render-subchart-notes \
 ![higher-load-throughput](lower-delay-high-load-throughput.png)
 
 We can see that the latency has been increased a bit, versus the lower load benchmark, but it has improved compared to the
-benchmark [the last chaos day](../2024-08-16-Operate-load-handling/index.md#high-load). :information: Interesting factor is that it seems that the throughput from Zeebe has changed as well, that in consequence increased the import throughput.
+benchmark [the last chaos day](../2024-08-16-Operate-load-handling/index.md#high-load). :information: An interesting factor is that it seems that the throughput from Zeebe has changed as well, that in consequence increased the import throughput.
 
-Looking into it further, we can see that the job and process instance creation and completion has changed by ~13-18 percent. Before we had around 130 process instance completion per second.
+Looking into it further, we can see that the job and process instance creation and completion have changed by ~13-18 percent. Before we had around 130 process instance completion per second.
 
 ![backpressure-higher-load](backpressure-higher-load.png)
 
-In the recent benchmark we almost reach our target load (150 PI/s) with 147 process instance completions per second.
+In the recent benchmark, we almost reach our target load (150 PI/s) with 147 process instance completions per second.
 
 ![backpressure-higher-load-lower-delay](backpressure-lower-delay-higher-load.png)
 
-The reason seem to be the different backpressure. Backpressure has been decrease from ~20 % to 5-10%. This might be because our backpressure strategy has recently changed and now takes exporting into account. See also [related chaos day about this topic](../2024-07-25-Using-flow-control-to-handle-bottlenecked-exporting/index.md).
+The reason seem to be the different backpressure. Backpressure has been decreased from ~20 % to 5-10%. This might be because our backpressure strategy has recently changed and now takes exporting into account. See also [related chaos day about this topic](../2024-07-25-Using-flow-control-to-handle-bottlenecked-exporting/index.md).
 
 ##### Additional finding
 
-A interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
+An interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
 
 ![import-delay](import-delay.png)
 
@@ -223,9 +223,9 @@ In our benchmark after the importer failed, it took ~20 minutes until the backlo
 ![recover-import-delay](import-delay-recover.png)
 
 This shows that Operate, especially the importer is quite sensitive to restarts. This is likely to be changed and improved when
-Operates importing mechanism is moved into Zeebe, as separate exporter see [related GH issue](https://github.com/camunda/camunda/issues/16912).
+Operates importing mechanism is moved into Zeebe, as a separate exporter see [related GH issue](https://github.com/camunda/camunda/issues/16912).
 
-On lower load, the impact of an importer restart is negligible, as we can see below.
+On a lower load, the impact of an importer restart is negligible, as we can see below.
 
 ![no-impoact-low-load-restart](no-import-delay-restart-low-load.png)
 
@@ -233,7 +233,7 @@ On lower load, the impact of an importer restart is negligible, as we can see be
 
 > When we set the exporting/flush delay to a small value (under 1 second), we are affecting the import throughput negatively
 
-We were not able to set the `bulk.delay` to a smaller value then 1 second, as the configuration only accepts longs. The values seem to be expected to be seconds. When setting it to zero, no improvement has been observed (versus one second).
+We were not able to set the `bulk.delay` to a smaller value than 1 second, as the configuration only accepts longs. The values seem to be expected to be seconds. When setting it to zero, no improvement has been observed (versus one second).
 
 ## Potential improvements
 
