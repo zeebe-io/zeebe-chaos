@@ -212,6 +212,18 @@ In the recent benchmark, we almost reach our target load (150 PI/s) with 147 pro
 
 The reason seem to be the different backpressure. Backpressure has been decreased from ~20 % to 5-10%. This might be because our backpressure strategy has recently changed and now takes exporting into account. See also [related chaos day about this topic](../2024-07-25-Using-flow-control-to-handle-bottlenecked-exporting/index.md).
 
+_**Update**_:
+
+Looking into it further, the backpressure is not affected by the newest feature (as it was not enabled by default). This was discussed internally with the Zeebe team.
+
+![higher-load-less-throughput-commit-latency](higher-load-less-throughput-commit-latency.png)
+
+The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, which this is.
+
+The fast benchmark, with the configured exporting, has a much better commit latency. It is unlikely that this configuration affected this part of the system. We will have to retry the both benchmarks.
+
+![higher-load-higher-throughput](higher-load-higher-throughput-commit-latency.png)
+
 ##### Additional finding
 
 An interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
