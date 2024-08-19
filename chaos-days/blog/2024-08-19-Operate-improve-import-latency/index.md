@@ -218,9 +218,9 @@ Looking into it further, the backpressure is not affected by the newest feature 
 
 ![higher-load-less-throughput-commit-latency](higher-load-less-throughput-commit-latency.png)
 
-The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, which this is.
+The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, why this is.
 
-The fast benchmark, with the configured exporting, has a much better commit latency. It is unlikely that this configuration affected this part of the system. We will have to retry the both benchmarks.
+The faster benchmark, with the configured exporting, has a much better commit latency. It is unlikely that the exporter configuration affected this part of the system. We will have to retry the both benchmarks.
 
 ![higher-load-higher-throughput](higher-load-higher-throughput-commit-latency.png)
 
