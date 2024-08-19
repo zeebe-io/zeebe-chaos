@@ -4,9 +4,9 @@ title:  "Operate improve import latency"
 date:   2024-08-19
 categories: 
   - chaos_experiment 
-  - bpmn
+  - operate
 tags:
-  - availability
+  - performance
 authors: zell
 ---
 
