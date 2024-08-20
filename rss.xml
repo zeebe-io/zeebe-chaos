@@ -16,7 +16,7 @@
             <description><![CDATA[In our last Chaos Day we experimented with Operate and different load (Zeebe throughput). We observed that a higher load caused a lower import latency in Operate. The conclusion was that it might be related to Zeebe's exporting configuration, which is affected by a higher load.]]></description>
             <content:encoded><![CDATA[<p><a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-load-handling">In our last Chaos Day</a> we experimented with Operate and different load (Zeebe throughput). We observed that a higher load caused a lower import latency in Operate. The conclusion was that it might be related to Zeebe's exporting configuration, which is affected by a higher load.</p>
 <p>In today's chaos day we want to verify how different export and import configurations can affect the importing latency.</p>
-<p><strong>TL;DR;</strong> We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply reducing the <code>bulk.delay</code> configuration. This worked on load and even higher load, whereas on higher load we have even improved Zeebe's throughput by ~13%.</p>
+<p><strong>TL;DR;</strong> We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply educing the <code>bulk.delay</code> configuration. This worked on load and even higher load, without significant issues.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="background">Background<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency#background" class="hash-link" aria-label="Direct link to Background" title="Direct link to Background">​</a></h2>
 <p><em>In the following I want to briefly explain a bit more the background of how exporting and importing play together. If you are already aware feel free to jump to the <a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency#chaos-experiment">next section</a>.</em></p>
 <hr>
@@ -141,6 +141,14 @@ benchmark <a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/16/Operate-loa
 <p>The slower benchmark, seem to have a degraded commit latency, which in consequence slows down the whole system. It is unclear right now, why this is.</p>
 <p>The faster benchmark, with the configured exporting, has a much better commit latency. It is unlikely that the exporter configuration affected this part of the system. We will have to retry the both benchmarks.</p>
 <p><img decoding="async" loading="lazy" alt="higher-load-higher-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/higher-load-higher-throughput-commit-latency-fe734971e6c84fd5fcc91f0be184c03b.png" width="1909" height="525" class="img_ev3q"></p>
+<p><em><strong>Update 20-08-2024</strong></em></p>
+<p>We run additional benchmarks to verify the behavior on high load. This time we haven't seen any differences in terms
+of processing performance in both benchmarks.</p>
+<p>The benchmark without the configuration, reaches similar numbers (146 PI/s), as the other before.</p>
+<p><img decoding="async" loading="lazy" alt="20-08-high-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/2024-08-20_high-load-throughput-9af777e2e4b2ca7f505630269e5dfc26.png" width="2539" height="383" class="img_ev3q"></p>
+<p>Benchmark with configuring the flush delay reaches comparable numbers.</p>
+<p><img decoding="async" loading="lazy" alt="20-08-high-throughput" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/2024-08-20_high-load-throughput-lower-delay-b7a3a17768405a0cf71ee848cb882bae.png" width="2539" height="376" class="img_ev3q"></p>
+<p>During running the benchmarks we run into another issue, for which we opened the following <a href="https://github.com/camunda/camunda/issues/21376" target="_blank" rel="noopener noreferrer">issue #21376</a>.</p>
 <h5 class="anchor anchorWithStickyNavbar_LWe7" id="additional-finding">Additional finding<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency#additional-finding" class="hash-link" aria-label="Direct link to Additional finding" title="Direct link to Additional finding">​</a></h5>
 <p>An interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.</p>
 <p><img decoding="async" loading="lazy" alt="import-delay" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/import-delay-90beae953db149d42fff5c116f738a60.png" width="1908" height="446" class="img_ev3q"></p>
@@ -158,7 +166,9 @@ Operates importing mechanism is moved into Zeebe, as a separate exporter see <a 
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="potential-improvements">Potential improvements<a href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency#potential-improvements" class="hash-link" aria-label="Direct link to Potential improvements" title="Direct link to Potential improvements">​</a></h2>
 <ul>
 <li>Allow to configure <code>bulk.delay</code> in non-second format (be able to specify the time/duration format)</li>
+<li>The <code>bulk.delay</code> configures a timer, which gets triggered with the given value. This means the flush can happen, even if flush was executed before causing flush with little buffers.</li>
 <li>Importing is highly affected by pod restarts, this can cause issues on higher load, due to a growing backlog. Making import idempotent, and scaling importers would help here.</li>
+<li><a href="https://github.com/camunda/camunda/issues/21376" target="_blank" rel="noopener noreferrer">Zeebe exporting latency can increase significantly without clear root cause #21376</a>.</li>
 </ul>]]></content:encoded>
             <category>performance</category>
         </item>
