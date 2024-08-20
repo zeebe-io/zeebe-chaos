@@ -224,6 +224,21 @@ The faster benchmark, with the configured exporting, has a much better commit la
 
 ![higher-load-higher-throughput](higher-load-higher-throughput-commit-latency.png)
 
+_**Update 20-08-2024**_
+
+We run additional benchmarks to verify the behavior on high load. This time we haven't seen any differences in terms
+of processing performance in both benchmarks.
+
+The benchmark without the configuration, reaches similar numbers (146 PI/s), as the other before.
+
+![20-08-high-throughput](2024-08-20_high-load-throughput.png)
+
+Benchmark with configuring the flush delay reaches comparable numbers. 
+
+![20-08-high-throughput](2024-08-20_high-load-throughput-lower-delay.png)
+
+During running the benchmarks we run into another issue, for which we opened the following [issue #21376](https://github.com/camunda/camunda/issues/21376).
+
 ##### Additional finding
 
 An interesting additional finding has been done. When the Operate import fails or restarts (that can easily happen with preemptive nodes), then the importer backlog can be significant. This is especially an issue on higher constant load.
@@ -250,7 +265,9 @@ We were not able to set the `bulk.delay` to a smaller value than 1 second, as th
 ## Potential improvements
 
 * Allow to configure `bulk.delay` in non-second format (be able to specify the time/duration format)
+* The `bulk.delay` configures a timer, which gets triggered with the given value. This means the flush can happen, even if flush was executed before causing flush with little buffers.
 * Importing is highly affected by pod restarts, this can cause issues on higher load, due to a growing backlog. Making import idempotent, and scaling importers would help here.
+* [Zeebe exporting latency can increase significantly without clear root cause #21376](https://github.com/camunda/camunda/issues/21376).
 
 
 
