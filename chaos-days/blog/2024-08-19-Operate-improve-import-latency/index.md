@@ -16,7 +16,7 @@ authors: zell
 
 In today's chaos day we want to verify how different export and import configurations can affect the importing latency. 
 
-**TL;DR;** We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply reducing the `bulk.delay` configuration. This worked on load and even higher load, whereas on higher load we have even improved Zeebe's throughput by ~13%.
+**TL;DR;** We were able to decrease the import latency by ~35% (from 5.7 to 3.7 seconds), by simply educing the `bulk.delay` configuration. This worked on load and even higher load, without significant issues.
 
 <!--truncate-->
 
