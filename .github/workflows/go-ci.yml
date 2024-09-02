@@ -50,11 +50,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - id: metadata
-        name: Fetch dependency metadata
-        uses: dependabot/fetch-metadata@v1.3.6
-        with:
-          github-token: "${{ secrets.AUTO_MERGE_GITHUB_TOKEN }}"
       - id: merge
         name: Merge PR
         run: gh pr merge ${{ github.event.pull_request.number }} --merge
