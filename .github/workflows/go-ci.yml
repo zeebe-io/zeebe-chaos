@@ -19,7 +19,7 @@ jobs:
       run:
         working-directory: go-chaos
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -49,12 +49,7 @@ jobs:
       checks: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v3
-      - id: metadata
-        name: Fetch dependency metadata
-        uses: dependabot/fetch-metadata@v1.3.6
-        with:
-          github-token: "${{ secrets.AUTO_MERGE_GITHUB_TOKEN }}"
+      - uses: actions/checkout@v4
       - id: merge
         name: Merge PR
         run: gh pr merge ${{ github.event.pull_request.number }} --merge
