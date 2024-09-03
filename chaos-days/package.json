@@ -18,7 +18,7 @@
     "@docusaurus/preset-classic": "3.5.1",
     "@mdx-js/react": "3.0.1",
     "@svgr/webpack": "^8.0.0",
-    "clsx": "^1.1.1",
+    "clsx": "^2.0.0",
     "file-loader": "^6.2.0",
     "plugin-image-zoom": "github:flexanalytics/plugin-image-zoom",
     "prism-react-renderer": "^1.2.1",
