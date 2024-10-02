@@ -5,7 +5,7 @@ go 1.22.0
 toolchain go1.23.1
 
 require (
-	github.com/camunda/zeebe/clients/go/v8 v8.5.6
+	github.com/camunda/zeebe/clients/go/v8 v8.5.8
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
