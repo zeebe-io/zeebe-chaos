@@ -19,7 +19,7 @@ This definition and everything related to that can be found under [principlesofc
 
 ### Resources
 
-Resources which you might find interesting regarding to that topic.
+Resources which you might find interesting regarding that topic.
 
  * https://principlesofchaos.org/?lang=ENcontent
  * https://www.oreilly.com/library/view/chaos-engineering/9781491988459/
@@ -31,7 +31,9 @@ Resources which you might find interesting regarding to that topic.
 In order to test or execute chaos experiments we use an tool called [chaos-toolkit](https://chaostoolkit.org/), which
 makes it easy to create chaos experiments and also automate them later on.
 
-[Complete list of experiments](inventory.md) 
+All our current experiments are located under `chaos-days/blog/`, for more 
+details please have a look at the [README](chaos-days/blog/README.md).
 
-All our current experiments are located under `chaos-experiments/`, for more details please have a look
-at the [README](chaos-experiments/README.md).
+Alternatively all our chaos-days experiments can be found [here](https://zeebe-io.github.io/zeebe-chaos/) in blog 
+format.
+
