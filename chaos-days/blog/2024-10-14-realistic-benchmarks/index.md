@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "Using realist benchmarks to test performance to derive new cluster configurations"
+title:  "Optimizing cluster sizing using a real world benchmark"
 date:   2024-10-14
 categories: 
   - chaos_experiment 
@@ -12,15 +12,16 @@ authors: rodrigo
 
 # Chaos Day Summary
 
-Our first goal is to further improve and make the benchmarks more 
-realistic, by using a process model that covers the average process 
-orchestration use case and a payload that reflects the reality. 
+Our first goal is to have a benchmark that better reflects a realistic use 
+case from our clients. To achieve this we used a new process model that resembles real use
+cases that we have seen in the field. This process model is a bank dispute
+process that has several service tasks and multi instances.
 
-The second goal is to use these benchmarks to derive new minimal viable 
-cluster configuration that can handle at least 40 process instances per 
+The second goal is to use these benchmarks to derive new optimized 
+cluster configuration that can handle at least 100 process instances per 
 second, while maintaining low backpressure and low latency.
 
-The third goal is to scale out minimal viable cluster configuration 
+The third goal is to scale out optimized cluster configuration 
 resources linearly and see if the performance scales accordingly.
 
 **TL;DR;**
@@ -36,10 +37,10 @@ backpressure and low latency.
 
 ### Expected
 
-We do expect that we can find a cluster configuration that can handle at 40 
+We expect that we can find a cluster configuration that can handle at 100 
 tasks second to be significantly reduced in resources in relation to our 
-smaller clusters ([G3-S HA Plan](https://accounts.cloud.dev.ultrawombat.com/consoleadmin/clusterplans/0af08654-28ec-413a-8dcf-c5938e828ddd)) since 
-these can process 50-70 tasks per second. 
+smaller clusters (G3-S HA Plan) since these can process significantly above 
+our initial target.
 
 We also expect that we can scale this base configuration linearly, and that 
 the processing tasks rate to grow initially a bit faster than linearly due to 
@@ -50,10 +51,16 @@ to the partition count being a bottleneck.
 
 #### Benchmarking a realistic process model
 
-In our previous benchmarks we used a simple process model with a single 
-task with several decision symbols. For the newer benchmarks we wanted to 
-increase significantly the number of symbols and service tasks used as well 
-to make the load more configurable.
+In the past, we discussed several times ways improve our coverage and use 
+different process models. What we did is to run on a weekly basis a 
+benchmark with a higher load, with still the one task process, but also a 
+mixed benchmark which has a process with a message start event and a task, 
+plus a process with a timer.
+
+We want to further improve and make the benchmarks more realistic, by using 
+a process model that covers the average process orchestration use case,
+with a higher amount of decision symbols, service tasks, and a payload that 
+reflects the reality.
 
 ![bank-customer-complaint-dispute-handling](bank-customer-complaint-dispute-handling.png)
 
@@ -71,15 +78,15 @@ start benchmarking or different cluster configurations where we measure the
 performance by how many process instances are completed per second, while 
 maintaining low backpressure (bellow 10%) as to preserve user experience. 
 
-#### Minimal Viable Requirements for our Cluster
+#### Minimal Requirements for our Cluster
 
-For our minimal viable cluster configuration we determined though several 
-metrics on users and our own experience that we need to be able to handle 
-at least 40 process instances per second, or 3.5 million tasks per day.
+Based on known customer usage, and our own previous experiments, we 
+determined that the new cluster would need to create and complete a 
+baseline of 100 tasks per second, or about 8.6 million tasks per day.
 
 Other metrics that we want to preserve and keep track are the backpressure 
 to preserve user experience, guarantee that exporting speed can keep up 
-with the processing speed, write to import latency which tells us how long 
+with the processing speed, write-to-import latency which tells us how long 
 it takes for a record to be written to being imported by our other 
 apps such as the operator.
 
@@ -89,13 +96,13 @@ For our new configurations the only resources that we are going to change
 are the ones relevant to the factors described above. These are the 
 resources allocated to our zeebe-brokers, gateway and elasticSearch.
 
-Our starting point in resources was the configuration for our [G3-S HA Plan](https://accounts.cloud.dev.ultrawombat.com/consoleadmin/clusterplans/0af08654-28ec-413a-8dcf-c5938e828ddd) 
+Our starting point in resources was the configuration for our G3-S HA Plan
 as this already had the capability to significantly outperform the current 
-goal of 40 tasks per second (close to 50-70 in reality). 
+goal of 100 tasks per second. 
 
 The next step was to deploy our realistic benchmark, with a payload of 5 
-costumer disputes per instance and start 2 instances per second, this 
-generated approximately 40 tasks per second.
+customer disputes per instance and start 7 instances per second, this 
+generated approximately 120 tasks per second (some buffer was added to guarantee performance).
 
 After this we reduced the resources iteratively until we saw any increase 
 in backpressure, given that no there was no backlog of records, and no 
@@ -120,7 +127,6 @@ configuration cluster is the G3 - BasePackage HA.
 | zeebeAnalytics         | 0.4       | 0.45               |
 | connectorBridge        | 0.4       | 0.512              |
 | **TOTAL**              | **16.58** | **25.762**         |
-[Cluster Plan](https://accounts.cloud.dev.ultrawombat.com/consoleadmin/clusterplans/0af08654-28ec-413a-8dcf-c5938e828ddd)
 </div>
 
 <div style="width: 48%;">
@@ -136,12 +142,11 @@ configuration cluster is the G3 - BasePackage HA.
 | zeebeAnalytics        | 0.2       | 0.3                |
 | connectorBridge       | 0.4       | 1                  |
 | **TOTAL**             | **8.7**   | **14.9**           |
-[Cluster Plan](https://accounts.cloud.dev.ultrawombat.com/consoleadmin/clusterplans/9b8b444a-636e-48cf-be83-2387a0d11aba)
 </div>
 
 </div>
 
-##### Reduction in Resources for our Minimal Viable Cluster
+##### Reduction in Resources for our Optimized Cluster
 
 |                       |   CPU Reduction (%) |   Memory Reduction (%) |
 |:----------------------|--------------------:|-----------------------:|
