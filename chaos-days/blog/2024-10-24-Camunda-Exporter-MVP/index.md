@@ -12,13 +12,13 @@ authors: zell
 
 # Chaos Day Summary
 
-After a long pause I come back with some interesting to share and experiment with. Right now we are re-architecture
-Camunda 8. One important part (where I'm contributing on) is to get rid of Webapps Importer/Archivers and move 
+After a long pause, I come back with an interesting topic to share and experiment with. Right now we are re-architecture
+Camunda 8. One important part (which I'm contributing to) is to get rid of Webapps Importer/Archivers and move 
 data aggregation closer to the engine (inside a Zeebe Exporter).
 
 Today, I want to experiment with the first increment/iteration of our so-called MVP. The MVP targets green field installations where you simply deploy Camunda (with a new Camunda Exporter enabled) without Importers.
 
-**TL;DR;** All our experiments were successful. The MVP is a success, and we are looking forward to further improvements, additions. Next stop Iteration 2: Adding Archiving historic data and prepare for data migration (and polish MVP).
+**TL;DR;** All our experiments were successful. The MVP is a success, and we are looking forward to further improvements and additions. Next stop Iteration 2: Adding Archiving historic data and preparing for data migration (and polishing MVP).
 
 ## Camunda Exporter
 
@@ -34,9 +34,9 @@ It has certain challenges, like:
 * Maintenance: duplication of importer and archiver logic
 * Performance: Round trip (delay) of data visible to the user
 * Complexity: installation and operational complexity (we need separate pods to deploy)
-* Scalability: Importer are not scalable in the same way as Zeebe or brokers (and workload) are.
+* Scalability: The Importer is not scalable in the same way as Zeebe or brokers (and workload) are.
 
-These challenges we obviously wanted to overcome and the plan (as teasered earlier) is to get rid of the need of separate importers and archivers (and in general to have separate application; but this is a different topic).
+These challenges we obviously wanted to overcome and the plan (as mentioned earlier) is to get rid of the need of separate importers and archivers (and in general to have separate application; but this is a different topic).
 
 The plan for this project looks something like this:
 
@@ -47,10 +47,10 @@ We plan to:
 1. Harmonize the existing indices stored in Elasticsearch/Opensearch
    2. Space: Reduce the unnecessary data duplication  
 2. Move importer and archiver logic into a new Camunda exporter
-   3. Performance: This should allow us to reduce one additional hop (as we don't need to use ES/OS as queue)
+   3. Performance: This should allow us to reduce one additional hop (as we don't need to use ES/OS as a queue)
    4. Maintenance: Indices and business logic is maintained in one place
-   5. Scalability: With this approach we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
-   6. Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application needed.
+   5. Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
+   6. Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.
 
 Note: Optimize is right now out of scope (due to time), but will later be part of this as well.
 
@@ -75,15 +75,15 @@ What I want to verify today, when I deploy the Camunda 8 stack with Camunda Expo
 
   * Are webapps schemas created in ES, by the new Camunda Exporter
   * Is data exported into the indices
-  * Can Operate show data ? (right now just checking for basic functionality) 
+  * Can Operate show data? (right now just checking for basic functionality) 
 
-Additionally, I would like to understand how the performance looks like, the system behaves with two ES exporters (the old ES exporter and the new Camunda Exporter), and more.
+Additionally, I would like to understand what the performance looks like, how the system behaves with two ES exporters (the old ES exporter and the new Camunda Exporter), and more.
 
-For our experiment I use a [new defined realistic benchmark](https://github.com/camunda/camunda/issues/21472) (with a more complex process model). More about this in a separate blog post. 
+For our experiment, I use a [newly defined realistic benchmark](https://github.com/camunda/camunda/issues/21472) (with a more complex process model). More about this in a separate blog post. 
 
 ### Expected
 
-I can deploy the newest helm charts (alpha stage), with disabling Importer manually and will be able to use Zeebe and Operate together. See verifications above.
+I can deploy the newest helm charts (alpha stage), by disabling Importer manually, and will be able to use Zeebe and Operate together. See the verifications above.
 
 ### Actual
 
@@ -111,7 +111,7 @@ env:
 value: "false"
 ```
 
-With that we can install our chart:
+With that, we can install our chart:
 
 ```shell
 $ helm install zeebe-benchmark-test charts/zeebe-benchmark/ --render-subchart-notes -f charts/zeebe-benchmark/values-realistic-benchmark.yaml --set global.elasticsearch.prefix=null
@@ -124,7 +124,7 @@ After our benchmark chart is deployed we can already see the first time our Camu
 ![firsttime](first-time-seeing-camunda-exporter.png)
 
 
-Worth to mention that the Camunda Export already comes with some metrics, visibile on our Zeebe Dashboard
+Worth mentioning that the Camunda Export already comes with some metrics, visible on our Zeebe Dashboard
 
 ![metrics](mvp-c8-exporter-metrics.png)
 ![metrics2](mvp-c8-exporter-metrics2.png)
@@ -142,9 +142,9 @@ ERROR - Failed to open exporter 'CamundaExporter'. Retrying...
 
 ![log](exporter-opened.png)
 
-At some point the exporter can be opened and the loop stops. 
+At some point, the exporter can be opened and the loop stops. 
 
-I think generally it shouldn't be an ERROR but more an WARN (but these are details we can fix). Follow-up.
+I think generally it shouldn't be an ERROR but more a WARN (but these are details we can fix). Follow-up.
 
 
 ### Verify Operate Data
