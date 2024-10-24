@@ -187,30 +187,31 @@ configurations:
 
 |                          | Base 1x | Base 2x | Base 3x | Base 4x |
 |:-------------------------|--------:|--------:|--------:|--------:|
-| Process Instances/s      |       2 |       6 |       9 |      20 |
-| Tasks/s                  |      40 |     108 |     160 |     360 |
-| Average Backpressure     |      0% |      5% |      9% |      2% |
-| Write-to-Import Latency  |    2.8s |      9s |      3s |  2.5min |
-| Write-to-Process Latency |    40ms |   200ms |   240ms |    15ms |
-| Records Processed        |     750 |    2100 |    3700 |    6750 |
-| Records Exported         |     700 |    1900 |    3200 |    5700 |
+| Process Instances/s      |       7 |      12 |      23 |      27 |
+| Tasks/s                  |     125 |     217 |     414 |     486 |
+| Average Backpressure     |      2% |      2% |      3% |      6% |
+| Write-to-Import Latency  |     90s |    120s |    150s |    390s |
+| Write-to-Process Latency |   140ms |    89ms |   200ms |   160ms |
+| Records Processed Rate   |    2500 |    4700 |    7800 |   11400 |
+| Records Exported Rate    |    2100 |    3900 |    6500 |    9200 |
 
 This first observations is that the performance scales particularly well by 
 just adding more resources to the cluster, particularly for a linear 
 increase of the resources the performance as measured by tasks completed 
-increases slightly more than linearly. This might be due to the fact that 
-for a 2x of the resources the application overhead of the system is 
-reduced in proportion to the resources added.
+increases slightly less than linearly (comparing the 1x and 4x task/s we 
+get 388% the initial rate).  
 
 This a very good result as it means that we can scale our system linearly 
 (at least initially) to handle the expected increase in loads.
 
 Importantly, the backpressure is kept low, and the write-to-import latency 
-only increases significantly at the last 4x configuration when kept at this 
-max rate. This might imply that a 4x configuration the amount records 
-generated starts to be too much for either elasticSearch or our web apps 
-that import these records to handle. Some further investigation could be 
-done here to investigate the bottleneck.
+only increases significantly if we leave the cluster running at max rate 
+for long periods of time. For slightly lower rates the write-to-import 
+latency is kept in the single digits of seconds or lower tens. This might 
+imply that a these sustained max rates, the amount records generated starts 
+to be too much for either elasticSearch or our web apps that import these 
+records to handle. Some further investigation could be done here to 
+investigate the bottleneck.
 
 Another metric also relevant but not shown in this table is the backlog of 
 records not exported, which kept at almost null through all the experiments 
@@ -220,7 +221,7 @@ conducted.
 
 During the initial tests, we had several OOM errors in the gateways pods. 
 After some investigation, we found that this was exclusive to the Camunda 8.
-6.0 version, which consumes more memory in the gateway than the previous versions. This 
-explains why the gateway memory limits were the only resource that was 
-increased in the new reduced cluster configuration. 
+6.0 version, which consumes more memory in the gateway than the previous 
+versions. This explains why the gateway memory limits were the only 
+resource that was increased in the new reduced cluster configuration. 
 
