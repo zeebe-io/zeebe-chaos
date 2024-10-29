@@ -12,25 +12,21 @@ authors: rodrigo
 
 # Chaos Day Summary
 
-Our first goal is to have a benchmark that better reflects a realistic use 
-case from our clients. To achieve this we used a new process model that resembles real use
-cases that we have seen in the field. This process model is a bank dispute
-process that has several service tasks and multi instances.
-
-The second goal is to use these benchmarks to derive new optimized 
-cluster configuration that can handle at least 100 process instances per 
+Our first goal of this experiment is to use a benchmarks to derive new optimized cluster configuration that can handle at least 100 process instances per 
 second, while maintaining low backpressure and low latency.
 
-The third goal is to scale out optimized cluster configuration 
+For our experiment, we use a newly defined realistic benchmark (with a more complex process model). More about this in a separate blog post.
+
+The second goal is to scale out optimized cluster configuration 
 resources linearly and see if the performance scales accordingly.
 
 **TL;DR;**
 
-We used a realistic process model to benchmark our system and derived a new 
+We used a realistic benchmark to derive a new 
 cluster configuration based on previous requirements. 
 
 When we scale this base configuration linearly we see that the performance
-increases significantly more than linearly, while maintaining low 
+increases almost linearly as well, while maintaining low 
 backpressure and low latency.
 
 ## Chaos Experiment
@@ -48,35 +44,6 @@ the lower relative overhead, and if we keep expanding further to flatten due
 to the partition count being a bottleneck.
 
 ### Actual
-
-#### Benchmarking a realistic process model
-
-In the past, we discussed several times ways improve our coverage and use 
-different process models. What we did is to run on a weekly basis a 
-benchmark with a higher load, with still the one task process, but also a 
-mixed benchmark which has a process with a message start event and a task, 
-plus a process with a timer.
-
-We want to further improve and make the benchmarks more realistic, by using 
-a process model that covers the average process orchestration use case,
-with a higher amount of decision symbols, service tasks, and a payload that 
-reflects the reality.
-
-![bank-customer-complaint-dispute-handling](bank-customer-complaint-dispute-handling.png)
-
-For this realistic benchmark, we tried to use a situation closer to a real 
-world scenario, where a bank customer complaint dispute handling process is
-handled by several service tasks. Additionally, fraud claim 
-investigation part of the process is unfolded in multiple instances. This 
-can be configured in our instance payload by how many disputes we send to 
-scale up or down the number of multi instances in the fraud claim 
-investigation, which enables to scale the load of each process instance.
-
-Finally, in deploying our benchmark we can define the number of instances 
-started per second. After choosing a uniform payload for all tests we can 
-start benchmarking or different cluster configurations where we measure the 
-performance by how many process instances are completed per second, while 
-maintaining low backpressure (bellow 10%) as to preserve user experience. 
 
 #### Minimal Requirements for our Cluster
 
