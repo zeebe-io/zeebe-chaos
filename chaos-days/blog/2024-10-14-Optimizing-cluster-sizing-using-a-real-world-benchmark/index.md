@@ -6,7 +6,7 @@ categories:
   - chaos_experiment 
   - performance
 tags:
-  - benchmark
+  - performance
 authors: rodrigo
 ---
 
@@ -79,10 +79,6 @@ The results for our new cluster are specified bellow in the tables, where
 our starting cluster configuration is the G3-S HA Plan and the new 
 configuration cluster is the G3 - BasePackage HA.
 
-<div style="display: flex; justify-content: space-between;">
-
-<div style="width: 48%;">
-
 | G3-S HA                | CPU Limit | Memory Limit in GB |
 |------------------------|-----------|--------------------|
 | operate                | 2         | 2                  |
@@ -94,9 +90,6 @@ configuration cluster is the G3 - BasePackage HA.
 | zeebeAnalytics         | 0.4       | 0.45               |
 | connectorBridge        | 0.4       | 0.512              |
 | **TOTAL**              | **16.58** | **25.762**         |
-</div>
-
-<div style="width: 48%;">
 
 | G3 - BasePackage HA   | CPU Limit | Memory Limit in GB |
 |-----------------------|-----------|--------------------|
@@ -109,9 +102,7 @@ configuration cluster is the G3 - BasePackage HA.
 | zeebeAnalytics        | 0.2       | 0.3                |
 | connectorBridge       | 0.4       | 1                  |
 | **TOTAL**             | **8.7**   | **14.9**           |
-</div>
 
-</div>
 
 ##### Reduction in Resources for our Optimized Cluster
 
