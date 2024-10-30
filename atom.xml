@@ -139,6 +139,114 @@ data aggregation closer to the engine (inside a Zeebe Exporter).</p>
         <category label="performance" term="performance"/>
     </entry>
     <entry>
+        <title type="html"><![CDATA[Optimizing cluster sizing using a real world benchmark]]></title>
+        <id>https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark</id>
+        <link href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark"/>
+        <updated>2024-10-14T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Our first goal of this experiment is to use a benchmarks to]]></summary>
+        <content type="html"><![CDATA[<p>Our first goal of this experiment is to use a benchmarks to
+derive new optimized cluster configuration that can handle
+at least 100 tasks per second, while maintaining low backpressure and low latency.</p>
+<p>For our experiment, we use a newly defined realistic benchmark (with a more complex process model). More about this in a separate blog post.</p>
+<p>The second goal is to scale out optimized cluster configuration
+resources linearly and see if the performance scales accordingly.</p>
+<p><strong>TL;DR;</strong></p>
+<p>We used a realistic benchmark to derive a new
+cluster configuration based on previous requirements.</p>
+<p>When we scale this base configuration linearly we see that the performance
+increases almost linearly as well, while maintaining low
+backpressure and low latency.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="chaos-experiment">Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
+<p>We expect that we can find a cluster configuration that can handle at 100
+tasks second to be significantly reduced in resources in relation to our
+smaller clusters (G3-S HA Plan) since these can process significantly above
+our initial target.</p>
+<p>We also expect that we can scale this base configuration linearly, and that
+the processing tasks rate to grow initially a bit faster than linearly due to
+the lower relative overhead, and if we keep expanding further to flatten due
+to the partition count being a bottleneck.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="minimal-requirements-for-our-cluster">Minimal Requirements for our Cluster<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#minimal-requirements-for-our-cluster" class="hash-link" aria-label="Direct link to Minimal Requirements for our Cluster" title="Direct link to Minimal Requirements for our Cluster">​</a></h4>
+<p>Based on known customer usage, and our own previous experiments, we
+determined that the new cluster would need to create and complete a
+baseline of 100 tasks per second, or about 8.6 million tasks per day.</p>
+<p>Other metrics that we want to preserve and keep track are the backpressure
+to preserve user experience, guarantee that exporting speed can keep up
+with the processing speed, write-to-import latency which tells us how long
+it takes for a record to be written to being imported by our other
+apps such as the operator.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="reverse-engineering-the-cluster-configuration">Reverse Engineering the Cluster Configuration<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#reverse-engineering-the-cluster-configuration" class="hash-link" aria-label="Direct link to Reverse Engineering the Cluster Configuration" title="Direct link to Reverse Engineering the Cluster Configuration">​</a></h4>
+<p>For our new configurations the only resources that we are going to change
+are the ones relevant to the factors described above. These are the
+resources allocated to our zeebe-brokers, gateway and elasticSearch.</p>
+<p>Our starting point in resources was the configuration for our G3-S HA Plan
+as this already had the capability to significantly outperform the current
+goal of 100 tasks per second.</p>
+<p>The next step was to deploy our realistic benchmark, with a payload of 5
+customer disputes per instance and start 7 instances per second, this
+generated approximately 120 tasks per second (some buffer was added to guarantee performance).</p>
+<p>After this we reduced the resources iteratively until we saw any increase
+in backpressure, given that no there was no backlog of records, and no
+significant increase in the write to import latency.</p>
+<p>The results for our new cluster are specified bellow in the tables, where
+our starting cluster configuration is the G3-S HA Plan and the new
+configuration cluster is the G3 - BasePackage HA.</p>
+<table><thead><tr><th>G3-S HA</th><th>CPU Limit</th><th>Memory Limit in GB</th></tr></thead><tbody><tr><td>operate</td><td>2</td><td>2</td></tr><tr><td>operate.elasticsearch</td><td>6</td><td>6</td></tr><tr><td>optimize</td><td>2</td><td>2</td></tr><tr><td>tasklist</td><td>2</td><td>2</td></tr><tr><td>zeebe.broker</td><td>2.88</td><td>12</td></tr><tr><td>zeebe.gateway</td><td>0.9</td><td>0.8</td></tr><tr><td><strong>TOTAL</strong></td><td><strong>15.78</strong></td><td><strong>24.8</strong></td></tr></tbody></table>
+<table><thead><tr><th>G3 - BasePackage HA</th><th>CPU Limit</th><th>Memory Limit in GB</th></tr></thead><tbody><tr><td>operate</td><td>1</td><td>1</td></tr><tr><td>operate.elasticsearch</td><td>3</td><td>4.5</td></tr><tr><td>optimize</td><td>1</td><td>1.6</td></tr><tr><td>tasklist</td><td>1</td><td>1</td></tr><tr><td>zeebe.broker</td><td>1.5</td><td>4.5</td></tr><tr><td>zeebe.gateway</td><td>0.6</td><td>1</td></tr><tr><td><strong>TOTAL</strong></td><td><strong>8.1</strong></td><td><strong>13.6</strong></td></tr></tbody></table>
+<h5 class="anchor anchorWithStickyNavbar_LWe7" id="reduction-in-resources-for-our-optimized-cluster">Reduction in Resources for our Optimized Cluster<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#reduction-in-resources-for-our-optimized-cluster" class="hash-link" aria-label="Direct link to Reduction in Resources for our Optimized Cluster" title="Direct link to Reduction in Resources for our Optimized Cluster">​</a></h5>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:right">CPU Reduction (%)</th><th style="text-align:right">Memory Reduction (%)</th></tr></thead><tbody><tr><td style="text-align:left">zeebe.broker</td><td style="text-align:right">47.92</td><td style="text-align:right">62.5</td></tr><tr><td style="text-align:left">zeebe.gateway</td><td style="text-align:right">33.33</td><td style="text-align:right">-25.0</td></tr><tr><td style="text-align:left">operate.elasticsearch</td><td style="text-align:right">50.00</td><td style="text-align:right">25.0</td></tr></tbody></table>
+<p>Total cluster reduction:</p>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:right">G3-S HA</th><th style="text-align:right">G3 - BasePackage HA</th><th style="text-align:right">Reduction (%)</th></tr></thead><tbody><tr><td style="text-align:left">CPU Limits</td><td style="text-align:right">15.78</td><td style="text-align:right">8.1</td><td style="text-align:right">49</td></tr><tr><td style="text-align:left">Memory Limits</td><td style="text-align:right">24.8</td><td style="text-align:right">13.6</td><td style="text-align:right">45</td></tr></tbody></table>
+<p>The process of reducing the hardware requirements was donne initially by
+scaling down the resources of the zeebe-broker, gateway and elasticSearch.
+The other components were left untouched, as they had no impact in our key
+metrics, and were scaled down later in separate experiences to maintain
+user experience.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="scaling-out-the-cluster">Scaling out the Cluster<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#scaling-out-the-cluster" class="hash-link" aria-label="Direct link to Scaling out the Cluster" title="Direct link to Scaling out the Cluster">​</a></h4>
+<p>Now for the scaling procedure we intend to see if we can linearly increase
+the allocated resources and having a corresponding performance increase,
+while keeping the backpressure low, low latency, and user experience.</p>
+<p>For this we started with the G3 - BasePackage HA configuration and
+incremented the load again until we saw any increase in backpressure,
+capture our key metrics and repeated the process for the cluster
+configuration resources respectively multiplied by 2x, 3x, and 4x.</p>
+<p>This means that the resources allocated for our clusters were:</p>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:right">Base 1x</th><th style="text-align:right">Base 2x</th><th style="text-align:right">Base 3x</th><th style="text-align:right">Base 4x</th></tr></thead><tbody><tr><td style="text-align:left">CPU Limits</td><td style="text-align:right">8.7</td><td style="text-align:right">17.4</td><td style="text-align:right">26.1</td><td style="text-align:right">34.8</td></tr><tr><td style="text-align:left">Memory Limits</td><td style="text-align:right">14.9</td><td style="text-align:right">29.8</td><td style="text-align:right">44.7</td><td style="text-align:right">59.6</td></tr></tbody></table>
+<p>The results in the table bellow show the performance of our several cluster
+configurations:</p>
+<table><thead><tr><th style="text-align:left"></th><th style="text-align:right">Base 1x</th><th style="text-align:right">Base 2x</th><th style="text-align:right">Base 3x</th><th style="text-align:right">Base 4x</th></tr></thead><tbody><tr><td style="text-align:left">Process Instances/s</td><td style="text-align:right">7</td><td style="text-align:right">12</td><td style="text-align:right">23</td><td style="text-align:right">27</td></tr><tr><td style="text-align:left">Tasks/s</td><td style="text-align:right">125</td><td style="text-align:right">217</td><td style="text-align:right">414</td><td style="text-align:right">486</td></tr><tr><td style="text-align:left">Average Backpressure</td><td style="text-align:right">2%</td><td style="text-align:right">2%</td><td style="text-align:right">3%</td><td style="text-align:right">6%</td></tr><tr><td style="text-align:left">Write-to-Import Latency</td><td style="text-align:right">90s</td><td style="text-align:right">120s</td><td style="text-align:right">150s</td><td style="text-align:right">390s</td></tr><tr><td style="text-align:left">Write-to-Process Latency</td><td style="text-align:right">140ms</td><td style="text-align:right">89ms</td><td style="text-align:right">200ms</td><td style="text-align:right">160ms</td></tr><tr><td style="text-align:left">Records Processed Rate</td><td style="text-align:right">2500</td><td style="text-align:right">4700</td><td style="text-align:right">7800</td><td style="text-align:right">11400</td></tr><tr><td style="text-align:left">Records Exported Rate</td><td style="text-align:right">2100</td><td style="text-align:right">3900</td><td style="text-align:right">6500</td><td style="text-align:right">9200</td></tr></tbody></table>
+<p>This first observations is that the performance scales particularly well by
+just adding more resources to the cluster, particularly for a linear
+increase of the resources the performance as measured by tasks completed
+increases slightly less than linearly (comparing the 1x and 4x task/s we
+get 388% the initial rate).</p>
+<p>This a very good result as it means that we can scale our system linearly
+(at least initially) to handle the expected increase in loads.</p>
+<p>Importantly, the backpressure is kept low, and the write-to-import latency
+only increases significantly if we leave the cluster running at max rate
+for long periods of time. For slightly lower rates the write-to-import
+latency is kept in the single digits of seconds or lower tens. This might
+imply that a these sustained max rates, the amount records generated starts
+to be too much for either ElasticSearch or our web apps that import these
+records to handle. Some further investigation could be done here to
+investigate the bottleneck.</p>
+<p>Another metric also relevant but not shown in this table is the backlog of
+records not exported, which kept at almost null through all the experiments
+conducted.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="bugs-found">Bugs found<a href="https://zeebe-io.github.io/zeebe-chaos/2024/10/14/Optimizing-cluster-sizing-using-a-real-world-benchmark#bugs-found" class="hash-link" aria-label="Direct link to Bugs found" title="Direct link to Bugs found">​</a></h3>
+<p>During the initial tests, we had several OOM errors in the gateways pods.
+After some investigation, we found that this was exclusive to the Camunda 8.
+6.0 version, which consumes more memory in the gateway than the previous
+versions. This explains why the gateway memory limits were the only
+resource that was increased in the new reduced cluster configuration.</p>]]></content>
+        <author>
+            <name>Rodrigo Lopes</name>
+            <uri>https://github.com/rodrigo-lourenco-lopes</uri>
+        </author>
+        <category label="performance" term="performance"/>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Improve Operate import latency]]></title>
         <id>https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency</id>
         <link href="https://zeebe-io.github.io/zeebe-chaos/2024/08/19/Operate-improve-import-latency"/>
@@ -1911,73 +2019,6 @@ This allows us to also view the details in Operate.</p>
 <p>I will create a follow-up issue to improve our experiment, so we can reproduce the critical bug.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="found-bugs">Found Bugs<a href="https://zeebe-io.github.io/zeebe-chaos/2022/08/02/deployment-distribution#found-bugs" class="hash-link" aria-label="Direct link to Found Bugs" title="Direct link to Found Bugs">​</a></h2>
 <p><em>none</em></p>]]></content>
-        <author>
-            <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
-        </author>
-        <category label="availability" term="availability"/>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Standalone Gateway in CCSaaS]]></title>
-        <id>https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS</id>
-        <link href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS"/>
-        <updated>2022-02-15T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[We recently introduced the Zeebe Standalone Gateway in CCSaaS. Today I wanted to do a first simple]]></summary>
-        <content type="html"><![CDATA[<p>We recently introduced the Zeebe Standalone Gateway in CCSaaS. Today I wanted to do a first simple
-chaos experiment with the gateway, where we just restart one gateway.</p>
-<p>Ideally in the future we could enable some gateway chaos experiments again, which we currently only support for <a href="https://github.com/zeebe-io/zeebe-chaos/tree/master/chaos-workers/chaos-experiments/helm" target="_blank" rel="noopener noreferrer">helm</a>.</p>
-<p><strong>TL;DR;</strong> Our Camunda Cloud clusters can handle gateway restarts without issues.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="chaos-experiment">Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment">​</a></h2>
-<p>This experiment is a simple restart / kill pod experiment. We want to verify that our cluster
-can still make progress even if a gateway is restarted / killed in between. Currently, we are running two gateway replicas in the CCSaaS.</p>
-<p>In order to start with our experiment we created a new CCSaaS cluster with a <code>Production - S</code> plan, and the latest version (1.3.4).
-To run some load on the cluster we used the cloud benchmark deployments, which you can find <a href="https://github.com/camunda-cloud/zeebe/tree/main/benchmarks/setup/cloud-default" target="_blank" rel="noopener noreferrer">here</a>.
-The load was rather low with ~ 100 PI/s.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p><em>Hypothesis: When restarting / killing a zeebe standalone gateway we expect only a small
-impact on current requests, new requests should be routed to the right gateway and the cluster can
-make progress.</em></p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="actual">Actual<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual">​</a></h3>
-<p>After creating the cluster and starting the benchmark we checked the current resource usage, to find a cluster which does most of the work. It looks like that the requests are well distributed.</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">[zell zell-chaos/ cluster: ultrachaos ns:448f5091-8d15-4c01-a0ee-202437c09d83-zeebe]$ k top pod</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">NAME                                                     CPU(cores)   MEMORY(bytes)   </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...      </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">zeebe-gateway-6c9f95b557-f2zbf                           294m         407Mi           </span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">zeebe-gateway-6c9f95b557-gk57z                           202m         396Mi</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>We deleted the first pod <code>zeebe-gateway-6c9f95b557-f2zbf</code> and observed the metrics.</p>
-<div class="codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">[zell zell-chaos/ cluster: ultrachaos ns:448f5091-8d15-4c01-a0ee-202437c09d83-zeebe]$ k delete pod zeebe-gateway-6c9f95b557-f2zbf</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">pod "zeebe-gateway-6c9f95b557-f2zbf" deleted</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>We can see that a new gateway pod is created quite fast.</p>
-<div class="codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">[zell zell-chaos/ cluster: ultrachaos ns:448f5091-8d15-4c01-a0ee-202437c09d83-zeebe]$ kgpo</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">NAME                                                     READY   STATUS             RESTARTS   AGE</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">zeebe-gateway-6c9f95b557-flgz6                           0/1     Running            0          16s</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">zeebe-gateway-6c9f95b557-gk57z                           1/1     Running            0          156m</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>As expected we see no high impact due to the restart.</p>
-<p><img decoding="async" loading="lazy" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/restart-5fbac0a50fb69d699a0721209d956d9d.png" width="1834" height="682" class="img_ev3q"></p>
-<p>Just out of interest I deleted all gateway pods:</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">$ k delete pod -l app.kubernetes.io/component=standalone-gateway</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">pod "zeebe-gateway-6c9f95b557-flgz6" deleted</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">pod "zeebe-gateway-6c9f95b557-gk57z" deleted</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>We can see that the throughput goes almost directly down, but recovers again. It took ~4 min until we
-reached the normal state (normal throughput of 100 PI/s) again. But we can also see that it is only a short period
-of time, where nothing happens.</p>
-<p><img decoding="async" loading="lazy" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/restart2-a5fd3b37472ebf79e5edac7f1ed513e5.png" width="1828" height="685" class="img_ev3q"></p>
-<p>Ideally we would define some anti-affinity on the gateway pods, to reduce the risk of losing all gateways at once.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="result">Result<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#result" class="hash-link" aria-label="Direct link to Result" title="Direct link to Result">​</a></h2>
-<p>We were able to verify and proof our hypothesis.</p>
-<blockquote>
-<p><em>Hypothesis: When restarting / killing a zeebe standalone gateway we expect only a small
-impact on current requests, new requests should be routed to the right gateway and the cluster can
-make progress.</em></p>
-</blockquote>
-<p>As we saw above the resources were almost equally used, which is in our normal zeebe benchmarks not the case.
-In the benchmarks we use the helm charts and there is no ingress controller enabled,
-so we have no good load balancing of the incoming requests.</p>
-<p>The benefit of the standalone gateway now stands out: losing one is not too problematic than one broker with an embedded gateway,
-since a broker takes longer to restart and is likely to be an leader for a partition, which will then also cause a leader change.
-Furthermore, we can scale the gateways independently.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="found-issues">Found Issues<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#found-issues" class="hash-link" aria-label="Direct link to Found Issues" title="Direct link to Found Issues">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="optimize-resources">Optimize resources<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#optimize-resources" class="hash-link" aria-label="Direct link to Optimize resources" title="Direct link to Optimize resources">​</a></h3>
-<p>During experiment with the CCSaaS cluster I observed that the Optimize importer was crashlooping due to this load (PI 100/s).</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">[zell zell-chaos/ cluster: ultrachaos ns:448f5091-8d15-4c01-a0ee-202437c09d83-zeebe]$ kgpo</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">NAME                                                     READY   STATUS             RESTARTS   AGE</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">optimize-deployment-importer-archiver-65679b6449-pb7kz   0/1     CrashLoopBackOff   5          128m</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>Checking the pod shows:</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">    State:          Waiting</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      Reason:       CrashLoopBackOff</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    Last State:     Terminated</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      Reason:       Error</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      Exit Code:    3</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      Started:      Tue, 15 Feb 2022 14:25:36 +0100</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      Finished:     Tue, 15 Feb 2022 14:26:33 +0100</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    Ready:          False</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>Checking the logs we can see that it runs continuously out of memory.</p>
-<div class="language-shell codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-shell codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Zell￼  13 minutes ago</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">13:32:48.493 [ZeebeImportScheduler-1] WARN  org.elasticsearch.client.RestClient - request [POST http://elasticsearch:9200/zeebe-record-process-instance/_search?routing=2&amp;typed_keys=true&amp;max_concurrent_shard_requests=5&amp;ignore_unavailable=false&amp;expand_wildcards=open&amp;allow_no_indices=true&amp;ignore_throttled=true&amp;request_cache=false&amp;search_type=query_then_fetch&amp;batched_reduce_size=512&amp;ccs_minimize_roundtrips=true] returned 1 warnings: [299 Elasticsearch-7.16.2-2b937c44140b6559905130a8650c64dbd0879cfb "[ignore_throttled] parameter is deprecated because frozen indices have been deprecated. Consider cold or frozen tiers in place of frozen indices."]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">13:32:49.104 [ImportJobExecutor-pool-ZeebeProcessInstanceImportService-0] WARN  org.elasticsearch.client.RestClient - request [HEAD http://elasticsearch:9200/optimize-process-instance-benchmark?ignore_throttled=false&amp;ignore_unavailable=false&amp;expand_wildcards=open%2Cclosed&amp;allow_no_indices=false] returned 1 warnings: [299 Elasticsearch-7.16.2-2b937c44140b6559905130a8650c64dbd0879cfb "[ignore_throttled] parameter is deprecated because frozen indices have been deprecated. Consider cold or frozen tiers in place of frozen indices."]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">java.lang.OutOfMemoryError: Java heap space</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Dumping heap to java_pid8.hprof ...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Heap dump file created [611503401 bytes in 1.070 secs]</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">Terminating due to java.lang.OutOfMemoryError: Java heap space</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="gateway-metrics">Gateway metrics<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#gateway-metrics" class="hash-link" aria-label="Direct link to Gateway metrics" title="Direct link to Gateway metrics">​</a></h3>
-<p>It looks like that in our latest ccsm helm charts, we no longer export the gateway metrics which we should fix.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="gateway-anti-affinity">Gateway Anti-affinity<a href="https://zeebe-io.github.io/zeebe-chaos/2022/02/15/Standalone-Gateway-in-CCSaaS#gateway-anti-affinity" class="hash-link" aria-label="Direct link to Gateway Anti-affinity" title="Direct link to Gateway Anti-affinity">​</a></h3>
-<p>Currently, we have no anti-affinity defined for the gateway, which could cause on preemption to take down all gateways.</p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
             <uri>https://github.com/zelldon</uri>
