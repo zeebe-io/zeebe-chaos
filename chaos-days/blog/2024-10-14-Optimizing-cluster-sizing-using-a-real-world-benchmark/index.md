@@ -12,8 +12,9 @@ authors: rodrigo
 
 # Chaos Day Summary
 
-Our first goal of this experiment is to use a benchmarks to derive new optimized cluster configuration that can handle at least 100 process instances per 
-second, while maintaining low backpressure and low latency.
+Our first goal of this experiment is to use a benchmarks to
+derive new optimized cluster configuration that can handle
+at least 100 tasks per second, while maintaining low backpressure and low latency.
 
 For our experiment, we use a newly defined realistic benchmark (with a more complex process model). More about this in a separate blog post.
 
@@ -87,9 +88,7 @@ configuration cluster is the G3 - BasePackage HA.
 | tasklist               | 2         | 2                  |
 | zeebe.broker           | 2.88      | 12                 |
 | zeebe.gateway          | 0.9       | 0.8                |
-| zeebeAnalytics         | 0.4       | 0.45               |
-| connectorBridge        | 0.4       | 0.512              |
-| **TOTAL**              | **16.58** | **25.762**         |
+| **TOTAL**              | **15.78** | **24.8**           |
 
 | G3 - BasePackage HA   | CPU Limit | Memory Limit in GB |
 |-----------------------|-----------|--------------------|
@@ -99,9 +98,7 @@ configuration cluster is the G3 - BasePackage HA.
 | tasklist              | 1         | 1                  |
 | zeebe.broker          | 1.5       | 4.5                |
 | zeebe.gateway         | 0.6       | 1                  |
-| zeebeAnalytics        | 0.2       | 0.3                |
-| connectorBridge       | 0.4       | 1                  |
-| **TOTAL**             | **8.7**   | **14.9**           |
+| **TOTAL**             | **8.1**   | **13.6**           |
 
 
 ##### Reduction in Resources for our Optimized Cluster
@@ -117,8 +114,8 @@ Total cluster reduction:
 
 |                       | G3-S HA | G3 - BasePackage HA | Reduction (%) |
 |:----------------------|--------:|--------------------:|--------------:|
-| CPU Limits            |   16.58 |                 8.7 |            48 |
-| Memory Limits         |  25.762 |                14.9 |            42 |
+| CPU Limits            |   15.78 |                 8.1 |            49 |
+| Memory Limits         |    24.8 |                13.6 |            45 |
 
 
 The process of reducing the hardware requirements was donne initially by 
@@ -172,7 +169,7 @@ only increases significantly if we leave the cluster running at max rate
 for long periods of time. For slightly lower rates the write-to-import 
 latency is kept in the single digits of seconds or lower tens. This might 
 imply that a these sustained max rates, the amount records generated starts 
-to be too much for either elasticSearch or our web apps that import these 
+to be too much for either ElasticSearch or our web apps that import these 
 records to handle. Some further investigation could be done here to 
 investigate the bottleneck.
 
