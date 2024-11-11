@@ -5,7 +5,7 @@
 <meta name="generator" content="Docusaurus v3.6.1">
 <title data-rh="true">8 posts tagged with &quot;performance&quot; | Zeebe Chaos</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://zeebe-io.github.io/zeebe-chaos/tags/performance"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" property="og:title" content="8 posts tagged with &quot;performance&quot; | Zeebe Chaos"><meta data-rh="true" name="docusaurus_tag" content="blog_tags_posts"><meta data-rh="true" name="docsearch:docusaurus_tag" content="blog_tags_posts"><link data-rh="true" rel="icon" href="/zeebe-chaos/img/zeebe-logo.png"><link data-rh="true" rel="canonical" href="https://zeebe-io.github.io/zeebe-chaos/tags/performance"><link data-rh="true" rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/tags/performance" hreflang="en"><link data-rh="true" rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/tags/performance" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/zeebe-chaos/rss.xml" title="Zeebe Chaos RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/zeebe-chaos/atom.xml" title="Zeebe Chaos Atom Feed"><link rel="stylesheet" href="/zeebe-chaos/assets/css/styles.1a3a904b.css">
-<script src="/zeebe-chaos/assets/js/runtime~main.8fa4eb0f.js" defer="defer"></script>
+<script src="/zeebe-chaos/assets/js/runtime~main.3214e81a.js" defer="defer"></script>
 <script src="/zeebe-chaos/assets/js/main.c92fc54f.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -31,13 +31,19 @@ data aggregation closer to the engine (inside a Zeebe Exporter).</p>
 <p><img decoding="async" loading="lazy" alt="plan" src="/zeebe-chaos/assets/images/how-brown-field-929f9a23e6dfee9ede15e76b1a134fdc.png" width="1228" height="904" class="img_ev3q"></p>
 <p>We plan to:</p>
 <ol>
-<li>Harmonize the existing indices stored in Elasticsearch/Opensearch
-2. Space: Reduce the unnecessary data duplication</li>
-<li>Move importer and archiver logic into a new Camunda exporter
-3. Performance: This should allow us to reduce one additional hop (as we don&#x27;t need to use ES/OS as a queue)
-4. Maintenance: Indices and business logic is maintained in one place
-5. Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
-6. Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.</li>
+<li>Harmonize the existing indices stored in Elasticsearch/Opensearch<!-- -->
+<ul>
+<li>Space: Reduce the unnecessary data duplication</li>
+</ul>
+</li>
+<li>Move importer and archiver logic into a new Camunda exporter<!-- -->
+<ul>
+<li>Performance: This should allow us to reduce one additional hop (as we don&#x27;t need to use ES/OS as a queue)</li>
+<li>Maintenance: Indices and business logic is maintained in one place</li>
+<li>Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)</li>
+<li>Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.</li>
+</ul>
+</li>
 </ol>
 <p>Note: Optimize is right now out of scope (due to time), but will later be part of this as well.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="mvp">MVP<a href="#mvp" class="hash-link" aria-label="Direct link to MVP" title="Direct link to MVP">​</a></h3>

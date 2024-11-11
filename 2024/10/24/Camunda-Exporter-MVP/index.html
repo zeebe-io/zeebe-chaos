@@ -5,7 +5,7 @@
 <meta name="generator" content="Docusaurus v3.6.1">
 <title data-rh="true">Camunda Exporter MVP | Zeebe Chaos</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Camunda Exporter MVP | Zeebe Chaos"><meta data-rh="true" name="description" content="After a long pause, I come back with an interesting topic to share and experiment with. Right now we are re-architecture"><meta data-rh="true" property="og:description" content="After a long pause, I come back with an interesting topic to share and experiment with. Right now we are re-architecture"><meta data-rh="true" property="og:type" content="article"><meta data-rh="true" property="article:published_time" content="2024-10-24T00:00:00.000Z"><meta data-rh="true" property="article:author" content="https://github.com/zelldon"><meta data-rh="true" property="article:tag" content="performance"><link data-rh="true" rel="icon" href="/zeebe-chaos/img/zeebe-logo.png"><link data-rh="true" rel="canonical" href="https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP"><link data-rh="true" rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP" hreflang="en"><link data-rh="true" rel="alternate" href="https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","@id":"https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP","mainEntityOfPage":"https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP","url":"https://zeebe-io.github.io/zeebe-chaos/2024/10/24/Camunda-Exporter-MVP","headline":"Camunda Exporter MVP","name":"Camunda Exporter MVP","description":"After a long pause, I come back with an interesting topic to share and experiment with. Right now we are re-architecture","datePublished":"2024-10-24T00:00:00.000Z","author":{"@type":"Person","name":"Christopher Kujawa","description":"Chaos Engineer @ Zeebe","url":"https://github.com/zelldon","image":"https://github.com/zelldon.png"},"keywords":[],"isPartOf":{"@type":"Blog","@id":"https://zeebe-io.github.io/zeebe-chaos/","name":"Blog"}}</script><link rel="alternate" type="application/rss+xml" href="/zeebe-chaos/rss.xml" title="Zeebe Chaos RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/zeebe-chaos/atom.xml" title="Zeebe Chaos Atom Feed"><link rel="stylesheet" href="/zeebe-chaos/assets/css/styles.1a3a904b.css">
-<script src="/zeebe-chaos/assets/js/runtime~main.8fa4eb0f.js" defer="defer"></script>
+<script src="/zeebe-chaos/assets/js/runtime~main.3214e81a.js" defer="defer"></script>
 <script src="/zeebe-chaos/assets/js/main.c92fc54f.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -31,13 +31,19 @@ data aggregation closer to the engine (inside a Zeebe Exporter).</p>
 <p><img decoding="async" loading="lazy" alt="plan" src="/zeebe-chaos/assets/images/how-brown-field-929f9a23e6dfee9ede15e76b1a134fdc.png" width="1228" height="904" class="img_ev3q"></p>
 <p>We plan to:</p>
 <ol>
-<li>Harmonize the existing indices stored in Elasticsearch/Opensearch
-2. Space: Reduce the unnecessary data duplication</li>
-<li>Move importer and archiver logic into a new Camunda exporter
-3. Performance: This should allow us to reduce one additional hop (as we don&#x27;t need to use ES/OS as a queue)
-4. Maintenance: Indices and business logic is maintained in one place
-5. Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
-6. Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.</li>
+<li>Harmonize the existing indices stored in Elasticsearch/Opensearch<!-- -->
+<ul>
+<li>Space: Reduce the unnecessary data duplication</li>
+</ul>
+</li>
+<li>Move importer and archiver logic into a new Camunda exporter<!-- -->
+<ul>
+<li>Performance: This should allow us to reduce one additional hop (as we don&#x27;t need to use ES/OS as a queue)</li>
+<li>Maintenance: Indices and business logic is maintained in one place</li>
+<li>Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)</li>
+<li>Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.</li>
+</ul>
+</li>
 </ol>
 <p>Note: Optimize is right now out of scope (due to time), but will later be part of this as well.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="mvp">MVP<a href="#mvp" class="hash-link" aria-label="Direct link to MVP" title="Direct link to MVP">​</a></h3>
