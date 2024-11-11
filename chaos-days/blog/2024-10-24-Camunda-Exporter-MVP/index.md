@@ -45,12 +45,12 @@ The plan for this project looks something like this:
 We plan to:
 
 1. Harmonize the existing indices stored in Elasticsearch/Opensearch
-2. Space: Reduce the unnecessary data duplication  
-3. Move importer and archiver logic into a new Camunda exporter
-4. Performance: This should allow us to reduce one additional hop (as we don't need to use ES/OS as a queue)
-5. Maintenance: Indices and business logic is maintained in one place
-6. Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
-7. Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.
+    - Space: Reduce the unnecessary data duplication  
+2. Move importer and archiver logic into a new Camunda exporter
+    - Performance: This should allow us to reduce one additional hop (as we don't need to use ES/OS as a queue)
+    - Maintenance: Indices and business logic is maintained in one place
+    - Scalability: With this approach, we can scale with partitions, as Camunda Exporters are executed for each partition separately (soon partition scaling will be introduced)
+    - Complexity: The Camunda Exporter will be built-in and shipped with Zeebe/Camunda 8. No additional pod/application is needed.
 
 Note: Optimize is right now out of scope (due to time), but will later be part of this as well.
 
