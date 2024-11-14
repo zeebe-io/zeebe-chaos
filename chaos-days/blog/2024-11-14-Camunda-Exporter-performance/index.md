@@ -4,9 +4,9 @@ title:  "Camunda Exporter performance"
 date:   2024-11-14
 categories: 
   - chaos_experiment 
-  - bpmn
+  - performance
 tags:
-  - availability
+  - performance
 authors: zell
 ---
 
@@ -16,18 +16,16 @@ In our [last Chaos day](../2024-10-24-Camunda-Exporter-MVP/index.md) we experime
 
 ![](it2-migration.png)
 
-Additionally, [some fixes and improvements](https://github.com/zeebe-io/benchmark-helm/pull/202) have been done to our realistic benchmarks that should allow us to better compare the general performance with a realistic good performing benchmark.
+Additionally, [some fixes and improvements](https://github.com/zeebe-io/benchmark-helm/pull/202) have been done to the realistic benchmarks that should allow us to better compare the general performance with a realistic good performing benchmark.
 
 Actually, this is what we want to explore today.
 
-* Does the Camunda Exporter (since last benchmark) impact performance? And how? 
+* Does the Camunda Exporter (since the last benchmark) impact performance? And how? 
 * How can we potentially mitigate this?
 
-**TL;DR;** Today's, results showed that, enabling the Camunda Exporter causes a 25% processing throughput drop. We identified the CPU as bottleneck. It seems to be mitigated with either adjusting the CPU requests or removing the ES exporter. With these results we are equipped to make further investigations and decisions.  
+**TL;DR;** Today's, results showed that enabling the Camunda Exporter causes a 25% processing throughput drop. We identified the CPU as a bottleneck. It seems to be mitigated by either adjusting the CPU requests or removing the ES exporter. With these results, we are equipped to make further investigations and decisions.  
 
 <!--truncate-->
-
-We identified the CPU as bottleneck (which is kind of expected, as we run now more in the Zeebe system). It seems to be mitigated with either adjusting the CPU requests or and limits (as we can remove certain deployments, like importer/archiver) or removing the ES exporter (which is still needed/planned for 8.7 to be use with Optimize). Based on the results we know now the bigger impact and can iterate on this.
 
 ## Benchmarks
 
@@ -73,7 +71,7 @@ The process instance execution p99 has been increased from ~4s to +60s, the p50 
 
 #### CPU
 
-Investing this, we can look at the CPU. On our base Benchmark, we have CPU throttling around 20%.
+Investing this, we can look at the CPU. On our base Benchmark, we have CPU throttling at around 20%.
 
 ![cpu](base-cpu.png)
 
@@ -84,9 +82,9 @@ When comparing this with the Camunda Exporter benchmark, we can see that the CPU
 
 ### Benchmark: Without ES exporter
 
-As we have seen the Camunda Exporter, causes the Brokers to consumes a lot more CPU. This is kind of  expected as there much more running now in our system.
+As we have seen the Camunda Exporter, causes the Brokers to consume a lot more CPU. This is kind of  expected as there is much more running now in our system.
 
-As an additional experiment we want to run the Benchmarks with the Camunda Exporter, without the Elasticsearch exporter. The hypothesis is that we can reduce the resource consumption and use it for the Camunda Exporter. The Elasticsearch exporter is with 8.7, only necessary for Optimize.
+As an additional experiment, we want to run the Benchmarks with the Camunda Exporter, without the Elasticsearch exporter. The hypothesis is that we can reduce the resource consumption and use it for the Camunda Exporter. The Elasticsearch exporter is with 8.7, only necessary for Optimize.
 
 ![](no-es-general.png)
 
@@ -101,21 +99,21 @@ The latency is reduced, and we can also observe that it seems to drop over time 
 
 #### CPU
 
-The CPU throttling is dropping at some-point, which explains the other drop of latency. 
+The CPU throttling is dropping at some point, which explains the other drop of latency. 
 
 ![](no-es-cpu.png)
 
 ### Benchmark: More CPU
 
-As we're migrating logic from the actual Importer deployment to the Camunda Exporter, we can get rid of such extra deployment and bound resources. Arguable we can use these free resources and assign them to the brokers.
+As we're migrating logic from the actual Importer deployment to the Camunda Exporter, we can get rid of such extra deployment and bound resources. Arguably we can use these free resources and assign them to the brokers.
 
-When we look at the Camunda Exporter benchmark, the Operate deployment itself doesn't use many resources, and likely don't need the assigned ones.
+When we look at the Camunda Exporter benchmark, the Operate deployment itself doesn't use many resources and likely don't need the assigned ones.
 
 ![](it2-exporter-operate-cpu.png)
 
 ![](change-resources.png)
 
-This change allows to bring the throughput as well back to normal.
+This change allows us to bring the throughput as well back to normal.
 
 ![](more-cpu-general.png)
 
@@ -136,7 +134,7 @@ The CPU throttling has been reduced to almost zero. Interesting is that we don't
 
 As we have seen, introducing (or enabling) the Camunda Exporter, can or will increase our processing latency and reduce our potential processing throughput. This obviously depends on the cluster load.
 
-We were able to pinpoint the problem to limited resources, to be specific CPU is the bottleneck.
+We were able to pinpoint the problem due to limited resources, to be specific CPU is the bottleneck.
 
 This is expected, as running the Camunda Exporter means we are running more logic inside the Zeebe system. 
 
