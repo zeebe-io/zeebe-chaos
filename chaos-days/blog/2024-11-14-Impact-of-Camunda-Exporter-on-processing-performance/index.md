@@ -1,6 +1,6 @@
 ---
 layout: posts
-title:  "Camunda Exporter performance"
+title:  "Impact of Camunda Exporter on processing performance"
 date:   2024-11-14
 categories: 
   - chaos_experiment 
@@ -18,9 +18,10 @@ In our [last Chaos day](../2024-10-24-Camunda-Exporter-MVP/index.md) we experime
 
 Additionally, [some fixes and improvements](https://github.com/zeebe-io/benchmark-helm/pull/202) have been done to the realistic benchmarks that should allow us to better compare the general performance with a realistic good performing benchmark.
 
-Actually, this is what we want to explore today.
+Actually, this is what we want to explore and experiment with today.
 
-* Does the Camunda Exporter (since the last benchmark) impact performance? And how? 
+* Does the Camunda Exporter (since the last benchmark) impact performance of the overall system? 
+  * If so how? 
 * How can we potentially mitigate this?
 
 **TL;DR;** Today's, results showed that enabling the Camunda Exporter causes a 25% processing throughput drop. We identified the CPU as a bottleneck. It seems to be mitigated by either adjusting the CPU requests or removing the ES exporter. With these results, we are equipped to make further investigations and decisions.  
