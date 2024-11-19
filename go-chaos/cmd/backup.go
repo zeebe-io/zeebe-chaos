@@ -195,7 +195,7 @@ func takeBackup(flags *Flags) error {
 
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
-	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, flags.backupId)
+	url := fmt.Sprintf("http://localhost:%d/actuator/backup-runtime/%s", port, flags.backupId)
 	resp, err := http.Post(url, "", nil)
 	if err != nil {
 		return err
@@ -336,7 +336,7 @@ func restoreEnvFromSfs(flags *Flags, sfs *apps.StatefulSet) []core.EnvVar {
 }
 
 func getBackupStatus(port int, backupId string) (*BackupStatus, error) {
-	url := fmt.Sprintf("http://localhost:%d/actuator/backups/%s", port, backupId)
+	url := fmt.Sprintf("http://localhost:%d/actuator/backup-runtime/%s", port, backupId)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
