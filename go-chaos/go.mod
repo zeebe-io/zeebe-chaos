@@ -11,7 +11,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.33.0
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
-	golang.org/x/mod v0.21.0
+	golang.org/x/mod v0.22.0
 	google.golang.org/grpc v1.68.1
 	k8s.io/api v0.31.2
 	k8s.io/apimachinery v0.31.2
