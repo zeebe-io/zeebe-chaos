@@ -55,12 +55,20 @@ Furthermore, we expect that the latency until the user sees data (or data is wri
 <p>We were able to show that the latency has been reduced under normal load.</p>
 <p><strong>Note:</strong> Be aware this experiment only runs benchmarks with less-to-normal load, on higher load this might change, and need to be tested separately.</p>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="found-bugs">Found Bugs<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#found-bugs" class="hash-link" aria-label="Direct link to Found Bugs" title="Direct link to Found Bugs">​</a></h4>
-<p>Within the experiment we run into several other issues. Especially after running for a while, when pods got restarted, the Camunda Exporter broke.</p>
+<p>Within the experiment we run into several other issues. Especially after running for a while, when pods got restarted and importer have been enabled, the Camunda Exporter broke.</p>
 <p><img decoding="async" loading="lazy" alt="exporting-fail" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/exporting-fail-2ddb3996ac30f721fe4e9a1ec8fcce7a.png" width="951" height="449" class="img_ev3q"></p>
 <p>This caused to increase the latency.</p>
 <p><img decoding="async" loading="lazy" alt="exporting-fail-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/exporting-fail-latency-15efaf79627febc56dbe8ee0247c87d3.png" width="1888" height="193" class="img_ev3q"></p>
-<p>The exporter was not able to detect correctly anymore that the importing was done.</p>
-<p>See related github issue(s)</p>]]></content:encoded>
+<p>The exporter was not able to detect correctly anymore that the importing was done, but was still flushing periodically (which is as well wrong)</p>
+<p>See related github issue(s)</p>
+<ul>
+<li><a href="https://github.com/camunda/camunda/issues/26046" target="_blank" rel="noopener noreferrer">Importer(s) are not communicating import done correctly</a></li>
+<li><a href="https://github.com/camunda/camunda/issues/26047" target="_blank" rel="noopener noreferrer">Exporter flushes periodically even when importer not completed</a></li>
+</ul>
+<p>Furthermore, based on logs we saw that the treePath hasn't be published correctly in the Exporter.</p>
+<ul>
+<li><a href="https://github.com/camunda/camunda/issues/26048" target="_blank" rel="noopener noreferrer">Camunda Exporter is not able to consume treePath</a></li>
+</ul>]]></content:encoded>
             <category>availability</category>
         </item>
         <item>
