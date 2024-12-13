@@ -13,23 +13,23 @@
             <link>https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project</link>
             <guid>https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project</guid>
             <pubDate>Thu, 12 Dec 2024 00:00:00 GMT</pubDate>
-            <description><![CDATA[In this Chaos day we want to verify the current state of the exporter project, and run benchmarks with it. Comparing]]></description>
-            <content:encoded><![CDATA[<p>In this Chaos day we want to verify the current state of the exporter project, and run benchmarks with it. Comparing
+            <description><![CDATA[In this Chaos day, we want to verify the current state of the exporter project and run benchmarks with it. Comparing]]></description>
+            <content:encoded><![CDATA[<p>In this Chaos day, we want to verify the current state of the exporter project and run benchmarks with it. Comparing
 with a previous version (v8.6.6) should give us a good hint on the current state and potential improvements.</p>
-<p><strong>TL;DR;</strong> The performance that the user sees data has been improved due to the architecture change, but there are still some bugs that we have to fix until the release.</p>
+<p><strong>TL;DR;</strong> The latency of user data availability has improved due to our architecture change, but we still need to fix some bugs before our planned release of the Camunda Exporter. This experiment allows us to detect three new bugs, fixing this should allow us to make the system more stable.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="chaos-experiment">Chaos Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment">​</a></h2>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="benchmarks">Benchmarks<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#benchmarks" class="hash-link" aria-label="Direct link to Benchmarks" title="Direct link to Benchmarks">​</a></h3>
-<p>We have seen in previous experiments and benchmarks that the realistic benchmarks are not yet totally reliable, as they seem to overload at some-point the system. This can happen if there is a hiccup and jobs take longer to process. Jobs in the queue are getting delayed, and time out, they are sent out to different workers, but we will reach at some point again the jobs, and we will publish also for this job a message. This in general increases the load of the system as we have to timeout jobs, we have to handle additional message publish, etc.</p>
-<p>Additionally, message publish can be rejected, when this happens we wait for another timeout adding again load on the system, more and more retries happen etc. this breaks the benchmark performance.</p>
-<p>To avoid this, we reduce the benchmark payload for now, which is in charge of creating multi instances and call activities etc. To be specific, the reduced the items from 50 to 5,
-but scaled the starter to start more instances. With this payload we can scale more fine granular. Each instance can create 5 sub-instances, when creating three process instances  we create effectively 15 instances/token.</p>
-<p>As this the benchmark runs quite stable, it allows us to better compare the latency between based and main.</p>
+<p>We have seen in previous experiments and benchmarks that the realistic benchmarks are not yet totally reliable, as they seem to overload at some point the system. This can happen if there is a hiccup and jobs take longer to process. Jobs in the queue are getting delayed, and time out, they are sent out to different workers, but we will reach them at some point again the jobs, and we will publish also for this job a message. This in general increases the load of the system as we have to timeout jobs, we have to handle additional message publish, etc.</p>
+<p>Additionally, message publish can be rejected, when this happens we wait for another timeout adding again load on the system, more and more retries happen, etc. This breaks the benchmark performance.</p>
+<p>To avoid this, we reduce the benchmark payload for now, which is in charge of creating multiple instances and call activities, etc. To be specific, they reduced the items from 50 to 5
+but scaled the starter to start more instances. With this payload, we can scale more fine granular. Each instance can create 5 sub-instances, when creating three process instances  we create effectively 15 instances/token.</p>
+<p>As this benchmark runs quite stable, it allows us to better compare the latency between base and main.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="details-experiment">Details Experiment<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#details-experiment" class="hash-link" aria-label="Direct link to Details Experiment" title="Direct link to Details Experiment">​</a></h3>
 <p>We will run two benchmarks one against 8.6.6, call based, and one against the current main branch (commit a1609130).</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="expected">Expected<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected">​</a></h3>
-<p>When running the base and the main and comparing each other we expect that the general throughput, should be similar.
-Furthermore, we expect that the latency until the user sees data (or data is written into ES and searchable) should be lowered on main than base.</p>
-<p>Note: Right now we don't have a good metric to measure that data is available for the user, we plan to implement this in the starter benchmark application at some-point via querying the REST API. For now, we calculate different average latencies together, whereas we take as elasticsearch flush a constant of 2 seconds.</p>
+<p>When running the base and the main and comparing each other we expect that the general throughput should be similar.
+Furthermore, we expect that the latency until the user sees data (or data is written into ES and searchable) should be lowered on the main branch rather than on the base.</p>
+<p>Note: Right now we don't have a good metric to measure that data is available for the user, we plan to implement this in the starter benchmark application at some point via querying the REST API. For now, we calculate different average latencies together, whereas we take as elastic search flush a constant of 2 seconds.</p>
 <p>We expect a reduction of latency as we reduce one additional hop/usage of ES as intermediate storage, before aggregation.</p>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="base">Base<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#base" class="hash-link" aria-label="Direct link to Base" title="Direct link to Base">​</a></h4>
 <p><img decoding="async" loading="lazy" alt="current-8.6" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/current-miro-659b193b670b1b604ebb32ff30b067a4.png" width="1096" height="885" class="img_ev3q"></p>
@@ -44,7 +44,7 @@ Furthermore, we expect that the latency until the user sees data (or data is wri
 <h5 class="anchor anchorWithStickyNavbar_LWe7" id="main-general">Main general<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#main-general" class="hash-link" aria-label="Direct link to Main general" title="Direct link to Main general">​</a></h5>
 <p><img decoding="async" loading="lazy" alt="main-general" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/main-general-a2f75f96be9f6682c54ab3cdfb931a8f.png" width="1889" height="784" class="img_ev3q"></p>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="latency">Latency<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#latency" class="hash-link" aria-label="Direct link to Latency" title="Direct link to Latency">​</a></h4>
-<p>This experiment targets to show difference in the data availability for the user.</p>
+<p>This experiment aims to show the difference in the data availability for the user.</p>
 <p>In order to better visualize the dashboard has been adjusted for this experiment.</p>
 <h5 class="anchor anchorWithStickyNavbar_LWe7" id="base-latency">Base latency<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#base-latency" class="hash-link" aria-label="Direct link to Base latency" title="Direct link to Base latency">​</a></h5>
 <p><img decoding="async" loading="lazy" alt="base-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/base-latencies-tree-17aa593ad5dc16c9ca89726c38155b82.png" width="1134" height="793" class="img_ev3q"></p>
@@ -55,17 +55,17 @@ Furthermore, we expect that the latency until the user sees data (or data is wri
 <p>We were able to show that the latency has been reduced under normal load.</p>
 <p><strong>Note:</strong> Be aware this experiment only runs benchmarks with less-to-normal load, on higher load this might change, and need to be tested separately.</p>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="found-bugs">Found Bugs<a href="https://zeebe-io.github.io/zeebe-chaos/2024/12/12/News-from-Camunda-Exporter-project#found-bugs" class="hash-link" aria-label="Direct link to Found Bugs" title="Direct link to Found Bugs">​</a></h4>
-<p>Within the experiment we run into several other issues. Especially after running for a while, when pods got restarted and importer have been enabled, the Camunda Exporter broke.</p>
+<p>Within the experiment, we run into several other issues. Especially after running for a while, when pods got restarted and importer have been enabled, the Camunda Exporter broke.</p>
 <p><img decoding="async" loading="lazy" alt="exporting-fail" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/exporting-fail-2ddb3996ac30f721fe4e9a1ec8fcce7a.png" width="951" height="449" class="img_ev3q"></p>
-<p>This caused to increase the latency.</p>
+<p>This caused to increase in the latency.</p>
 <p><img decoding="async" loading="lazy" alt="exporting-fail-latency" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/exporting-fail-latency-15efaf79627febc56dbe8ee0247c87d3.png" width="1888" height="193" class="img_ev3q"></p>
-<p>The exporter was not able to detect correctly anymore that the importing was done, but was still flushing periodically (which is as well wrong)</p>
-<p>See related github issue(s)</p>
+<p>The exporter was not able to detect correctly anymore that the importing was done but was still flushing periodically (which is as well wrong)</p>
+<p>See related GitHub issue(s)</p>
 <ul>
 <li><a href="https://github.com/camunda/camunda/issues/26046" target="_blank" rel="noopener noreferrer">Importer(s) are not communicating import done correctly</a></li>
 <li><a href="https://github.com/camunda/camunda/issues/26047" target="_blank" rel="noopener noreferrer">Exporter flushes periodically even when importer not completed</a></li>
 </ul>
-<p>Furthermore, based on logs we saw that the treePath hasn't be published correctly in the Exporter.</p>
+<p>Furthermore, based on logs we saw that the treePath hasn't been published correctly in the Exporter.</p>
 <ul>
 <li><a href="https://github.com/camunda/camunda/issues/26048" target="_blank" rel="noopener noreferrer">Camunda Exporter is not able to consume treePath</a></li>
 </ul>]]></content:encoded>
