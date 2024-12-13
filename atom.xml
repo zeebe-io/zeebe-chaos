@@ -70,7 +70,7 @@ Furthermore, we expect that the latency until the user sees data (or data is wri
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
     </entry>
@@ -160,7 +160,7 @@ We recently found some smaller issues in our benchmarks, related to <a href="htt
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="performance" term="performance"/>
     </entry>
@@ -297,7 +297,7 @@ data aggregation closer to the engine (inside a Zeebe Exporter).</p>
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="performance" term="performance"/>
     </entry>
@@ -573,7 +573,7 @@ Operates importing mechanism is moved into Zeebe, as a separate exporter see <a 
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="performance" term="performance"/>
     </entry>
@@ -698,7 +698,7 @@ All defaults from the helm charts are used, if not other specified. The most imp
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="performance" term="performance"/>
     </entry>
@@ -1389,7 +1389,7 @@ Before a broker can leave, another broker first needs to join the replication gr
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <author>
             <name>Nicolas Pepin-Perreault</name>
@@ -1493,7 +1493,7 @@ Before a broker can leave, another broker first needs to join the replication gr
 <p>What we should or need to investigate further what if the job completion delay is much larger than the timeout. This is something we might want to test soon.</p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <author>
             <name>Nicolas Pepin-Perreault</name>
@@ -1566,7 +1566,7 @@ Before a broker can leave, another broker first needs to join the replication gr
 <p>Furthermore, the completed backups seem to be misleading and are reset which causes inconsistent views.</p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
     </entry>
@@ -1631,7 +1631,7 @@ Before a broker can leave, another broker first needs to join the replication gr
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
     </entry>
@@ -1756,7 +1756,7 @@ Unfortunately, I missed using the verbose flag.</p>
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
         <category label="data" term="data"/>
@@ -1871,7 +1871,7 @@ Right now zbchaos can't complete an job (missing feature). We use zbctl for that
 <p>Nevertheless, we need to prove this once more for multiple process instances (100-1000 PIs), which cause or forces compaction of the SST files. Right now I'm not 100% convinced whether this experiment was enough, but it was a good first step.</p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
         <category label="data" term="data"/>
@@ -1979,7 +1979,7 @@ async segment creation in our journal built recently. We need to investigate thi
 <p><img decoding="async" loading="lazy" alt="segment" src="https://zeebe-io.github.io/zeebe-chaos/assets/images/segment-176d6a262460c14aa4dce22bdce1dab2.png" width="1850" height="402" class="img_ev3q"></p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
         <category label="resiliency" term="resiliency"/>
@@ -2031,7 +2031,7 @@ async segment creation in our journal built recently. We need to investigate thi
 </ul>]]></content>
         <author>
             <name>Christopher Kujawa</name>
-            <uri>https://github.com/zelldon</uri>
+            <uri>https://github.com/ChrisKujawa</uri>
         </author>
         <category label="availability" term="availability"/>
     </entry>
