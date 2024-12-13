@@ -92,7 +92,7 @@ We were able to show that the latency has been reduced under normal load.
 
 #### Found Bugs
 
-Within the experiment we run into several other issues. Especially after running for a while, when pods got restarted, the Camunda Exporter broke.
+Within the experiment we run into several other issues. Especially after running for a while, when pods got restarted and importer have been enabled, the Camunda Exporter broke.
 
 
 ![exporting-fail](exporting-fail.png)
@@ -101,7 +101,13 @@ This caused to increase the latency.
 
 ![exporting-fail-latency](exporting-fail-latency.png)
 
-The exporter was not able to detect correctly anymore that the importing was done.
+The exporter was not able to detect correctly anymore that the importing was done, but was still flushing periodically (which is as well wrong)
 
 See related github issue(s)
 
+ * [Importer(s) are not communicating import done correctly](https://github.com/camunda/camunda/issues/26046)
+ * [Exporter flushes periodically even when importer not completed](https://github.com/camunda/camunda/issues/26047) 
+
+Furthermore, based on logs we saw that the treePath hasn't be published correctly in the Exporter.
+ 
+ * [Camunda Exporter is not able to consume treePath](https://github.com/camunda/camunda/issues/26048)
