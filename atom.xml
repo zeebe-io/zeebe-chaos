@@ -2,11 +2,112 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://camunda.github.io/zeebe-chaos/</id>
     <title>Zeebe Chaos Blog</title>
-    <updated>2026-10-01T00:00:00.000Z</updated>
+    <updated>2026-10-08T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://camunda.github.io/zeebe-chaos/"/>
     <subtitle>Zeebe Chaos Blog</subtitle>
     <icon>https://camunda.github.io/zeebe-chaos/img/zeebe-logo.png</icon>
+    <entry>
+        <title type="html"><![CDATA[REST data availability and the shared HTTP client]]></title>
+        <id>https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6</id>
+        <link href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6"/>
+        <updated>2026-10-08T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Under stress, the data availability reported by our load tester ("how long after creation can a process instance be found via the search API") was at the 90-second limit for REST (p50), but about 52 seconds (p50) for gRPC. Today, we wanted to find out whether the REST API, the gateway, or our load tester is responsible.]]></summary>
+        <content type="html"><![CDATA[<p>Under stress, the data availability reported by our load tester ("how long after creation can a process instance be found via the search API") was at the 90-second limit for REST (p50), but about 52 seconds (p50) for gRPC. Today, we wanted to find out whether the REST API, the gateway, or our load tester is responsible.</p>
+<p><strong>TL;DR:</strong> The 90-second plateau is a client-side effect of the load tester, not a slow REST API.</p>
+<ul>
+<li class="">The search is the same REST endpoint in both setups, whether instances are created through REST or gRPC, and the server answers <code>/v2/process-instances/search</code> with a p50 of about 30 to 47 ms and a p90 of about 73 to 95 ms in all four tests (REST slightly higher).</li>
+<li class="">The starter (the load tester application that creates process instances) uses one Camunda client for creating instances (target: 300 process instances per second) <em>and</em> for the availability check. With REST, requests queue up in the client (all 100 pooled connections are leased, with about 2,900 requests waiting), and the availability search waits in the same queue. The starter measured about 15 seconds for a query that took the server 70 ms.</li>
+<li class="">The availability check starts the next check only after the previous one is completed, and returns at most 2,500 instances per check. With a 15-second cycle, it confirms at most about 167 instances per second, an upper bound that real checks stay below. Instances that are not confirmed in time are dropped after 90 seconds and recorded with the same metric as real latency, so timeouts appear as slow data availability.</li>
+<li class="">A second Camunda client only for the read requests brings the search time seen by the starter from about 15 seconds to about 0.12 to 0.15 seconds (<a href="https://github.com/camunda/camunda/pull/65355" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65355</a>, merged). The mean data availability of the REST test is about 57 to 68 seconds with this client (97 to 99 seconds without it). For gRPC, it is about 45 seconds.</li>
+<li class="">The remaining delay is related to the exporter backlog under the stress load, which can be estimated on the server side as <code>backlog / export rate</code></li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="chaos-experiment">Chaos Experiment<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment" translate="no">​</a></h2>
+<p>We ran load tests with REST and with gRPC side by side. We compared server metrics, including search request latency and data availability, as measured by the starter. Note that the protocols are used only to start and complete instances. For querying data, only the REST API exists.</p>
+<p>Regarding setup, as usual, the clusters have three Camunda pods, each with a limit of 3 CPUs, and Elasticsearch as secondary storage. We ran REST and gRPC under stress (max) load, each on 4 CPU nodes and on larger 8 CPU nodes, with the pods' CPU limit unchanged.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="expected">Expected<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected" translate="no">​</a></h3>
+<p>Either the client (see <a class="" href="https://camunda.github.io/zeebe-chaos/2026/10/01/Investigating-load-tester-limits">Investigating load tester limits</a>) or the gateway is the problem. If the search requests are slower on the server side with REST, the Camunda REST API is the suspect. If the server-side looks the same for both protocols, that points to the load tester, which we then test.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="actual">Actual<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual" translate="no">​</a></h3>
+<p>We started four load tests: gRPC and REST, each on the standard and on the bigger nodes (the <code>-4</code> and <code>-8</code> namespaces).</p>
+<p>We were able to reproduce the larger data availability issues with REST under stress.</p>
+<p><img decoding="async" loading="lazy" alt="Stress comparison" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-comparison-25e195017df3d9a6960864119dd113b7.png" width="2461" height="588" class="img_ev3q"></p>
+<ul>
+<li class="">gRPC was fine and similar on both node sizes.</li>
+<li class="">For REST, the data availability (p50 in the screenshot) was at the 90-second limit of the load tester. For gRPC, the p50 was about 52 seconds. This held for both REST setups.</li>
+<li class="">The server side looked the same: the exporter backlog was similar, and the search request latencies were similar.</li>
+<li class="">The starter was throttled in about 8% of the CPU scheduling periods (the share of Linux CFS periods in which the container hit its CPU limit) for REST, and in almost none for gRPC.</li>
+<li class="">The REST starter spent about 6% of its time in garbage collection pauses: 36 seconds in a 10-minute recording, of which 63 full collections took about 23 seconds (about 370 ms on average, up to 570 ms). This could add to the delay (we did not measure its effect separately), but it does not appear to be the main cause: increasing the CPU for the starter 10x changed nothing (see below).</li>
+</ul>
+<p><img decoding="async" loading="lazy" alt="CPU throttling per container in the four namespaces: the starter is throttled in about 8% of the periods for REST" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-cpu-3dc31023342366be251c0be1b38b6dd2.png" width="2472" height="599" class="img_ev3q"></p>
+<p><img decoding="async" loading="lazy" alt="Garbage collection pauses of the REST starter over the 10 minute recording" src="https://camunda.github.io/zeebe-chaos/assets/images/gc-pauses-cc977b34ce5eaf8fd79398a5f961433d.png" width="1834" height="836" class="img_ev3q"></p>
+<p><img decoding="async" loading="lazy" alt="Garbage collection summary of the same recording" src="https://camunda.github.io/zeebe-chaos/assets/images/gc-pauses2-54ab59fb5ea89ae872c9cce09b3c9e40.png" width="1260" height="603" class="img_ev3q"></p>
+<p>If the server is as fast for REST and the data is exported at the same pace, the hypothesis is that the high latency comes from how the starter measures it. The following sections test it.</p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="how-the-starter-measures-data-availability">How the starter measures data availability<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#how-the-starter-measures-data-availability" class="hash-link" aria-label="Direct link to How the starter measures data availability" title="Direct link to How the starter measures data availability" translate="no">​</a></h4>
+<p>The starter keeps every created process instance in a map and regularly checks which of them can be found via the search API. It remembers the creation time and records the time until the instance is found. Instances not found after 90 seconds are removed and recorded along with their age.</p>
+<p>The starter logs every scheduled check of the availability meter. In the logs, most checks are rescheduled with a delay of 0 ms instead of the configured 250 ms, and they are 5 to 23 seconds apart, about 15 seconds on average in this excerpt. The number of instances the starter was waiting for kept increasing. The next check is scheduled only after the previous one is completed, and a query that takes longer than the interval is followed immediately by the next check. A cycle of about 15 seconds means the query itself took about 15 seconds.</p>
+<p><img decoding="async" loading="lazy" alt="Starter log" src="https://camunda.github.io/zeebe-chaos/assets/images/starter-log-44960134b7d5c2e1d0501c81fd41cc7c.png" width="1269" height="181" class="img_ev3q"></p>
+<p>The metrics confirmed this. A snapshot during the stress runs (the data availability here is the mean, not the p50 of the screenshot above; the REST means exceed 90 seconds for the reason given below the table):</p>
+<table><thead><tr><th>Namespace</th><th>Pending instances</th><th>Query duration seen by the starter</th><th>Mean data availability</th></tr></thead><tbody><tr><td>gRPC, 4 CPU nodes</td><td>7.8k</td><td>0.07 s</td><td>45 s</td></tr><tr><td>gRPC, 8 CPU nodes</td><td>7.7k</td><td>0.08 s</td><td>42 s</td></tr><tr><td>REST, 4 CPU nodes</td><td>15.9k</td><td>14.7 s</td><td>97 s</td></tr><tr><td>REST, 8 CPU nodes</td><td>12.9k</td><td>17.6 s</td><td>99 s</td></tr></tbody></table>
+<p>The server-side duration of the search request is a p50 of about 30-47 ms for both REST and gRPC (REST slightly higher).</p>
+<p><img decoding="async" loading="lazy" alt="Duration percentiles of the search request in the four namespaces" src="https://camunda.github.io/zeebe-chaos/assets/images/k6-metrics-2e77c6abcdfad346ccf3f2797ca0a1d1.png" width="2471" height="477" class="img_ev3q"></p>
+<p>In REST, the starter sees 14.7 seconds for the same request. A heap dump of the starter confirms the number of pending instances: it held 16,059 instances waiting for their availability.</p>
+<p>The REST means are above the 90-second limit because timed-out instances are removed only after a check is completed, so their recorded age is 90 seconds plus up to one cycle of about 15 seconds.</p>
+<p>Two effects follow from this:</p>
+<ol>
+<li class="">Each data-availability check can confirm at most 2,500 instances (the page size of the search) and takes about 15 seconds: <code>2500 / 15</code> is about 167 instances per second. This is an upper bound and not the full explanation: the REST starter completes about 180 creation requests per second (the target is 300), close to the 167 per second a check can confirm, yet most observations sit at or near the 90-second limit (mean above 90 seconds). We did not measure how many instances a check really returns, so the effective confirm rate is lower than the bound for a reason we have not isolated. A check can only return instances that are already exported, and the filter of a query holds all pending keys (up to 16,000) while a response returns at most 2,500 instances, so many of the keys can belong to instances that are still in the exporter backlog.</li>
+<li class="">The timeouts are recorded in the same metric as the real latencies. The upper bucket of the histogram is the 90 seconds, so a timeout (recorded with an age of 90 seconds or a bit more) lands in the same bucket as an instance that was really found after 90 seconds and cannot be told apart.</li>
+</ol>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-does-the-query-take-15-seconds">Why does the query take 15 seconds?<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#why-does-the-query-take-15-seconds" class="hash-link" aria-label="Direct link to Why does the query take 15 seconds?" title="Direct link to Why does the query take 15 seconds?" translate="no">​</a></h4>
+<p>The availability query uses the same Camunda client as the creation of process instances. With gRPC, the creation runs over gRPC, and the client's HTTP connections are used by the search only. With REST, the starter sends about 300 requests per second over the same HTTP client, and the search has to queue behind them like any other request.</p>
+<p>The HTTP client metrics we added in the <a class="" href="https://camunda.github.io/zeebe-chaos/2026/10/01/Investigating-load-tester-limits">previous chaos day</a> show it. They exist only through a proof of concept in the starter (<a href="https://github.com/camunda/camunda/issues/64528" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#64528</a> asks for a supported way). The REST starter has all 100 connections of its pool leased and about 2,900 requests pending.</p>
+<p><img decoding="async" loading="lazy" alt="Stress HTTP Client" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-http-client-6ea24fcc803d0b458c3df54f1d2d1838.png" width="508" height="500" class="img_ev3q"></p>
+<p>With about 2,900 pending requests and about 180 completed requests per second, a request waits on average around 2,900 / 180 = 16 seconds in the queue (Little's law). This matches the 15-second availability query.</p>
+<p>The queue may not only be the pool of connections. A JFR (Java Flight Recorder, a profiler) recording of the REST starter shows that the client routes all its HTTP traffic through a single I/O thread (<code>httpclient-dispatch-1</code>) in a single-core I/O reactor. It has the most CPU samples, 500 of 1,207, ahead of the two threads that send the requests (about 320 each). This shows it is the busiest thread, not that it is saturated.</p>
+<p><img decoding="async" loading="lazy" alt="Threads of the REST starter in the JFR recording: the I/O thread of the HTTP client has the most samples" src="https://camunda.github.io/zeebe-chaos/assets/images/java-threads-72781c95afbd944b4c18ae50fb5f4043.png" width="1884" height="980" class="img_ev3q"></p>
+<p>We tried several things to confirm and fix it, with these results:</p>
+<ol>
+<li class="">A standalone starter that only calls the search API with 2,000+ process instance keys in the filter: about 2 seconds, compared to about 400 ms without a filter. Slower, but far from 15 seconds. A k6 script (a load testing tool) with 2,000 keys in the filter shows the same: a p50 of about 0.5 to 0.7 seconds and a p90 of about 2.5 to 2.8 seconds, with one spike to about a minute. The cost is not specific to Java or the starter.</li>
+</ol>
+<p><img decoding="async" loading="lazy" alt="Duration percentiles of the k6 search with 2,000 keys in the filter" src="https://camunda.github.io/zeebe-chaos/assets/images/k6-metrics-2k-keys-83a5402a45ffcb714e4ca9d2f39dc90a.png" width="617" height="375" class="img_ev3q">
+2. A bigger connection pool (500 instead of 100), more threads for the data availability meter (5 instead of 1), and ten times the CPU for the starter (2500m instead of 250m): no visible change.
+3. A <strong>second Camunda client only for the read requests</strong>: the search time seen by the starter dropped from about 15 seconds to about 0.12 to 0.15 seconds. The server execution time did not change, only the time until the starter code got its response.</p>
+<p>A bigger pool alone did not help, so the pool size is not the whole bottleneck, and the single I/O thread is a <strong>candidate</strong>. The second client has its own pool and its own I/O thread and showed better results.
+The second client separates the "loader" from the "reader" in the starter (<a href="https://github.com/camunda/camunda/pull/65355" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65355</a>, merged), which also makes the application easier to reason about.</p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="with-the-separate-client">With the separate client<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#with-the-separate-client" class="hash-link" aria-label="Direct link to With the separate client" title="Direct link to With the separate client" translate="no">​</a></h4>
+<p>After the change was deployed to the REST test on 4 CPU nodes, the starter measured about 0.12 to 0.15 seconds for the availability query (before: 14.7 seconds). The mean data availability was then about 57 to 68 seconds (before: 97 seconds), compared to a mean of 42 to 45 seconds for gRPC. The Camunda REST API is not the reason for the higher data availability, and the remaining difference to gRPC is explained below.</p>
+<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-remaining-delay">The remaining delay<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#the-remaining-delay" class="hash-link" aria-label="Direct link to The remaining delay" title="Direct link to The remaining delay" translate="no">​</a></h4>
+<p>With the separate client, process instances take about 45 seconds (gRPC) to about 60 seconds (REST) until the search finds them. The query is fast now, so it is no longer the reason.</p>
+<p><strong>The exporter backlog.</strong> Under the stress load, the exporter is behind. Both clusters stayed about 320,000 to 390,000 records behind the committed log (summed over all partitions, so the estimate assumes backlog and throughput are spread evenly across partitions) while exporting about 8,000 to 10,000 records per second (exported and skipped records). Records are exported in order, so a new record waits about <code>backlog/export rate</code> until it is exported, which is about 32 to 49 seconds. This is the same for REST and gRPC. The exporting latency metric cannot show it, because its top bucket is 10 seconds, so the backlog-based estimate is the server-side signal.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion" translate="no">​</a></h2>
+<p>The search API is not the reason for the higher data availability of the REST test. The original REST measurement was dominated by our own load tester: the query that measures it waited in the same client queue as the creation of process instances, took about 15 seconds, and could only confirm a part of the waiting instances. The rest ended at the 90-second limit, and the metric recorded these timeouts like real latencies. With a separate client, both protocols include a substantial delay from the exporter backlog under the stress load. REST stays about 12 to 23 seconds above gRPC. We did not isolate the reason, but two effects are likely: REST has more latency than gRPC in general because of the protocol overhead, and the REST test has more pending instances (13 to 16 thousand compared to about 8 thousand), so each availability query carries more keys, and searching with many keys is slow (see below).</p>
+<p>What we learned:</p>
+<ul>
+<li class="">Under high load, reads and writes of a REST client compete for the same queue in the client (pool or I/O thread, our experiments do not separate them), and a metric measured through that client measures the queue as well.</li>
+<li class="">Timeouts must stay visible in the latency metric, and should also be counted, so that a plateau at the limit is recognized as timeouts. Hiding them would have hidden this problem.</li>
+<li class="">The client metrics were essential to see the queue, but we had to hack them in again. They need to be a supported feature of the Java client.</li>
+<li class="">The exporting latency metric is capped at 10 seconds, so it cannot show a backlog of 40 seconds. The exporter backlog divided by the export rate approximates the data availability on the server side.</li>
+<li class="">Searching with many process instance keys is expensive (about 2 seconds for 2,000 keys). The load tester sends up to 16,000 keys, where the cost is not measured yet, so it should query fewer keys.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="found-bugs-and-follow-ups">Found Bugs and Follow-ups<a href="https://camunda.github.io/zeebe-chaos/2026/10/08/REST-Performance-validating-with-k6#found-bugs-and-follow-ups" class="hash-link" aria-label="Direct link to Found Bugs and Follow-ups" title="Direct link to Found Bugs and Follow-ups" translate="no">​</a></h2>
+<ul>
+<li class="">Separate Camunda client for the availability queries in the starter: <a href="https://github.com/camunda/camunda/pull/65355" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65355</a> (merged)</li>
+<li class="">Make the data availability meter observable and robust: <a href="https://github.com/camunda/camunda/issues/65371" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65371</a></li>
+<li class="">Query fewer process instance keys for the data availability: <a href="https://github.com/camunda/camunda/issues/65520" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65520</a></li>
+<li class="">Log the effective starter and worker configuration: <a href="https://github.com/camunda/camunda/issues/65372" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65372</a></li>
+<li class="">Investigate the latency of searching with thousands of keys: <a href="https://github.com/camunda/camunda/issues/65373" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#65373</a></li>
+<li class="">Expose the HTTP client metrics of the Java client: <a href="https://github.com/camunda/camunda/issues/64528" target="_blank" rel="noopener noreferrer" class="">camunda/camunda#64528</a></li>
+</ul>]]></content>
+        <author>
+            <name>Jonathan Ballet</name>
+            <uri>https://github.com/multani</uri>
+        </author>
+        <author>
+            <name>Christopher Kujawa</name>
+            <uri>https://github.com/ChrisKujawa</uri>
+        </author>
+        <category label="performance" term="performance"/>
+        <category label="availability" term="availability"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Investigating load tester limits]]></title>
         <id>https://camunda.github.io/zeebe-chaos/2026/10/01/Investigating-load-tester-limits</id>
@@ -2014,118 +2115,6 @@ This can only be completed when ES is up and running; the bootstrapping of addit
 <li class="">In the Helm Chart, it is hard to configure. We must use the <code>extraConfiguration</code></li>
 <li class="">The <code>index.numberOfReplicas</code> configuration is not documented, but exposed <a href="https://github.com/camunda/camunda/blob/main/zeebe/exporters/elasticsearch-exporter/src/main/java/io/camunda/zeebe/exporter/ElasticsearchExporterConfiguration.java#L256" target="_blank" rel="noopener noreferrer" class="">here</a></li>
 </ul>]]></content>
-        <author>
-            <name>Christopher Kujawa</name>
-            <uri>https://github.com/ChrisKujawa</uri>
-        </author>
-        <category label="availability" term="availability"/>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Experimenting with data availability metric]]></title>
-        <id>https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric</id>
-        <link href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric"/>
-        <updated>2026-01-08T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Happy New Year, everyone! Time for some chaos experiments again.]]></summary>
-        <content type="html"><![CDATA[<p>Happy New Year, everyone <!-- -->🎉<!-- -->! Time for some chaos experiments again <!-- -->😃<!-- -->.</p>
-<p>In today's chaos day, I was joined by <a href="https://github.com/pranjalg13" target="_blank" rel="noopener noreferrer" class="">Pranjal</a>, our newest addition to the reliability testing team at Camunda (welcome <!-- -->🎉<!-- -->)</p>
-<p>We planned to experiment with the new data availability metric, which we have recently added to our load testing infrastructure, for more details see related <a href="https://github.com/camunda/camunda/pull/42553" target="_blank" rel="noopener noreferrer" class="">PR</a>. In short, we measure the time from creating a process instance until it is actually available to the user via the API. This allows us to reason how long it also takes for Operate to show new data.</p>
-<p>The goal for today was to gain a better understanding of how the system behaves under higher loads and how this affects data availability. The focus was set here on the orchestration cluster, meaning data availability for Operate and Tasklist.</p>
-<p><strong>TL;DR:</strong> We have observed that increasing the process instance creation rate results in higher data availability times. While experimenting with different workloads, we discovered that the <a href="https://github.com/camunda/camunda/issues/42244" target="_blank" rel="noopener noreferrer" class="">typical load test</a> is still not working well. During our investigation of the platform behaviors, we found a recently introduced <a href="https://github.com/camunda/camunda/issues/43713" target="_blank" rel="noopener noreferrer" class="">regression</a> that is limiting our general maximum throughput. We also identified <a href="https://github.com/camunda/camunda/issues/43715" target="_blank" rel="noopener noreferrer" class="">suboptimal error handling in the Gateway</a>, which causes request retries and can exacerbate load issues.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-latency-90953e0977127b0b78ea6ec2d6ea4343.png" width="2516" height="654" class="img_ev3q"></p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="chaos-experiment">Chaos Experiment<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#chaos-experiment" class="hash-link" aria-label="Direct link to Chaos Experiment" title="Direct link to Chaos Experiment" translate="no">​</a></h2>
-<p>In our experiments, we wanted to explore the new metric we have introduced for measuring data availability and how it behaves on different load characteristics.</p>
-<p>This means:</p>
-<ul>
-<li class="">We will run our normal and typical load test, with a focus on data availability as a base</li>
-<li class="">We will monitor the data availability metric during the test and understand the basis for the metric</li>
-<li class="">After running the first load tests (or even in parallel), we will start different types of tests with varying load (stress tests) and observe how the platform and data availability metric behaves</li>
-</ul>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="expected">Expected<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#expected" class="hash-link" aria-label="Direct link to Expected" title="Direct link to Expected" translate="no">​</a></h3>
-<p>In general, what we expected is that the data is available within acceptable time frames (around 2 seconds) after creating a process instance.</p>
-<ul>
-<li class="">Around 2 seconds, data availability seems to be acceptable by most users<!-- -->
-<ul>
-<li class="">This means the average data availability should be below 2 seconds</li>
-<li class="">In ideal case the p99 should also be below 2 seconds, imagine a user creating a process instance and then immediately trying to access it - if this takes longer than 2 seconds this might cause friction. Even if this only happens for 1% of the cases, it will eventually happen to a user.</li>
-<li class="">In our current state, we might not yet achieve that (but it is good to have it as a goal)</li>
-</ul>
-</li>
-<li class="">If we increase the load (process instance creation rate) the data availability might increase a bit, but should stay within acceptable limits<!-- -->
-<ul>
-<li class="">Important is here what is acceptable? Below 5 seconds?</li>
-<li class="">Everything higher than 5 seconds will likely cause friction for users and the usage, because at some point, users will notice that data is not available right away and start to wonder what is going on, refresh the page, etc. (making it worse).</li>
-</ul>
-</li>
-<li class="">Expectation: no matter the process model, we should see similar data availability behavior<!-- -->
-<ul>
-<li class="">caveat that longer process instances might have slightly different behavior because of more data being written, but in general, should be similar</li>
-</ul>
-</li>
-</ul>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="actual">Actual<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#actual" class="hash-link" aria-label="Direct link to Actual" title="Direct link to Actual" translate="no">​</a></h3>
-<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="base-typical-load-test">Base typical load test<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#base-typical-load-test" class="hash-link" aria-label="Direct link to Base typical load test" title="Direct link to Base typical load test" translate="no">​</a></h4>
-<p>We started with our <a href="https://github.com/camunda/camunda/blob/main/docs/testing/reliability-testing.md#typical-load" target="_blank" rel="noopener noreferrer" class="">typical load test</a> with creating 50 process instances per second.
-We realized quickly that this test is still affected by <a href="https://github.com/camunda/camunda/issues/42244" target="_blank" rel="noopener noreferrer" class="">issue 42244</a> and unstable. Making it hard to interpret the results.</p>
-<p><img decoding="async" loading="lazy" alt="base-typical-unstable.png" src="https://camunda.github.io/zeebe-chaos/assets/images/base-typical-unstable-3b15eea8dcc2cefd6ad67a04b5d3a728.png" width="2491" height="769" class="img_ev3q"></p>
-<p>The data availability metric shows high values and is unstable because of this as well.</p>
-<p><img decoding="async" loading="lazy" alt="base-typical-spike-data.png" src="https://camunda.github.io/zeebe-chaos/assets/images/base-typical-spike-data-26e2a92d1c7de9467c93e35034ff9d11.png" width="2515" height="350" class="img_ev3q"></p>
-<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="base-stress-test">Base stress test<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#base-stress-test" class="hash-link" aria-label="Direct link to Base stress test" title="Direct link to Base stress test" translate="no">​</a></h4>
-<p>For better comparison and evaluation, we fall back to the <a href="https://github.com/camunda/camunda/blob/main/docs/testing/reliability-testing.md#max--stress-load-test" target="_blank" rel="noopener noreferrer" class="">stress test</a> load, using one task per process instance and creating 150 process instances per second.</p>
-<p>This test is more stable and allows us to reason about the data availability metric better.</p>
-<p><img decoding="async" loading="lazy" alt="base-stress-general" src="https://camunda.github.io/zeebe-chaos/assets/images/base-stress-general-8cc0f293d9c7fa32758af9a743ce484b.png" width="2519" height="742" class="img_ev3q">
-<img decoding="async" loading="lazy" alt="base-stress-data-avail.png" src="https://camunda.github.io/zeebe-chaos/assets/images/base-stress-data-avail-391695608bd9edc1d11c219072c93184.png" width="2523" height="346" class="img_ev3q"></p>
-<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="stress-test-with-high-load">Stress test with high load<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#stress-test-with-high-load" class="hash-link" aria-label="Direct link to Stress test with high load" title="Direct link to Stress test with high load" translate="no">​</a></h4>
-<p>We increased the load of the stress test to 300 process instances per second. After doing so we observed that the system is not able to handle this load and the process instance creation rate seem to be limited at ~150 PIs, which was unexpected.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-general" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-general-8abdfc1e23ca0d53e6e5023d60a46875.png" width="2513" height="883" class="img_ev3q"></p>
-<p>Looking at the data availability metric, we can see that it is affected by the higher load as well. It goes up to one minute and higher, which is way beyond acceptable limits.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-latency-90953e0977127b0b78ea6ec2d6ea4343.png" width="2516" height="654" class="img_ev3q"></p>
-<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="investigation">Investigation<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#investigation" class="hash-link" aria-label="Direct link to Investigation" title="Direct link to Investigation" translate="no">​</a></h4>
-<p>Based on the observation, we started to investigate the reasons for the limited throughput and high data availability.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-not-exported.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-not-exported-2ca2a475d780e09bd990c61e4a8c68d3.png" width="2516" height="859" class="img_ev3q"></p>
-<p>Camunda seems to lag behind with exporting data to ELS, which causes the high data availability times. Expecting ELS to be the bottleneck, we looked at its CPU usage and throttling.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-els-cpu.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-els-cpu-7ae86362ed5a25af3eff89dc734006d7.png" width="2529" height="744" class="img_ev3q"></p>
-<p>This seems to be fine, with low throttling and CPU usage. At least lower than under normal load.</p>
-<p>It is interesting that the CPU usage on the Camunda side is much higher and also shows higher throttling.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-cam-cpu.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-cam-cpu-f5598d0bd3681016cb1a2706f225b322.png" width="2516" height="664" class="img_ev3q"></p>
-<p>Further investigation showed that the commit latency is higher as well, which could explain the slowdown of the system.</p>
-<p><img decoding="async" loading="lazy" alt="comparison-commit-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/comparison-commit-latency-4786ae6482e24067fbf30f7091ea0082.png" width="2527" height="549" class="img_ev3q"></p>
-<p>As we have introduced recently, daily max load tests, we remembered that the maximum achievable load was previously higher, like ~200 PIs. Looking at the historical data we could confirm this.</p>
-<p><img decoding="async" loading="lazy" alt="max-perf-decrease.png" src="https://camunda.github.io/zeebe-chaos/assets/images/max-perf-decrease-82b996349268d6e6094783d00d788062.png" width="926" height="597" class="img_ev3q"></p>
-<p>Before 19.12, we were normally able to reach 200+ PIs per second; after that, it seems to slow down.</p>
-<p>Looking at the current events over time, we can observe this as well.
-<img decoding="async" loading="lazy" alt="stress-test-overtime.png" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-test-overtime-3407a23779d084fe2d93a3852e33bdac.png" width="1566" height="388" class="img_ev3q"></p>
-<p>This view also allows us to better compare differences in latencies. For example, in the commit latency, we can see that after 19.12, the latency is higher on average.</p>
-<p><img decoding="async" loading="lazy" alt="stress-test-overtime-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-test-overtime-latency-0cff696736eccf6df94a39d61a0cc93b.png" width="1889" height="288" class="img_ev3q">
-<img decoding="async" loading="lazy" alt="stress-test-overtime-latency-commit.png" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-test-overtime-latency-commit-e1d50c5787bd1959425ad2c66bc6e84b.png" width="916" height="253" class="img_ev3q"></p>
-<p>While the journal append latency seemed to decrease, the flush latency went up.</p>
-<p><img decoding="async" loading="lazy" alt="stress-test-overtime-journal.png" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-test-overtime-journal-1326a45c73c6927f2c1dfdcdb321636a.png" width="1872" height="555" class="img_ev3q"></p>
-<p>Some panels are also not correctly showing the expected data, after adding the quantiles we were able to see that the append latency is actually higher as well.</p>
-<p><img decoding="async" loading="lazy" alt="stress-test-overtime-append-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/stress-test-overtime-append-latency-76d749eb3324f322c7b9697196a7f20e.png" width="1881" height="269" class="img_ev3q"></p>
-<p>As this indicated a change around 19.12, we have investigated <a href="https://github.com/camunda/camunda/commits/main/?since=2025-12-19&amp;until=2025-12-19&amp;before=dfe3ffb6f781e98e5094ebaa7c1ed331d4da4929+105" target="_blank" rel="noopener noreferrer" class="">related changes in the code basis</a>. The changes had to be related to raft or the journal flushing, which is why the following changes stand out:</p>
-<ul>
-<li class=""><a href="https://github.com/camunda/camunda/pull/43090" target="_blank" rel="noopener noreferrer" class="">feat: set default segment-preallocation-strategy to POSIX_OR_FILL</a></li>
-<li class=""><a href="https://github.com/camunda/camunda/pull/33442" target="_blank" rel="noopener noreferrer" class="">deps: Update dependency io.netty<!-- -->:netty-bom<!-- --> to v4.2.7.Final (main)</a></li>
-</ul>
-<p>To validate whether these changes are the root cause, we have created a benchmark reverting these changes and running the stress test again.</p>
-<p>It turned out that the netty changes (especially the decoding changes) were the root cause (or at least part) of the performance regression.</p>
-<p><img decoding="async" loading="lazy" alt="revert-netty-general.png" src="https://camunda.github.io/zeebe-chaos/assets/images/revert-netty-general-d03452e2b7e23b79b99075d2d3c00f9a.png" width="2522" height="800" class="img_ev3q"></p>
-<p>We achieved a throughput of at least 185 PIs per second. The commit latency also decreased again by a factor of 2, which also had a similar effect on the process instance execution time.</p>
-<p><img decoding="async" loading="lazy" alt="revert-netty-commit-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/revert-netty-commit-latency-1b2081d33134605654e754c2aef9f212.png" width="2519" height="836" class="img_ev3q">
-<img decoding="async" loading="lazy" alt="revert-netty-pi-latency.png" src="https://camunda.github.io/zeebe-chaos/assets/images/revert-netty-pi-latency-48b40182149210ac58f5caada75b3de0.png" width="2517" height="309" class="img_ev3q"></p>
-<h4 class="anchor anchorTargetStickyNavbar_Vzrq" id="additional-investigation-of-request-counts">Additional investigation of request counts<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#additional-investigation-of-request-counts" class="hash-link" aria-label="Direct link to Additional investigation of request counts" title="Direct link to Additional investigation of request counts" translate="no">​</a></h4>
-<p>During our investigation of our high-load stress tests, we have observed high backpressure at higher loads. We have also observed that the process instance rate is still constant and does not show that the starter is actually retrying requests. But we have seen that the messages sent in the cluster, especially to the Command API, are unexpectedly high, hinting at some internal retries.</p>
-<p><img decoding="async" loading="lazy" alt="request-count-comparison-base-vs-stress.png" src="https://camunda.github.io/zeebe-chaos/assets/images/request-count-comparison-base-vs-stress-b33417a35d85baa763ad13ae7d5b65e2.png" width="2508" height="877" class="img_ev3q"></p>
-<p>When investigating this further, we have found out that in the Gateway / Endpoint Manager, we are retrying requests <a href="https://github.com/camunda/camunda/blob/main/zeebe/gateway/src/main/java/io/camunda/zeebe/gateway/impl/broker/RequestRetryHandler.java#L148" target="_blank" rel="noopener noreferrer" class="">on resource exhausted errors (we try the next partition)</a>.</p>
-<p><strong>Problem:</strong> As we sent our load round-robin, we can expect that partitions experience equal load. If one of these partitions experiences resource exhaustion, it is <strong>likely</strong> that other partitions will experience the same problem. Meaning if we now retry the request to the next partition, it will likely also fail, causing more retries and more load on the orchestration cluster.</p>
-<p>As an experiment, we tried to fix this behavior <a href="https://github.com/camunda/camunda/pull/43679" target="_blank" rel="noopener noreferrer" class="">#43679</a> and run some further tests, but it didn't fully help in restoring our general performance.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="summary-of-findings">Summary of findings<a href="https://camunda.github.io/zeebe-chaos/2026/01/08/Experimenting-with-data-availability-metric#summary-of-findings" class="hash-link" aria-label="Direct link to Summary of findings" title="Direct link to Summary of findings" translate="no">​</a></h3>
-<ul>
-<li class="">We have observed that the data availability metric is affected by the load on the system. Increasing the process instance creation rate leads to higher data availability times.</li>
-<li class="">We still seem to be affected by <a href="https://github.com/camunda/camunda/issues/42244" target="_blank" rel="noopener noreferrer" class="">issue 42244</a>, causing instability in our typical load test.</li>
-<li class="">We have identified a performance regression introduced around 19.12, related to Netty changes, which limited our max throughput and increased commit latencies.</li>
-<li class="">We have identified that high load causes resource exhaustion errors in the orchestration cluster, leading to request retries in the Gateway, which further increases load on the system. This exacerbates load issues and can lead to higher data availability times.</li>
-</ul>
-<p>While we were not able to prove our expectations or hypotheses, we have identified several areas for improvement and further investigation to enhance our performance and data availability under high load conditions.</p>]]></content>
         <author>
             <name>Christopher Kujawa</name>
             <uri>https://github.com/ChrisKujawa</uri>
