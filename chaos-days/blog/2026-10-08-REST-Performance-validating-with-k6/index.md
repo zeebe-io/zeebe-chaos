@@ -29,17 +29,14 @@ Under stress, the data availability reported by our load tester ("how long after
 
 ## Chaos Experiment
 
-We ran load tests with REST and with gRPC side by side and compared the server metrics. Note that the different protocols are only use for starting and completing instances. For querying data, there only exists the REST API.
+We ran load tests with REST and with gRPC side by side and compared the server metrics. Note that different protocols are only used for starting and completing instances. For querying data, there only exists the REST API.
 
 Since last week we even have k6 load testing support (in our tool-box) for running load tests against the REST query API. This is useful for experiment and queries which do not need additional context.
 
 We measured the k6 search latencies (k6 runs read requests against the search API during the test), and the data availability measured by the starter.
 
-
-Regarding setup, as usual the clusters have three Camunda pods with 3 CPUs each and Elasticsearch as secondary storage. We ran two rounds:
-
-1. REST and gRPC on our standard 4 CPU nodes with a realistic load.
-2. REST and gRPC with stress (max) load, each on 4 CPU nodes and on bigger, 8 CPU nodes. The CPU limit of the Camunda pods stayed the same.
+Regarding setup, as usual the clusters have three Camunda pods with 3 CPUs each and Elasticsearch as secondary storage.
+REST and gRPC with stress (max) load, each on 4 CPU nodes and on bigger, 8 CPU nodes. The CPU limit of the Camunda pods stayed the same.
 
 ### Expected
 
@@ -47,51 +44,11 @@ Either the client (again, see [Investigating load tester limits](../2026-10-01-I
 
 ### Actual
 
-#### Round 1: realistic load
+We started four load tests: gRPC and REST, each on the standard and on the bigger nodes (the `-4` and `-8` namespaces).
 
-At first, k6 showed about twice the search latency (p99) for REST compared to gRPC.
+We were able to reproduce the larger data availability issues for REST under stress load.
 
-![k6 search latency for gRPC (left) and REST (right)](rest-k6.png)
-
-The throughput was the same for both protocols.
-
-![Throughput of the gRPC and REST test is similar](same-load.png)
-
-The data availability looked similar for both, apart from one spike on the gRPC side that matches a restart of the starter pod.
-
-![Data availability of gRPC (left) and REST (right)](data-avail-start.png)
-
-![Data availability later in the test](data-avail-later.png)
-
-The CPU was a clear difference: REST used about 2.2 of its 3 CPUs and was throttled in 11 to 17% of the periods, while gRPC used about 1.3 CPUs and was barely throttled.
-
-![CPU usage and throttling of the Camunda pods, gRPC (left) and REST (right)](cpu.png)
-
-Throttling well below the limit looked odd. The node (4 CPUs, 3.92 allocatable) already had 99% of its CPU requested, with one Camunda pod requesting 3 CPUs next to the node daemons. Our assumption was that REST, which needs more CPU, suffers from contention on the node.
-
-![CPU usage of the node](node-usage.png)
-
-To test that, we moved the REST Camunda pods to 8 CPU nodes at 12:20, without changing their CPU limit and requests. Right before the move, k6 had shown a high latency spike on REST. Elasticsearch had restarted two of its pods around 12:10 and showed a lot of activity on the process instance index, which explains that spike.
-
-![The k6 latency spike on REST before the move](k6-highspike.png)
-
-![Elasticsearch activity on the process instance index](es-spike.png)
-
-At the same time, we found that our k6 latency panel displayed the wrong data. With a corrected panel (now a heatmap), REST and gRPC are similar, and REST improved after the move to bigger nodes.
-
-![Corrected k6 quantiles](k6-fix-quantiles.png)
-
-![Corrected k6 latency heatmap](k6-fix-heatmap.png)
-
-![k6 latency heatmap over time, with the move of REST to bigger nodes around 12:20](k6-fix-heatmap-overtime.png)
-
-We also realized that this round tested a realistic load, instead of the stress test where the high data availability was reported.
-
-#### Round 2: stress load
-
-![Stress data availability](stress-data-avail.png)
-
-We started four new load tests: gRPC and REST, each on the standard and on the bigger nodes (the `-4` and `-8` namespaces).
+![Stress comparison](stress-comparison.png)
 
 - gRPC was fine and similar on both node sizes. Looking at the k6 metrics, the gRPC test on bigger nodes performed best.
 - For REST, the data availability was at the limit of the report window, 90 seconds. For gRPC it was about 30 seconds. This held for both REST setups.
@@ -108,7 +65,9 @@ If the server is as fast for REST and the data is exported at the same pace, the
 
 The starter keeps every created process instance in a map, and checks regularly which of them can be found through the search API. It remembers the creation time and records the time until the instance is found. Instances that are not found after 90 seconds are removed and recorded with their age.
 
-The starter logged the number of instances it was waiting for every 15 seconds, and this number kept increasing. A 15 second cycle was surprising: the configured interval is 250 ms. The next check is scheduled only after the previous one completed, so a cycle of 15 seconds means that the query itself took about 15 seconds.
+The starter logged the number of instances it was waiting for every 15 seconds, and this number kept increasing. A 15 second cycle was surprising: the configured interval is 250 ms. The next check is scheduled only after the previous one completed, so a cycle of 15 seconds means that the query itself took about 15 seconds. This was observable in the logs as well.
+
+![Starter log](starter-log.png)
 
 The metrics confirmed this. A snapshot during the stress runs:
 
@@ -130,8 +89,7 @@ Two effects follow from this:
 
 The availability query uses the same Camunda client as the creation of process instances. With gRPC, the creation runs over gRPC and the client's HTTP connections are used by the search only. With REST, the starter sends about 300 requests per second over the same HTTP client, and the search has to wait for a free connection like any other request.
 
-The client metrics we added in the [previous chaos day](../2026-10-01-Investigating-load-tester-limits/index.md) show it: the REST starter has all 100 connections of its pool leased and about 2,900 requests pending.
-
+The client metrics we added in the [previous chaos day as POC](../2026-10-01-Investigating-load-tester-limits/index.md) show it: the REST starter has all 100 connections of its pool leased and about 2,900 requests pending.
 
 ![Stress HTTP Client](stress-http-client.png)
 
