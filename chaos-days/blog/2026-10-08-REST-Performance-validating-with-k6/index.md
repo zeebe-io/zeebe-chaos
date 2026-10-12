@@ -22,8 +22,8 @@ Under stress, the data availability reported by our load tester ("how long after
 - The REST search is not slower than with gRPC: the server answers `/v2/process-instances/search` in about 70 ms in both setups.
 - The starter (the load tester application that creates process instances) used one Camunda client for creating instances at 300 PI/s *and* for the availability check. With REST, the connection pool of that client was fully leased (100 connections) with about 2,900 requests waiting, so the availability search waited in the same queue. The starter measured about 15 seconds for a query that took the server 70 ms.
 - The availability check starts the next check only after the previous one completed, and returns at most 2,500 instances per check. With a 15 second cycle, it confirms at most about 167 instances per second. The rest is dropped after 90 seconds and recorded with the same metric as a real latency, so timeouts look like slow data availability.
-- A second Camunda client only for the read requests brings the search time seen by the starter from about 15 seconds to about 0.1 seconds ([camunda/camunda#65355](https://github.com/camunda/camunda/pull/65355), merged). The mean data availability of the REST test drops from about 97 seconds to about 30 to 65 seconds, in the same range as gRPC (about 45 seconds).
-- The remaining delay of about 45 seconds exists for both protocols. It is a queuing effect of the stress load: with more load, the exporter backlog grows, and data becomes searchable later.
+- A second Camunda client only for the read requests brings the search time seen by the starter from about 15 seconds to about 0.1 seconds ([camunda/camunda#65355](https://github.com/camunda/camunda/pull/65355), merged). The mean data availability of the REST test drops from about 97 seconds to about 50 to 65 seconds (gRPC: about 45 seconds).
+- The remaining delay has two parts. The first is the exporter backlog under the stress load, about 40 seconds for both protocols, which can be estimated on the server side as `backlog / export rate`. The second, only for REST, is the latency of the creation request of about 15 seconds: the starter takes the start time before it sends the request, and the request waits in the same client queue.
 
 <!--truncate-->
 
@@ -110,21 +110,30 @@ The second client separates the "loader" from the "reader" in the starter ([camu
 
 #### With the separate client
 
-After the change was deployed to the REST test on 4 CPU nodes, the starter measures about 0.12 to 0.15 seconds for the availability query (before: 14.7 seconds). The mean data availability is now about 30 to 65 seconds (before: 97 seconds), which is in the range of gRPC (mean of 42 to 45 seconds). The Camunda REST API was not the reason for a higher data availability.
+After the change was deployed to the REST test on 4 CPU nodes, the starter measures about 0.12 to 0.15 seconds for the availability query (before: 14.7 seconds). The mean data availability is now about 50 to 65 seconds (before: 97 seconds), compared to a mean of 42 to 45 seconds for gRPC. The Camunda REST API was not the reason for a higher data availability, and the remaining difference to gRPC is explained below.
 
-#### The remaining 45 seconds
+#### The remaining delay
 
-Under stress, process instances still take about 45 seconds until they can be found with the search API, for REST and for gRPC. The query is fast now, so this is not a measurement effect of the client. It is a queuing effect: under the higher load, the exporter backlog is bigger, and the data reaches the secondary storage later. The exporter backlog was the same for REST and gRPC in the stress tests: both clusters stayed about 320,000 to 390,000 records behind the committed log (summed over all partitions) while exporting about 8,000 to 10,000 records per second. That is a backlog of roughly 35 to 45 seconds, which matches the data availability we measure for both protocols.
+With the separate client, process instances still take about 45 seconds (gRPC) to about 60 seconds (REST) until the search finds them. The query is fast now, so the availability query is no longer the reason. Two parts remain:
+
+1. **The exporter backlog.** Under the stress load, the exporter is behind. Both clusters stayed about 320,000 to 390,000 records behind the committed log (summed over all partitions) while exporting about 8,000 to 10,000 records per second (exported and skipped records). Records are exported in order, so a new record waits about `backlog / export rate` until it is exported, which is 35 to 45 seconds. This is the same for REST and gRPC. The exporting latency metric cannot show it, because its top bucket is 10 seconds, so the backlog based estimate is the server-side signal.
+2. **The creation request.** The starter takes the start time before it sends the creation request, as this is what a user sees: how long it takes from starting an instance until it shows up. This includes the latency of the creation request itself. With gRPC it is about 0.27 seconds, but with REST it is 14 to 17 seconds, because the requests wait in the same client queue as described above.
+
+Together, both parts match what we measure (hourly samples, rates over 10 minutes):
+
+- gRPC: 0.27 s creation latency + about 42 s backlog = about 43 s, measured about 45 s.
+- REST: about 16 s creation latency + 37 to 48 s backlog = about 53 to 66 s, measured about 57 to 68 s.
 
 ## Conclusion
 
-The Camunda REST API is not the reason for the higher data availability of the REST test. It was dominated by our own load tester: the query that measures it waited in the same client queue as the creation of process instances, took about 15 seconds, and could only confirm a part of the waiting instances. The rest ended at the 90 second limit, and the metric recorded these timeouts like real latencies. With a separate client, REST and gRPC show the same data availability, bounded by the exporter backlog under stress load.
+The Camunda REST API is not the reason for the higher data availability of the REST test. It was dominated by our own load tester: the query that measures it waited in the same client queue as the creation of process instances, took about 15 seconds, and could only confirm a part of the waiting instances. The rest ended at the 90 second limit, and the metric recorded these timeouts like real latencies. With a separate client, the data availability of REST and gRPC differs only by the latency of the creation request, and both are bounded by the exporter backlog under the stress load.
 
 What we learned:
 
 - Under high load, reads and writes of a REST client compete for the same queue (connections and the I/O thread), and a metric measured through that client measures the queue as well.
 - Timeouts must stay visible in the latency metric, and should also be counted, so that a plateau at the limit is recognized as timeouts. Hiding them would have hidden this problem.
 - The client metrics were essential to see the queue, but we had to hack them in again. They need to be a supported feature of the Java client.
+- The exporting latency metric is capped at 10 seconds, so it cannot show a backlog of 40 seconds. The exporter backlog divided by the export rate approximates the data availability on the server side.
 - Searching with many process instance keys is expensive (about 2 seconds for 2,000 keys), so the load tester should query fewer keys.
 
 ## Found Bugs and Follow-ups
