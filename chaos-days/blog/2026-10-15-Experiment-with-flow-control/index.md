@@ -240,8 +240,6 @@ With an acceptable backlog of 10k we still reached a high throughput of about ~2
 
 The exporter backlog is about three times lower than in the base (about 35k vs 105k per partition). It is not exactly the configured value, so the setting does not behave like a hard per-second bound.
 
-What we are configuring here is the soft limit of the exporter backlog. It determines how many records can be queued before flow control kicks in, but it does not act as a strict per-second limit.
-
 Important to note here is that a higher limit doesn't necessary help, as this only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit has a direct effect on the data availability latency. 
 
 This is directly related to queuing theory (like Little's Law): the waiting time in a queue is its size divided by the rate at which it is served. For the backlog this estimates the export delay, which is only one part of the data availability measured through the REST API.
@@ -289,11 +287,7 @@ flowchart LR
 
 The 5k cluster lowers the acceptable backlog even further, to 5k records per partition. This is a soft limit as well.
 
-In the investigation and discussion we realized that the acceptable backlog only tunes the data availability. A large backlog leads to a large export delay and a small backlog to a small one.
-
-The throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
-
-See the diagram at the top: the acceptable backlog sizes the queue, the exporter rate sets the throughput.
+In the investigation and discussion we realized that the throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
 This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster, whole run means of 36.4, 37.1 and 37.1). This is a bit more than the 33 records we calculated for the write limit. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the bug below). With 37 records per PI and the exporter throughput we measured (whole run means of 8.2k, 7.3k and 6.4k records/s for the base, 10k and 5k cluster) the maximum is `8200 / 37`, `7300 / 37` and `6400 / 37`, about 223, 198 and 173 PIs/s.
 
