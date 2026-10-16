@@ -174,6 +174,8 @@ print(total_records)  # 33
 
 This makes `33` records per process instance. As the limit is set to 100 per partition we can expect ~3 PIs/s per partition (`100 / 33`), which is about 9 PIs/s for our whole cluster.
 
+In Prometheus the exporters exported 37.0 records per completed process instance on the base, 10k and 5k clusters (whole run means of 36.4, 37.1 and 37.1), a bit more than these 33 records. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the bug below). For the exporter throughput below we use the 37 exported records per PI.
+
 When we look at the metrics, we can see that the throughput aligns with our expectations for one partition only.
 
 ![General metrics of the lower limit cluster](lower-limit-general.png)
