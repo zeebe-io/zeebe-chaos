@@ -98,28 +98,27 @@ While looking at the base we noticed that deployments are continuously distribut
 
 When setting the write limit to a lower value, we tried to estimate what this would mean to our throughput. As this is not obvious from the user point of view (when setting record limit).
 
-We tried to approximate how many records a single PI writes in our load test for our stress workload, where we just have one start event, a service task and end event. This means we have three flow node instances and one process instance container. For each of them we can expect that we write ~4 records. See related investigation (TODO link to gh issue) and ZEP (TODO link to ZEP) for more details. In addition we know that we create one job per service task (~3 records), and we create 14 variables per process instances (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)).
+We tried to approximate how many records a single PI writes in our load test for our stress workload (one start event, a service task and an end event). Each process instance and flow node instance writes ~4 records, a job ~3 records, and we create 14 variables per process instance (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)). See [ZEP-004](https://github.com/zeebe-io/enhancements/blob/master/ZEP004-wf-stream-processing.md) for how the stream processing writes these records, and [camunda/camunda#61073](https://github.com/camunda/camunda/issues/61073) for related work on sizing by records per process model.
 
-```sh
+```python
 # Number of records per flow node instance
-fni=4
-
+fni = 4
 # Number of records per job
-job=3
-
+job = 3
 # Number of records per process instance container
-picontainer=4
-
+picontainer = 4
 # Number of variables per process instance
-variables=14
+variables = 14
 
 # Total number of records per process instance
-total_records=( (1 * picontainer) + (4 * fni) + (1 * job) + variables )
+# Our process has three flow nodes (start event, service task, end event)
+total_records = (1 * picontainer) + (3 * fni) + (1 * job) + variables
+print(total_records)  # 33
 ```
 
-This makes `37` records per process instance. As this configuration is set to 100 we can expect ~2.7 PIs/s per partition. Meaning for our whole cluster around ~8 PIs/s.
+This makes `33` records per process instance. As the limit is set to 100 per partition we can expect ~3 PIs/s per partition (`100 / 33`), which is about 9 PIs/s for our whole cluster.
 
-When we look at the metrics, we can see that the throughput aligns with our expectations for one partition only
+When we look at the metrics, we can see that the throughput aligns with our expectations for one partition only.
 
 ![General metrics of the lower limit cluster](lower-limit-general.png)
 
@@ -153,7 +152,7 @@ We raised the limit from 100 to 350 to see whether the limit correlates with wha
 
 ![Processing after raising the limit to 350](lower-limit-higher-350.png)
 
-With a limit of 350 (and 37 records per process instance) we would expect ~10 PIs/s per partition and indeed the cluster reached about 30 PIs/s and about 600 records/s.
+With a limit of 350 (and 33 records per process instance) we would expect ~10 PIs/s per partition (`350 / 33`) and indeed the cluster reached about 30 PIs/s. The accepted writes were about 480 records/s per partition though, which is higher than the configured limit of 350. We did not investigate how exactly the limit maps to the accepted writes (for example which write sources count against it).
 
 ![General metrics with a limit of 350](lower-limit-higher-general.png)
 
