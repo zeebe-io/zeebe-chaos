@@ -317,25 +317,11 @@ The backlog also did not shrink as much as we expected. We did not find out why.
 
 While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards, which might impact our throughput as well (we did not measure this).
 
-Looking into shard distribution, we can see that some shards hold significantly more documents than others. In addition, we stumbled over some indices with more shards than expected.
-
 ![Elasticsearch shards of the zeebe indices](shards-zeebe.png)
 
-```
-$ curl -s "localhost:9200/_cat/shards/zeebe*?v=true&bytes=gb"
-index                                           shard prirep state       docs store dataset ip           node
-zeebe-record_process-instance_8.11.0_2026-10-15 0     p      STARTED  3021041     0       0 10.152.31.66 elasticsearch-es-masters-1
-zeebe-record_process-instance_8.11.0_2026-10-15 1     p      STARTED        0     0       0 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process-instance_8.11.0_2026-10-15 2     p      STARTED        0     0       0 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process-instance_8.11.0_2026-10-15 3     p      STARTED  2708256     0       0 10.152.31.66 elasticsearch-es-masters-1
-zeebe-record_process-instance_8.11.0_2026-10-15 4     p      STARTED  2898537     0       0 10.152.25.2  elasticsearch-es-masters-0
-```
+Of the five shards of the process instance index two are empty. The exporters route each document by its partition id, so with three partitions only three routing values exist, and they can collide on the same shard. The heavy single-shard indices of Operate, Tasklist and Camunda are uneven as well, as Elasticsearch places shards by count and disk usage, not by indexing load. In the 5k run the documents indexed per second of the three Elasticsearch nodes differed (about 22.8K, 13.6K and 11.2K), so our test results depend on how the shards happen to be placed. The routing simulation, the shard listings and the related fix are in [camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172).
 
-Of the five process instance shards, two are empty. The exporters route each document by its partition id, so with three partitions only three distinct routing values exist, and these can collide in the same shard. [camunda/camunda#56522](https://github.com/camunda/camunda/pull/56522) changes the shard counts to 5 to address this, and the three used shards above are indeed even. But the change is only on main, and it only helps for exactly 3 partitions. An 8.10.4 cluster still shows one empty shard and one shard with twice the documents of another, and we simulated the routing for other partition counts (for example 6 partitions end up as 2, 1, 0, 2, 1 on 5 shards). This leads to uneven load per Elasticsearch node and different performance between otherwise identical clusters, see [camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172).
-
-The unevenness is not limited to the Zeebe record indices, it affects all indices we create (Zeebe, Operate, Tasklist, Camunda and Optimize). Most of the Operate, Tasklist and Camunda indices have a single primary shard, so each heavy index (for example list view, flow node instance, variable and task) is one hot shard, and Elasticsearch decides on which node it lives. As far as we know Elasticsearch balances shards by their count and disk usage, not by the document volume or the indexing load, so nothing prevents several heavy indices from ending up on the same node. On an 8.10.4 cluster the heavy indices of one day (47M list view, 21M flow node instance, 26M Zeebe variable and 6M job documents) have their primaries on the same node (`elasticsearch-es-masters-1`, about 100M documents in total), while another node holds primaries with about 39M documents. In this snapshot the replicas even this out (about 159M, 144M and 140M documents per node including replicas), but that is luck and not by design. In the 5k run the documents indexed per second of the three Elasticsearch nodes differed (about 22.8K, 13.6K and 11.2K). The load of the Elasticsearch nodes, and with it our test results, therefore depends on how the shards happen to be placed.
-
-We also noticed that many indices exist but hold no documents. Every shard has an overhead, see [Elastic's shard sizing guidance](https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards#each-shard-has-overhead). Our theory is that these empty indices and shards cost memory, but we did not verify it. If Elasticsearch balances shards by their count, the empty indices and shards matter for the distribution as well. They count like any other shard and take up places in the balance, so a heavy shard can end up next to another heavy shard while the placement still looks even by count. Not creating them would reduce the shard count and might improve the distribution. We did not verify this. We track this in [camunda/camunda#66173](https://github.com/camunda/camunda/issues/66173).
+We also noticed that many indices exist but hold no documents, and every shard has an overhead. We track this in [camunda/camunda#66173](https://github.com/camunda/camunda/issues/66173).
 
 
 ## Conclusion
