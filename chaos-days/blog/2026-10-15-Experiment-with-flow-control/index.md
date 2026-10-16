@@ -94,7 +94,7 @@ Before we started with our tests we made some expectations based on our current 
 
 ### Actual
 
-The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time from creating an instance until it is available via the REST API, as measured by the load tester (see [metrics documentation](https://github.com/camunda/camunda/blob/cccaef90819cd9456cfa4d3b2a3039a08ed8c84a/load-tests/docs/metrics.md#L215-L218)). Data availability is given as p50 over the whole run and as p99 in the steady state of the panel.
+The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time from creating an instance until it is available via the REST API, as measured by the load tester (see [metrics documentation](https://github.com/camunda/camunda/blob/cccaef90819cd9456cfa4d3b2a3039a08ed8c84a/load-tests/docs/metrics.md#L215-L218)). Data availability is given as p50 over the whole run and as p99 in the steady state of the panel (single 15 minute windows of the 10k and 5k runs reached the top bucket of 90s, which presumably relates to restarts of the cluster).
 
 ![Overview of the processing throughput and backlog for all clusters](actual-overview.png)
 ![Overview of the data availability and exporting for all clusters](actual-overview2.png)
