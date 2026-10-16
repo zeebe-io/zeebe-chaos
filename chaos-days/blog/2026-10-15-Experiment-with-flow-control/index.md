@@ -304,7 +304,7 @@ The backlog also did not shrink as much as we expected. We did not find out why.
 
 ![Uneven distribution of documents across Elasticsearch shards](lower-backlog-5k-es-notdistributed.png)
 
-While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards, which might impact our throughput as well (we did not measure this).
+While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards, which we observed in other load tests as well and which might impact our throughput as well (we did not measure this).
 
 ![Elasticsearch shards of the zeebe indices](shards-zeebe.png)
 
