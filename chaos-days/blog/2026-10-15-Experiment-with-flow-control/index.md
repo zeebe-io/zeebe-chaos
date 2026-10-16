@@ -39,7 +39,7 @@ flowchart LR
 
 - The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
 - Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without flow control, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
-- When flow control is enabled the maximum PIs/s are bound by the exporter throughput divided by the records per PI (about 33 exported records per PI). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
+- When flow control is enabled the maximum PIs/s are bound by the exporter throughput divided by the records per PI (about 37 exported records per PI, 33 of them written by the process itself). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
 - A backlog limit of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to a 10k limit, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions most likely could not finish bootstrapping.
 - Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
