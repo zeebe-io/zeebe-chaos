@@ -96,7 +96,7 @@ Before we started with our tests we made some expectations based on our current 
 
 ### Actual
 
-The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time from creating an instance until it is available via the REST API, as measured by the load tester (see [metrics documentation](https://github.com/camunda/camunda/blob/cccaef90819cd9456cfa4d3b2a3039a08ed8c84a/load-tests/docs/metrics.md#L215-L218)). Data availability is given as p50 over the whole run and as p99 in the steady state of the panel (single 15 minute windows reached the top bucket of 90s for 10k and 5k, see below).
+The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time from creating an instance until it is available via the REST API, as measured by the load tester (see [metrics documentation](https://github.com/camunda/camunda/blob/cccaef90819cd9456cfa4d3b2a3039a08ed8c84a/load-tests/docs/metrics.md#L215-L218)). Data availability is given as p50 over the whole run and as p99 in the steady state of the panel.
 
 ![Overview of the processing throughput and backlog for all clusters](actual-overview.png)
 ![Overview of the data availability and exporting for all clusters](actual-overview2.png)
@@ -124,8 +124,6 @@ flowchart LR
     classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W knob
 ```
-
-The base uses the write limit of 10000 and the throttling with the default acceptable backlog of 100k.
 
 The base behaved as in previous runs, with a backlog of about 105k records per partition per exporter.
 
@@ -261,7 +259,7 @@ flowchart LR
 
 Changed here: there is no limit on the write rate and no throttling, so there is no bound on the exporter queue.
 
-Without flow control (no exporter backlog limit) we reached about 295 PIs/s, but the exporter backlog kept growing until it reached about 19 million records per partition. The exporting throughput is lower than the processing throughput, so nothing slows the processing down.
+Without flow control (no exporter backlog limit) we reached about 295 PIs/s, but the exporter backlog kept growing until it reached about 19 million records per partition.
 
 At around 13:40, about 2.5 hours after the start, the disks of the Camunda pods were almost full (about 97%). This lines up with the throughput drop.
 
@@ -351,7 +349,7 @@ Under realistic load, the default configuration without any flow control worked 
 
 ### Load tests configurations
 
-Our load tests did not describe what we ship, because they enabled the write limit and the throttling, while Camunda ships with both disabled. The `no-limit` cluster is therefore the default flow control configuration. It keeps the other settings of our load test setup, for example the disk free space watermarks.
+Our load tests did not describe what we ship, because they enabled the write limit and the throttling, while Camunda ships with both disabled.
 
 This affects our earlier results as well, for example [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). They used the same configuration (write limit 10000 and throttling with the default acceptable backlog) and ran with a high load, which is exactly the situation where flow control has an effect. Their throughput and data availability numbers therefore reflect the throttling and not the default configuration, and they should be read with that in mind or repeated.
 
