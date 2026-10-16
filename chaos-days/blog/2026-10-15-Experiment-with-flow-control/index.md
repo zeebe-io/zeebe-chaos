@@ -38,10 +38,10 @@ flowchart LR
     B --> C[("Exporter backlog<br/>records not yet exported")]
     C --> D["Exporter<br/>7 to 8k records/s"]
     D --> E["Elasticsearch<br/>data available"]
-    C -. "backlog / exporter rate = waiting time (data availability)" .-> E
+    C -. "backlog / exporter rate = export delay, one part of the data availability" .-> E
 ```
 
-The acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
+The acceptable backlog sizes the queue in the middle, and with it the export delay. This is one part of the data availability, which the load tester measures from creating an instance until it is available via the REST API. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
 
 ## Chaos Experiment
 
@@ -244,7 +244,7 @@ What we are configuring here is the soft limit of the exporter backlog. It deter
 
 Important to note here is that a higher limit doesn't necessary help, as this only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit has a direct effect on the data availability latency. 
 
-This is directly related to queuing theory (like Little's Law): the waiting time in a queue is its size divided by the rate at which it is served.
+This is directly related to queuing theory (like Little's Law): the waiting time in a queue is its size divided by the rate at which it is served. For the backlog this estimates the export delay, which is only one part of the data availability measured through the REST API.
 
 
 #### No flow control
