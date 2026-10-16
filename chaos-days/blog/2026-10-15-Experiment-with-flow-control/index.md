@@ -255,7 +255,7 @@ This is directly related to queuing theory (like Little's Law): the waiting time
 ```mermaid
 flowchart LR
     A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
-    B --> W{{"No write limit"}}
+    B --> W{{"No flow control"}}
     W --> Q[("Exporter backlog<br/>unbounded, until the disk is full")]
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
