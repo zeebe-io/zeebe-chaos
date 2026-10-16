@@ -37,7 +37,7 @@ The acceptable backlog only sizes the queue in the middle, and with it the waiti
 **TL;DR;**
 
 - The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
-- Camunda ships with the write flow control disabled. Without it the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records, until the disks were almost full. Afterwards the throughput dropped to about 190 PIs/s.
+- Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without it, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records, until the disks were almost full. Afterwards the throughput dropped to about 190 PIs/s.
 - The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). With 7k records/s this is about 190 PIs/s.
 - A backlog of 5k, below what the exporter handles per second, cost about 14% throughput compared to 10k, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
@@ -258,7 +258,7 @@ We also noticed that many indices exist but hold no documents. Every shard has a
 - **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it. The test helped us to calculate the expected PIs/s for a given write limit (limit / records per PI / partitions).
 - **Lower backlog (10k):** a smaller throughput drop than expected (about 10%), with a three times lower backlog and a p99 data availability of about 44s.
 - **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 14% compared to 10k, because the exporter throughput dropped.
-- **No flow control:** more throughput than the others for a while, but a growing backlog until the disks were almost full, and a throughput drop afterwards.
+- **No flow control:** under stress, more throughput than the others for a while, but a growing backlog until the disks were almost full, and a throughput drop afterwards.
 
 The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable. The maximum throughput is bound by the exporter, so flow control can only trade data availability against throughput, it cannot add capacity.
 
