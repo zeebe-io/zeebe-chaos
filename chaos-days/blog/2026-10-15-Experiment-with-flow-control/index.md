@@ -100,12 +100,21 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 ![Overview of the data availability and exporting for all clusters](actual-overview2.png)
 
 
-- **Base:** 246 PIs/s at the start, on mean around 226 PIs/s. About +/-105k records not exported as backlog. Data availability: p50 40s, p99 59s.
-- **More PIs:** Showed a quite similar picture to the base, with 239 to 225 PIs/s, and a similar backlog and data availability (p50 41s, p99 60s).
-- **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high (p50 37s, p99 45s, see below).
-- **Lower backlog (10k):** 150 to 214 PIs/s, mean around 198. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
-- **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 150 to 200 PIs/s. The backlog grew to about 19 million records per partition. Data availability was no longer measurable, it was in the top bucket (90s) of the histogram.
-- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 28k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relates to restarts of the cluster.
+| Cluster | PIs/s | Exported records/s | Backlog per partition | Data availability p50 | p99 |
+|---|---|---|---|---|---|
+| Base | 226 | 8.24k | about 105k | 40s | 59s |
+| More PIs | 220 | 8.15k | similar to base | 41s | 60s |
+| Lower write limit | 3, later about 30 | about 1k | close to zero | 37s | 45s |
+| Lower backlog (10k) | 198 | 7.34k | about 35k | 23s | 44s |
+| Backlog 5k | 173 | 6.41k | about 28k | 22s | 30s |
+| No flow control | about 295, later 150 to 200 | about 6.8k | about 19M | top bucket (90s) | top bucket (90s) |
+
+- **Base:** 246 PIs/s at the start, then the mean above.
+- **More PIs:** a similar picture to the base.
+- **Lower write limit:** 3 PIs/s at the start, about 30 PIs/s after we raised the limit (see below). The backlog was close to zero, still the data availability was unexpectedly high (see below).
+- **Lower backlog (10k):** 150 to 214 PIs/s, with a three times lower backlog than the base.
+- **No flow control:** about 295 PIs/s for the first 2.5 hours, then about 150 to 200 PIs/s. The data availability was no longer measurable.
+- **Backlog 5k:** started with 220 PIs/s as well, then dropped. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relates to restarts of the cluster.
 
 
 #### Base
