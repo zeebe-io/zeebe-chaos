@@ -174,8 +174,6 @@ print(total_records)  # 33
 
 This makes `33` records per process instance. As the limit is set to 100 per partition we can expect ~3 PIs/s per partition (`100 / 33`), which is about 9 PIs/s for our whole cluster.
 
-In Prometheus the exporters exported 37.0 records per completed process instance on the base, 10k and 5k clusters (whole run means of 36.4, 37.1 and 37.1), a bit more than these 33 records. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the Base section and Found Bugs). For the exporter throughput below we use the 37 exported records per PI.
-
 When we look at the metrics, we can see that the throughput aligns with our expectations for one partition only.
 
 ![General metrics of the lower limit cluster](lower-limit-general.png)
@@ -290,7 +288,7 @@ The 5k cluster lowers the acceptable backlog even further, to 5k records per par
 
 In the investigation and discussion we realized that the throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
-This also lets us calculate the maximum PIs/s: exporter throughput divided by the exported records per process instance (37, see above).
+This also lets us calculate the maximum PIs/s: exporter throughput divided by the exported records per process instance. Prometheus shows about 37 exported records per process instance, 4 more than the 33 written, because of the continuous deployments and their distribution (see Found Bugs).
 
 This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
