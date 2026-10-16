@@ -25,20 +25,18 @@ Today we ran several load tests with different flow control settings to understa
 
 **TL;DR;**
 
-<!-- - The throttling configuration enables throttling by exporter throughput (and puts a queue in between, which can be controlled)
-- The acceptable backlog allows to tune data availability. A large backlog means a large export delay, a small backlog means a small one. (queuing theory)
-- Without flow control the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records until the disk went full.
-- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not even finish bootstrapping.
-- A backlog below the exporter throughput (5k) reduced processing throughput by about 20%.
-- Going forward, we plan to run load tests with the default (vanilla) configuration, and tests with a specific flow control configuration are separate, explicit scenarios.
-- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used. -->
+- The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one.
+- Without write flow control the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records. Afterwards the throughput dropped to about 190 PIs/s.
+- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
+- An acceptable backlog of 10k kept about 200 PIs/s with a lower backlog. A backlog of 5k, below what the exporter handles per second (about 7k records/s), cost about 14% throughput compared to 10k.
+- Going forward, load tests run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
+- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
 
 ## Chaos Experiment
 
 As we wanted to understand how flow-control works and impacts the system we ran several load tests with different flow control settings.
 
-<!-- Default flow control configuration - TODO link to it -->
-We used the max/stress scenario with 300 PIs/s and our default load test setup as the base (using the REST API). Our default load test setup enables the following flow control configuration:
+We used the max/stress scenario with 300 PIs/s and our [default load test setup](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L246-L252) as the base (using the REST API). Our default load test setup enables the following flow control configuration:
 
 ```yaml
 camunda.processing.flow-control.write.enabled: "true"
