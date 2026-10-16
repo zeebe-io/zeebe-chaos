@@ -39,6 +39,7 @@ The acceptable backlog steers the size of the queue in the middle, and with it t
 - **The acceptable backlog steers the data availability.** Flow control steers the exporter backlog towards a soft limit, and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
 - **Both knobs can hurt.** A too small backlog costs throughput (10k cost about 12% compared to the default 100k, 5k another 13% compared to 10k), and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration without our flow control settings ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
+- **Our earlier results are skewed.** Our load tests ran with a write limit and throttling that Camunda does not ship by default, so results under high load, for example the [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability), reflect our configuration and not the default one. We plan to change our load test setup to cover the default configuration.
 - We found two bugs along the way: deployments are redistributed on every redeploy ([camunda/camunda#66171](https://github.com/camunda/camunda/issues/66171)), and Elasticsearch shards are unevenly used ([camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172)).
 
 ## Chaos Experiment
