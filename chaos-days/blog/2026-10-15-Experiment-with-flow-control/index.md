@@ -25,7 +25,7 @@ Today we ran several load tests with different flow control settings to understa
 
 **TL;DR;**
 
-- **The limit of the system is the exporter.** The maximum PIs/s is the exporter throughput divided by the exported records per PI. The stress process exports about 37 records per PI (33 of them written by the process itself), the exporter handled 7.0k to 7.9k records/s, so the limit is 190 to 215 PIs/s.
+- **The limit of the system is the exporter.** The maximum PIs/s is the exporter throughput divided by the exported records per PI. The stress process exports about 37 records per PI (33 of them written by the process itself, the rest by the continuous deployments of our k6 script), the exporter handled 7.0k to 7.9k records/s, so the limit is 190 to 215 PIs/s.
 - **Without flow control an overloaded cluster fills its backlog.** Under our stress load (300 PIs/s) the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) bounds that backlog and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
 - **Both knobs can hurt.** A backlog of 5k per partition cost about 13% throughput compared to 10k, and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
@@ -295,7 +295,7 @@ The throughput is only slightly affected by the limit. What matters more is how 
 
 See the diagram at the top: the acceptable backlog sizes the queue, the exporter rate sets the throughput.
 
-This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster). This is a bit more than the 33 records we calculated for the write limit, as it also contains records that do not belong to a process instance, for example from the continuous deployments and their distribution. We did not break this down. With 37 records per PI and the exporter throughput we measured (7.0k to 7.9k records/s) the maximum is `7000 / 37` to `7900 / 37`, about 190 to 215 PIs/s.
+This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster). This is a bit more than the 33 records we calculated for the write limit. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the bug below). With 37 records per PI and the exporter throughput we measured (7.0k to 7.9k records/s) the maximum is `7000 / 37` to `7900 / 37`, about 190 to 215 PIs/s.
 
 This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
