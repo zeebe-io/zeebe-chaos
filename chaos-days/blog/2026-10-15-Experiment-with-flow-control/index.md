@@ -57,7 +57,7 @@ camunda.processing.flow-control.write.limit: 10000
 camunda.processing.flow-control.write.throttle.enabled: "true"
 ```
 
-See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure) is enabled by default, and it stays enabled in all our variations.
+See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default, and it stays enabled in all our variations.
 
 We started one cluster per variation:
 
@@ -65,7 +65,7 @@ We started one cluster per variation:
 - **More PIs** (`c8-chaos-w42-pis-400`): `load-tester.starter.rate: 400`.
 - **Lower write limit** (`c8-chaos-w42-lower-limit`): `camunda.processing.flow-control.write.limit: 100`.
 - **Lower backlog** (`c8-chaos-w42-lower-limit-backlog`): `camunda.processing.flow-control.write.throttle.acceptable-backlog: 10000`.
-- **No flow control** (`c8-chaos-w42-no-limit`): the three lines above removed from the default load test setup (this is the Camunda default configuration).
+- **No flow control** (`c8-chaos-w42-no-limit`): the three lines above removed from the default load test setup (this uses the Camunda default flow control settings, the other settings of the load test setup, like the disk watermarks, stay).
 
 Later we added a sixth cluster after discussing the results:
 
@@ -270,13 +270,13 @@ Under realistic load, the default configuration without any flow control worked 
 
 ### Load tests configurations
 
-Our load tests did not describe what we ship, because they enabled the write limit and the throttling, while Camunda ships with both disabled. The `no-limit` cluster is therefore the default configuration.
+Our load tests did not describe what we ship, because they enabled the write limit and the throttling, while Camunda ships with both disabled. The `no-limit` cluster is therefore the default flow control configuration. It keeps the other settings of our load test setup, for example the disk free space watermarks.
 
 This affects our earlier results as well, for example [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). They used the same configuration (write limit 10000 and throttling with the default acceptable backlog) and ran with a high load, which is exactly the situation where flow control has an effect. Their throughput and data availability numbers therefore reflect the throttling and not the default configuration, and they should be read with that in mind or repeated.
 
 We plan to change our load test setup to cover the default (vanilla) configuration, without our flow control settings and without our other custom tweaks, to make sure we test what we ship. Tests with a specific flow control configuration run additionally, as separate scenarios.
 
-This is independent from the question whether Camunda should ship with flow control enabled. The `no-limit` run shows what a default cluster does when it is overloaded: an unbounded backlog, a growing data availability delay and a full disk. Flow control needs expert knowledge to tune (at least right now), but a conservative default of the throttling (with an acceptable backlog) could keep data availability and disk usage under control. We have to follow up on this separately.
+This is independent from the question whether Camunda should ship with flow control enabled. The `no-limit` run shows what the default flow control does when the cluster is overloaded: a backlog without a flow control bound and a growing data availability delay, until the disk free space watermark was reached. Flow control needs expert knowledge to tune (at least right now), but a conservative default of the throttling (with an acceptable backlog) could keep data availability and disk usage under control. We have to follow up on this separately.
 
 ## Found Bugs
 
