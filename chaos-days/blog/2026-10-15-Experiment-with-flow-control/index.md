@@ -109,13 +109,6 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 | Backlog 5k | 173 | 6.41k | about 28k | 22s | 30s |
 | No flow control | about 295, later 150 to 200 | about 6.8k | about 19M | top bucket (90s) | top bucket (90s) |
 
-- **Base:** 246 PIs/s at the start, then the mean above.
-- **More PIs:** a similar picture to the base.
-- **Lower write limit:** 3 PIs/s at the start, about 30 PIs/s after we raised the limit (see below). The backlog was close to zero, still the data availability was unexpectedly high (see below).
-- **Lower backlog (10k):** 150 to 214 PIs/s, with a three times lower backlog than the base.
-- **No flow control:** about 295 PIs/s for the first 2.5 hours, then about 150 to 200 PIs/s. The data availability was no longer measurable.
-- **Backlog 5k:** started with 220 PIs/s as well, then dropped. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relates to restarts of the cluster.
-
 
 #### Base
 
