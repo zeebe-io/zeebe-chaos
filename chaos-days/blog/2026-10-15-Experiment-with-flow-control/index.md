@@ -65,7 +65,7 @@ flowchart LR
     W --> Q[("Exporter backlog<br/>records not yet exported")]
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
-    Q -. "Throttling: lowers the write limit<br/>when the backlog exceeds the acceptable backlog" .-> W
+    Q -. "Throttling: lowers the write limit<br/>when the backlog exceeds half of the acceptable backlog" .-> W
     classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
     classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W knob
