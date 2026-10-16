@@ -165,28 +165,14 @@ With an acceptable backlog of 10k we still reached a high throughput of about ~2
 
 ![General metrics of the 10k backlog cluster](lower-backlog-general.png)
 
-The exporter backlog is much lower than in the base, not about a factor of 10. It is not exactly the configured value, so the setting does not behave like a hard per-second bound.
+The exporter backlog is about three times lower than in the base (about 35k vs 105k per partition). It is not exactly the configured value, so the setting does not behave like a hard per-second bound.
 
 What we are configuring here is the soft limit of the exporter backlog. It determines how many records can be queued before flow control kicks in, but it does not act as a strict per-second limit.
 
-Important to note here is that a higher limit doesn't necessary help, as this only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit, has an direct effect on the data availability latency. 
+Important to note here is that a higher limit doesn't necessary help, as this only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit has a direct effect on the data availability latency. 
 
-This directly related to queuing theory (like Little's Law).
-<!-- 
+This is directly related to queuing theory (like Little's Law): the waiting time in a queue is its size divided by the rate at which it is served.
 
-Note for my self  - we can calculate the maximum processing throughput - or max PI/s when we know the exporting throughput and the number of records per process instance. HOLY SH!@@#
-```
-
-Type "help", "copyright", "credits" or "license" for more information.
->>> 7000 / 37
-189.1891891891892
->>> 7000 / 30
-233.33333333333334
->>> 7000 / 32
-218.75
->>> 
-
-``` -->
 
 #### No flow control
 
