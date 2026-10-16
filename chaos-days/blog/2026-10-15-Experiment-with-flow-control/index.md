@@ -40,9 +40,9 @@ The acceptable backlog sizes the queue in the middle, and with it the waiting ti
 - Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without it, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
 - The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
 - A backlog of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to 10k, because the exporter throughput dropped as well.
-- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
+- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions most likely could not finish bootstrapping.
 - Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
-- Going forward, load tests run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
+- Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
 - We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
 
 ## Chaos Experiment
@@ -94,7 +94,7 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 - **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high (p50 37s, p99 45s, see below).
 - **Lower backlog (10k):** 150 to 214 PIs/s, mean around 198. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
 - **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 150 to 200 PIs/s. The backlog grew to about 19 million records per partition. Data availability was no longer measurable, it was in the top bucket (90s) of the histogram.
-- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 30k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which we relate to restarts of the cluster.
+- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 30k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relate to restarts of the cluster.
 
 
 #### Base
@@ -197,7 +197,7 @@ At around 13:40, about 2.5 hours after the start, the disks of the Camunda pods 
 
 ![Disk usage of the Camunda and Elasticsearch pods, the Camunda disks reach about 97%](no-limit-disk-limit.png)
 
-This is what queueing theory predicts. The arrival rate (295 PIs/s, about 10.9k records/s) is higher than the service rate of the exporter (about 7k records/s), so the queue grows by about 3.9k records/s in total, about 1.3k records/s per partition. Over the roughly 2.5 hours until the plateau this is about 12 million records per partition, in the order of the 19 million we saw (the rates varied over time). A queue without a limit grows until a finite resource is exhausted, here the disk. As soon as the buffer is full, the system can only admit as much as it serves, so the throughput falls towards the service rate, `7000 / 37`, about 190 PIs/s. We measured about 150 to 200 PIs/s afterwards, with a much higher backlog and data availability (in queuing theory terms, a higher system waiting time). The mechanism behind it is the disk monitoring of the broker. Our load test setup configures that the broker rejects client commands and pauses processing when less than 3GB of disk space is free, and stops accepting replicated events below 2GB ([load test configuration](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L240-L241), the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L548-L559) are 2GB and 1GB). Processing continues when snapshots and compaction free space again, which is why the disk usage in the graph stays at the watermark instead of growing further. So the free space watermark was the effective limit for the backlog, not flow control.
+This is what queueing theory predicts. The arrival rate (295 PIs/s, about 10.9k records/s) is higher than the service rate of the exporter (about 7k records/s), so the queue grows by about 3.9k records/s in total, about 1.3k records/s per partition. Over the roughly 2.5 hours until the plateau this is about 12 million records per partition, in the order of the 19 million we saw (the rates varied over time). A queue without a limit grows until a finite resource is exhausted, here the disk. As soon as the buffer is full, the system can only admit as much as it serves, so the throughput falls towards the service rate, `7000 / 37`, about 190 PIs/s. We measured about 150 to 200 PIs/s afterwards, with a much higher backlog and data availability (in queuing theory terms, a higher system waiting time). The most likely mechanism behind it is the disk monitoring of the broker (we did not check the rejected commands). Our load test setup configures that the broker rejects client commands and pauses processing when less than 3GB of disk space is free, and stops accepting replicated events below 2GB ([load test configuration](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L240-L241), the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L548-L559) are 2GB and 1GB). Processing continues when snapshots and compaction free space again, which is why the disk usage in the graph stays at the watermark instead of growing further. So the free space watermark was most likely the effective limit for the backlog, not flow control.
 
 
 #### Comparison and the 5k backlog
@@ -230,7 +230,7 @@ The backlog also did not shrink as much as we expected. We did not find out why.
 
 ![Uneven distribution of documents across Elasticsearch shards](lower-backlog-5k-es-notdistributed.png)
 
-While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards, which in general impacts our throughput as well.
+While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards, which might impact our throughput as well (we did not measure this).
 
 Looking into shard distribution, we can see that some shards hold significantly more documents than others. In addition, we stumbled over some indices with more shards than expected.
 
@@ -257,7 +257,7 @@ We also noticed that many indices exist but hold no documents. Every shard has a
 
 - **Base:** as expected, about 220 PIs/s, about 105k records not exported per partition and a p99 data availability of about 59s.
 - **More PIs:** the same result as the base, so 300 PIs/s already stresses the cluster.
-- **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it. The test helped us to calculate the expected PIs/s for a given write limit (`limit / records per PI * partitions`).
+- **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 most likely prevented partitions from bootstrapping, and the cluster recovered after we raised it. The test helped us to calculate the expected PIs/s for a given write limit (`limit / records per PI * partitions`).
 - **Lower backlog (10k):** a smaller throughput drop than expected (about 12%), with a three times lower backlog and a p99 data availability of about 44s.
 - **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 13% compared to 10k, because the exporter throughput dropped.
 - **No flow control:** under stress, more throughput than the others for a while, but a growing backlog until the disks were almost full, and a throughput drop afterwards.
