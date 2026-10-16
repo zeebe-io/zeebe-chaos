@@ -113,6 +113,8 @@ When setting the write limit to a lower value, we tried to estimate what this wo
 
 We tried to approximate how many records a single PI writes in our load test for our stress workload (one start event, a service task and an end event). Each process instance and flow node instance writes ~4 records, a job ~3 records, and we create 14 variables per process instance (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)). See [ZEP-004](https://github.com/zeebe-io/enhancements/blob/master/ZEP004-wf-stream-processing.md) for how the stream processing writes these records, and [camunda/camunda#61073](https://github.com/camunda/camunda/issues/61073) for related work on sizing by records per process model.
 
+![The process model of the stress workload: a start event, a service task and an end event](one_task.png)
+
 ```python
 # Number of records per flow node instance
 fni = 4
