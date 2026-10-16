@@ -178,18 +178,12 @@ This is directly related to queuing theory (like Little's Law): the waiting time
 
 Without flow control (no exporter backlog limit) we reached about 295 PIs/s, but the exporter backlog kept growing until it reached about 46 million records. The exporting throughput is lower than the processing throughput, so nothing slows the processing down.
 
-At somepoint we hit an natural limit, the disk space, which is our new limit for the exporter backlog. Camunda has the property to stop processing when the exporter backlog reaches the disk space limit, preventing further data accumulation. 
+At around 13:40, about 2.5 hours after the start, the disks of the Camunda pods were almost full (about 97%). This lines up with the throughput drop.
 
-Interesting to note, we then reach again a similar processing throughput as with the base or lower backlog before, but with just a much higher backlog and data availability (or in queuing theory terms, a higher system waiting time). Everything is now again influenced/controlled by the exporter throughput.
+![Disk usage of the Camunda and Elasticsearch pods, the Camunda disks reach about 97%](no-limit-disk-limit.png)
 
+This is what queueing theory predicts. The arrival rate (295 PIs/s, about 10.9k records/s) is higher than the service rate of the exporter (about 7k records/s), so the queue grows by about 3.9k records/s. Over 2.5 hours this is in the order of the 46 million records we saw. A queue without a limit grows until a finite resource is exhausted, here the disk. As soon as the buffer is full, the system can only admit as much as it serves, so the throughput falls to the service rate, `7000 / 37`, about 190 PIs/s. This is also what we measured afterwards, with a much higher backlog and data availability (in queuing theory terms, a higher system waiting time). Which mechanism exactly stopped the processing at a full disk we did not look into.
 
-<!-- 
-
-TODO Can we draw a nice SVG with showing incoming load large or small queue and 
-
-Example we could show a funnel with incoming load at the top and the queue size the funnel at self and at the bottom the exporting throughput, illustrating how the backlog affects the system. And might overflow and that changing our limits only adjustes the funnel but not the throughput itself?
-
- -->
 
 #### Comparison and the 5k backlog
 
