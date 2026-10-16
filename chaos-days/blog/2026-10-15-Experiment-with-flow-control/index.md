@@ -2,115 +2,92 @@
 layout: posts
 title:  "Experiment with flow control"
 date:   2026-10-15
-categories: 
-  - chaos_experiment 
-  - bpmn
+categories:
+  - chaos_experiment
+  - performance
 tags:
+  - performance
   - availability
-authors: 
+authors:
   - jon
   - zell
 ---
 
 # Chaos Day Summary
 
-We realized that flow control is enable in ouar load test by default but not default in Camunda 
+While preparing the [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability) we realized that our load tests run with write flow control enabled, but flow control is not enabled by default in Camunda.
+That means our results did not describe what we ship.
 
-
-which make the results from 
-
-https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability
-
-a bit off - we want to investigate the effect of flow control on the throughput and availability of the system. And correct the results if needed and possible
-
-
-
-**TL;DR;** 
+Today [Jon](https://github.com/multani) and I ran several load tests with different flow control settings to understand how flow control affects throughput and data availability, and whether our earlier results need a correction.
 
 <!--truncate-->
 
+**TL;DR;**
+
+- The acceptable backlog mostly tunes data availability, not throughput. A large backlog means a large export delay, a small backlog means a small one.
+- Without flow control the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records. Afterwards throughput dropped to about 190 PIs/s.
+- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not even finish bootstrapping.
+- A backlog below the exporter throughput (5k) reduced processing throughput by about 20%.
+- Going forward, load tests run with the default (vanilla) configuration, and tests with a specific flow control configuration are separate, explicit scenarios.
+- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
+
 ## Chaos Experiment
 
+We used the max/stress scenario with 300 PIs/s and our default load test setup as the base. The default load test setup enables the following flow control configuration:
 
- - Base: We start a cluster with 300 PIs (max/stress scenario) and our default setup 
- - We start a cluster with 400 PIs and our default setup
- - We start a cluster with 300 PIs lower limits
-   -> camunda.processing.flow-control.write.throttle.acceptable-backlog: 10000
-   -> camunda.processing.flow-control.write.limit: 100
- - We start a cluster with 300 PIs and no flow control
- 
+```yaml
+camunda.processing.flow-control.write.enabled: "true"
+camunda.processing.flow-control.write.limit: 10000
+camunda.processing.flow-control.write.throttle.enabled: "true"
+```
 
+See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`).
+
+We started one cluster per variation:
+
+- **Base** (`c8-chaos-w42-baseline`): 300 PIs/s, default load test setup.
+- **More PIs** (`c8-chaos-w42-pis-400`): `load-tester.starter.rate: 400`.
+- **Lower write limit** (`c8-chaos-w42-lower-limit`): `camunda.processing.flow-control.write.limit: 100`.
+- **Lower backlog** (`c8-chaos-w42-lower-limit-backlog`): `camunda.processing.flow-control.write.throttle.acceptable-backlog: 10000`.
+- **No flow control** (`c8-chaos-w42-no-limit`): the three lines above removed from the default setup.
+
+Later we added a sixth cluster after discussing the results:
+
+- **Backlog 5k** (`c8-chaos-w42-backlog-5k`): `camunda.processing.flow-control.write.throttle.acceptable-backlog: 5000`.
 
 ### Expected
-https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control
 
-- write limit of 10k (idk ?)
-- we have exporting limit
-
-
-1 EXP:
-
-Jon: expectation is when we reach already the limit with 300 PIs and do more load (like 500 PIs) then it shouldn't change the result?
-
--> more backpressure? but the overall throughput doesnt change? like we reach ~220
-
-ALTERNATIVe - can we decrease the write limit and what happens now?
-
--> expectation is that the throughput will decrease and we will have more backpressure 
-
-I would expect that the backlog of exporting will decrease and we have a better data availability metric 
-
-We can make uuse of flow control endpoint https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#configure-temporary-write-limits
-
-
-
-2 EXP
-
-> CURRENT DEFAULT <
-
-What happens if we have no flow control?
-
-3 EXP
-
-
-Expected 
-
-
-- Base:  c8-chaos-w42-baseline
-  - as usual reaching ~220 PIs - data avail ~40-60s - and 100k exporter backlog
-- More PIs c8-chaos-w42-pis-400
-  - maybe we reach even less because we overstress ? Otherwise -> as usual reaching ~220 PIs - data avail ~40-60s - and 100k exporter backlog
-- Less write limit c8-chaos-w42-lower-limit - 100 
-  - significant drop in throughput but - quite good data availability - no backlog
-  - throughput is lower then the other config 
-- less backlog c8-chaos-w42-lower-limit-backlog
-  - significant drop in throughput but - quite good data availability - backlog as configured
-- No flow control c8-chaos-w42-no-limit
-  - i would expect that we reach more PIs - but have a huge backlog and data availability is worse then the other config
-
+- **Base:** as usual about 220 PIs/s, a backlog of about 100k records per partition, and a data availability delay of 40 to 60 seconds.
+- **More PIs:** we already reach the limit with 300 PIs/s, so more load should not change the result. It might even be slightly worse because of overstress.
+- **Lower write limit:** a significant throughput drop, but good data availability and no backlog.
+- **Lower backlog:** a throughput drop, good data availability, and a backlog as configured.
+- **No flow control:** more PIs/s, but a huge backlog and worse data availability than the other configurations.
 
 ### Actual
 
-We started several clusters with different configurations
+The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions).
 
-- Base:  c8-chaos-w42-baseline
-- More PIs c8-chaos-w42-pis-400
-- Less write limit c8-chaos-w42-lower-limit
-- less backlog c8-chaos-w42-lower-limit-backlog
-- No flow control c8-chaos-w42-no-limit
-
+- **Base:** 246 PIs/s at the start, slowly declining to about 211 PIs/s. About 105k records not exported per partition.
+- **More PIs:** 239 to 225 PIs/s, so no difference to the base. Same backlog as the base.
+- **Lower write limit:** about 30 PIs/s (see below). The backlog was close to zero.
+- **Lower backlog (10k):** 150 to 210 PIs/s, mostly around 200. The backlog stayed below about 45k records per partition.
+- **Backlog 5k:** 173 to 189 PIs/s. The backlog was between 5k and 35k records per partition.
+- **No flow control:** about 295 PIs/s for the first 2.5 hours, then about 190 PIs/s. The total backlog grew to about 46 million records.
 
 #### Base
 
+The base behaved as in previous runs, with a backlog of about 105k records per partition per exporter.
 
-We have a bug with deployment distribution detected
+![](lower-backlog-comparison-base.png)
 
+While looking at the base we noticed that deployments are continuously distributed to the other partitions. Our k6 script deploys the same resources again and again. A redeploy of identical resources should be idempotent, but a command distribution is created every time.
 
-base-deployment-distribution.png
+![](base-deployment-distribution.png)
 
-#### Lower limit
+#### Lower write limit
 
-Approximating how many records we write
+We approximated how many records a single PI writes in our load test to estimate the PIs/s a limit of 100 allows:
+
 ```sh
 >>> fni=3
 >>> (1 + fni + 1) * 4
@@ -125,264 +102,119 @@ Approximating how many records we write
 25
 ```
 
-So expected somehow 5 PIs - we reached 3 PIs
+We expected about 5 PIs/s but reached about 3.
 
 ![](lower-limit-general.png)
 
+Looking closer, partition one did much more than the other partitions.
 
-We realized that the parition one does more than the other partitions 
+![](lower-limit-different-processing.png)
 
+Only partition one created PIs, jobs and variables.
 
+![](lower-limit-p1-log.png)
 
-lower-limit-different-processing.png
+The other partitions only received PI creation commands, and almost everything was rejected.
 
+![](lower-limit-p3-log.png)
 
-One bug we found is that deployment is always redistributed - we introduced a k6 deployment script which always deployes the same resources this should be idempotent but it is not.
+We also saw authorization commands being rejected and retried. These commands are created internally to bootstrap a partition. Our theory is that the rejections prevented the partitions from bootstrapping fully.
 
-DEPLOYMENT IMAGE INSERT HERE
+![](lower-limit-p3-log-auth.png)
 
+The deployment distribution was affected as well. It could not succeed while the partitions were rejecting commands.
 
-We saw an interesting behavior - only partition one is actively doing something
-like PI, job and variable creations
+![](lower-limit-deploy-redistribution.png)
 
-lower-limit-p1-log.png
+We raised the limit from 100 to 350 to see whether the limit correlates with what we saw in the metrics. After the change the authorization commands succeeded, the partitions started to complete jobs, and the deployment distribution finished.
 
+![](lower-limit-deployment-success.png)
 
-The others only seem to get PI creations, nothing else - it also seems that we are rejecting almost everything
+![](lower-limit-higher-350.png)
 
-lower-limit-p3-log.png
+Even with 350 we could not see the limit directly reflected in the throughput. The cluster reached about 30 PIs/s and about 600 records/s.
 
-In addition we can see that authorization commands are created (which is something internal to bootstrap the partition) - these are rejected and retried as well - which probably stops the partition to bootstrap fully?!
+![](lower-limit-higher-general.png)
 
+![](lower-limit-higher-rate.png)
 
-lower-limit-p3-auth.png
+We are not sure yet how the configured limit maps to the observed throughput. We did not investigate this further.
 
+#### Lower backlog
 
-> We'll change the 100- limit to 350 to see if there's a correlation between the limit and what we are seeing in the metric
+With an acceptable backlog of 10k we still reached a high throughput of about 200 PIs/s.
 
-After increasing the limit we see that authorization is done and the partitions can do completions as well 
+![](lower-backlog-general.png)
 
+The exporter backlog is much lower than in the base, about a factor of 10. It is not exactly the configured value, so the setting does not behave like a hard per-second bound.
 
-lower-limit-higher-limit 
+#### No flow control
 
+Without flow control we reached about 295 PIs/s, but the exporter backlog kept growing until it reached about 46 million records. The exporting throughput is lower than the processing throughput, so nothing slows the processing down.
 
-After the limit change the deployment distribution succeeded as well - we can see that no longer distribution happens (but still enqueing of the same resources - which is a bug we need to fix)
+The exporting latency p99 of the base, the 400 PIs and the no-limit cluster was at the top bucket (10 s) of the histogram for the whole run, so it cannot show how large the delay really was. The lower limit cluster stayed at about 0.09 s.
 
-> we had a discussion about the feature - more advanced feature actually to play with
+#### Comparison and the 5k backlog
 
--> 
+In the discussion we realized that the acceptable backlog only tunes the data availability. A large backlog leads to a large export delay and a small backlog to a small one.
 
+The throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected. With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
-We cant see the limit reflected in our throughput we reach now 30 PIS and ~600 records?
+This led to an idea: what if the backlog is lower than the throughput the exporter can sustain? We would hope for the same throughput with an even better data availability.
 
+We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog and better data availability at the same throughput, unless the limit is too low, in which case the throughput suffers.
 
-lower-limit-higher-general.png
+![](lower-backlog-5k-comparison.png)
 
+The exporter throughput was about 7k records/s. A backlog of 5k is about 30% below that, and processing throughput dropped by about 20% (188 PIs/s compared to 218 PIs/s with 10k).
 
-lower-limit-higher-rate.png
+![](lower-backlog-5k-comparison-throughput.png)
 
+We assume a backlog around 8k gives the best combination of throughput and data availability. We did not test that.
 
-## Backlog lower limit
+The backlog also did not shrink as much as we expected. We did not find out why.
 
+#### Uneven load on Elasticsearch
 
-lower-backlog-general
+While looking at the 5k cluster we saw an uneven distribution of documents across the Elasticsearch shards.
 
-Quite high throughput still
-
-
-We can see that the backlog of exporter is much lower than the base line - still it is not exact what we set it to - it doesnt seem to be per second
-
-lower-backlog-comparison
-
-the factor is still reflect - factor 10 reduction
-
-
-## No limit
-
-comparin no limit we reach 300 PIS and growing backlog of exporters when looking at we were around 8 million
-
-This is because exporting throughput is lower then processing throughput
-
-## Comparison
-
-
-> discussion about the limit abd backlog
-
-We realized that the backlog is actually just tuning the data availability - large backlog -> large data avail - low backlog -> low data avail
-
-No matter what the limit is the throughput is only slightly affected - this is because it matters more how fast we are cleaning up - so how hight the exporter throughput is and new data can be accepted
-
-We reach 300 in the no limit - because we dont respect the exporter throughput when enabling the backlog we actually do and wait for the exporting to keep up so we are bound to the exporting throughput - it gives us the pace
-
-
-Idea: what if the limit is lower than the throughput - we would have a great data availability again with the same processing throughput?
-
-
-Starting c8-chaos-w42-backlog-5k with:
-
-camunda.processing.flow-control.write.throttle.acceptable-backlog: 5000 # default 100000
-
-
-
-Expectation: we should see a lower backlog and better data availability - but the throughput should be the same as the base line if the limit is to low then the throughput will be impacted as well 
-
-lower-backlog-5k-comparison
-
-lower-backlog-5k-general
-
-lower throughtput -0 but backlog is also higher then expected - we need to investigate why the backlog is not lower - maybe we need to set the limit as well?
-
-Processing --throughput P-->>>    [ QUEUE LIMIT X ]  ---consume---> Exporter --Throughput Y-> ES
-
-
-
-We saw an uneven distribution of load 
-
+![](shards-zeebe.png)
 
 ```
 $ curl -s "localhost:9200/_cat/shards/zeebe*?v=true&bytes=gb"
 index                                           shard prirep state       docs store dataset ip           node
-zeebe-record_variable_8.11.0_2026-10-15         0     r      STARTED 16176931     2       2 10.152.31.66 elasticsearch-es-masters-1
-zeebe-record_variable_8.11.0_2026-10-15         0     p      STARTED 16178904     2       2 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process_8.11.0_2026-10-15          0     r      STARTED        6     0       0 10.152.22.2  elasticsearch-es-masters-2
-zeebe-record_process_8.11.0_2026-10-15          0     p      STARTED        6     0       0 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process-instance_8.11.0_2026-10-15 0     r      STARTED  3021392     0       0 10.152.22.2  elasticsearch-es-masters-2
 zeebe-record_process-instance_8.11.0_2026-10-15 0     p      STARTED  3021041     0       0 10.152.31.66 elasticsearch-es-masters-1
-zeebe-record_process-instance_8.11.0_2026-10-15 1     r      STARTED        0     0       0 10.152.22.2  elasticsearch-es-masters-2
 zeebe-record_process-instance_8.11.0_2026-10-15 1     p      STARTED        0     0       0 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process-instance_8.11.0_2026-10-15 2     r      STARTED        0     0       0 10.152.31.66 elasticsearch-es-masters-1
 zeebe-record_process-instance_8.11.0_2026-10-15 2     p      STARTED        0     0       0 10.152.25.2  elasticsearch-es-masters-0
 zeebe-record_process-instance_8.11.0_2026-10-15 3     p      STARTED  2708256     0       0 10.152.31.66 elasticsearch-es-masters-1
-zeebe-record_process-instance_8.11.0_2026-10-15 3     r      STARTED  2708256     0       0 10.152.25.2  elasticsearch-es-masters-0
-zeebe-record_process-instance_8.11.0_2026-10-15 4     r      STARTED  2898876     0       0 10.152.22.2  elasticsearch-es-masters-2
 zeebe-record_process-instance_8.11.0_2026-10-15 4     p      STARTED  2898537     0       0 10.152.25.2  elasticsearch-es-masters-0
-
 ```
 
-> why we create indices but not using them
+Of the five process instance shards, two are empty. The exporters route each document by its partition id, so with three partitions only three distinct routing values exist, and these can collide in the same shard. [camunda/camunda#56522](https://github.com/camunda/camunda/pull/56522) changes the shard counts to address this.
 
+We also noticed that many indices exist but hold no documents. Every shard has an overhead, see [Elastic's shard sizing guidance](https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards#each-shard-has-overhead). Our theory is that these empty indices and shards cost memory, but we did not verify it.
 
-```
+![](lower-backlog-5k-es-notdistributed.png)
 
-[15-10-2026 14:39:41 +02:00]: ~ k8s:camunda-benchmark-prod:c8-chaos-w42-backlog-5k 
-$ curl -s "localhost:9200/_cat/shards/camunda*?v=true&bytes=gb"
-index                                          shard prirep state   docs store dataset ip           node
-camunda-user-8.8.0_                            0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-user-8.8.0_                            0     p      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-usage-metric-8.8.0_                    0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-usage-metric-8.8.0_                    0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-group-8.8.0_                           0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-group-8.8.0_                           0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-correlated-message-subscription-8.8.0_ 0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-correlated-message-subscription-8.8.0_ 0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-history-deletion-8.9.0_                0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-history-deletion-8.9.0_                0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-agent-definition-8.10.0_               0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-agent-definition-8.10.0_               0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-tenant-8.8.0_                          0     r      STARTED    6     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-tenant-8.8.0_                          0     p      STARTED    6     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-wait-state-8.10.0_                     0     p      STARTED   38     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-wait-state-8.10.0_                     0     r      STARTED   33     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-agent-instance-8.10.0_                 0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-agent-instance-8.10.0_                 0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-role-8.8.0_                            0     r      STARTED    9     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-role-8.8.0_                            0     p      STARTED    9     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-global-listener-8.9.0_                 0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-global-listener-8.9.0_                 0     p      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-job-metrics-batch-8.9.0_2026-10-15     0     p      STARTED  122     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-job-metrics-batch-8.9.0_2026-10-15     0     r      STARTED  122     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-web-session-8.8.0_                     0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-web-session-8.8.0_                     0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-usage-metric-tu-8.8.0_                 0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-usage-metric-tu-8.8.0_                 0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-cluster-variable-8.9.0_                0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-cluster-variable-8.9.0_                0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-mapping-rule-8.8.0_                    0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-mapping-rule-8.8.0_                    0     r      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-agent-history-8.10.0_                  0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-agent-history-8.10.0_                  0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-job-metrics-batch-8.9.0_               0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-job-metrics-batch-8.9.0_               0     p      STARTED    4     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-deployed-resource-8.10.0_              0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-deployed-resource-8.10.0_              0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-authorization-8.8.0_                   0     r      STARTED   60     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-authorization-8.8.0_                   0     p      STARTED   60     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-usage-metric-8.8.0_2026-10-01          0     r      STARTED   62     0       0 10.152.31.66 elasticsearch-es-masters-1
-camunda-usage-metric-8.8.0_2026-10-01          0     p      STARTED   61     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-audit-log-cleanup-8.9.0_               0     r      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-audit-log-cleanup-8.9.0_               0     p      STARTED    0     0       0 10.152.25.2  elasticsearch-es-masters-0
-camunda-audit-log-8.9.0_                       0     p      STARTED    0     0       0 10.152.22.2  elasticsearch-es-masters-2
-camunda-audit-log-8.9.0_                       0     r      STARTED    0     0       0 10.152.31.66 elasticsearch-es-masters-1
+## Conclusion
 
-```
+- **Base:** as expected, about 220 PIs/s and about 105k records not exported per partition.
+- **More PIs:** the same result as the base, so 300 PIs/s already stresses the cluster.
+- **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it.
+- **Lower backlog:** a smaller throughput drop than expected (about 10%), with a much lower backlog.
+- **Backlog below the exporter throughput:** processing throughput dropped by about 20%.
+- **No flow control:** more throughput than the others for a while, but a growing backlog and a throughput drop later on.
 
+The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable.
 
- theory - every shards as impact on memory
+### Decision
 
- https://www.elastic.co/docs/deploy-manage/production-guidance/optimize-performance/size-shards#each-shard-has-overhead
+Our load tests run with the default (vanilla) configuration, without flow control and without our other custom tweaks. We test what we ship. Tests with a specific flow control configuration run additionally, as separate scenarios. This will also matter when we start to test SaaS configurations.
 
-
-
- lower-backlog-5k-es-notdistributed.png
-
- We can see that low on es is niot werll distributed
-
-## Conculsion
-
-
-- Base:  c8-chaos-w42-baseline
-  - as usual reaching ~220 PIs - data avail ~40-60s - and 100k exporter backlog
-  - ok
-- More PIs c8-chaos-w42-pis-400
-  - maybe we reach even less because we overstress ? Otherwise -> as usual reaching ~220 PIs - data avail ~40-60s - and 100k exporter backlog
-  - we reaches similar load 
-- Less write limit c8-chaos-w42-lower-limit - 100
-  - significant drop in throughput but - quite good data availability - no backlog
-  - throughput is lower then the other config
-  -> Significant - we had even an issue to bootstrap a partition
-  -> after increas we recovered
-  - less backlog c8-chaos-w42-lower-limit-backlog
-    - significant drop in throughput but - quite good data availability - backlog as configured
-    - here we had not signification drop - but better data availability 
-  - limit backlog under throughput 
-    - 5k vs 7k exporter throughput - difference of 30%
-    - now processing throughput dropped by 20%
-    -> 8k we probably get the best results - of throughput and data availability
-- No flow control c8-chaos-w42-no-limit
-  - i would expect that we reach more PIs - but have a huge backlog and data availability is worse then the other config
-   - we reached 300 pis - and huge backlog
-
-
-
-Results
-
-
-- lets define that load tests should run with vanilla config - no flow control - no loeader distribution etc
-- "We test what we ship"
-- In addition always have additional tests with flow control enabled 
- -> actually when we start to test SaaS it will be come in place as well
-
-
-
-
-
-- > flow control removal?!
-
-----> best case test? Or specific with flow control?
-- ideally we have just the default config
-
-
-
---------? we started a load test with realistic load 
-
-
-
-
-
-
+After the experiments we started `c8-chaos-w42-no-limit-realistic`, a cluster with the default configuration and a more realistic load. It processes about 50 PIs/s with an exporting latency p99 of about 0.5 s and almost no backlog.
 
 ## Found Bugs
 
- - deployments distribution ? 
- - sharding ?! ask some question why this approach?
- - 
+- Deployments are redistributed on every redeploy, even if the resources are identical.
+- Elasticsearch shards are unevenly used, see [camunda/camunda#56522](https://github.com/camunda/camunda/pull/56522).
+- Open question: why do we create indices that are never used?
