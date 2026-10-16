@@ -240,29 +240,28 @@ We also noticed that many indices exist but hold no documents. Every shard has a
 
 ## Conclusion
 
-- **Base:** as expected, about 220 PIs/s and about 105k records not exported per partition.
+- **Base:** as expected, about 220 PIs/s, about 105k records not exported per partition and a p99 data availability of about 59s.
 - **More PIs:** the same result as the base, so 300 PIs/s already stresses the cluster.
-- **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it. This test allowed us to better understand and calculate expected PI throughput under different write limits.
-- **Lower backlog:** a smaller throughput drop than expected (about 10%), with a much lower backlog.
-- **Backlog below the exporter throughput:** processing throughput dropped by about 20%.
-- **No flow control:** more throughput than the others for a while, but a growing backlog and a throughput drop later on.
+- **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it. The test helped us to calculate the expected PIs/s for a given write limit (limit / records per PI / partitions).
+- **Lower backlog (10k):** a smaller throughput drop than expected (about 10%), with a three times lower backlog and a p99 data availability of about 44s.
+- **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 14% compared to 10k, because the exporter throughput dropped.
+- **No flow control:** more throughput than the others for a while, but a growing backlog until the disks were almost full, and a throughput drop afterwards.
 
-The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable.
+The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable. The maximum throughput is bound by the exporter, so flow control can only trade data availability against throughput, it cannot add capacity.
 
 As we have no control of index and sharding placement in Elasticsearch, this can lead to uneven load distribution, causing noise in our tests.
 
-Flow control is an interesting and important configuration, but needs expert knowledge to tune correctly (at least right now). Misconfigurations can lead to unexpected throughput drops or higher data availability. It should be enabled with default configuration, to prevent large disk usage and reduce data availability.
-
-We should consider to make it default in general, something we need to follow up with, to keep data availability and disk usage under control on overloaded clusters and ensure more predictable performance.
+Under realistic load, the default configuration without any flow control worked fine. After the experiments we started `c8-chaos-w42-no-limit-realistic`, a cluster with the default configuration (no write limit, no throttling) and a more realistic load. It has been running for about 22 hours and processed a stable ~51 PIs/s the whole time, with a data availability p50 of 1.6s and p99 of 3.9s, an exporting latency p99 of about 0.5s and almost no backlog. The exporter keeps up, so there is nothing for flow control to do. It only has an effect when the cluster is overloaded, like in the stress scenario.
 
 ### Load tests configurations
 
-We plan to change our load test setup to cover the default (vanilla) configuration we ship, without flow control and without our other custom tweaks. In oder to make sure we test what we ship. Tests with a specific flow control configuration run additionally, as separate scenarios (or ideally it becomes the default).
+Our load tests did not describe what we ship, because they enabled the write limit and the throttling, while Camunda ships with both disabled. The `no-limit` cluster is therefore the default configuration.
 
+This affects our earlier results as well, for example [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). They used the same configuration (write limit 10000 and throttling with the default acceptable backlog) and ran with a high load, which is exactly the situation where flow control has an effect. Their throughput and data availability numbers therefore reflect the throttling and not the default configuration, and they should be read with that in mind or repeated.
 
-Sidenote: 
+We plan to change our load test setup to cover the default (vanilla) configuration, without our flow control settings and without our other custom tweaks, to make sure we test what we ship. Tests with a specific flow control configuration run additionally, as separate scenarios.
 
-After the experiments we started `c8-chaos-w42-no-limit-realistic`, a cluster with the default configuration and a more realistic load. It processes about 50 PIs/s with an exporting latency p99 of about 0.5 s and almost no backlog. This means flow control as no general affect if the cluster performs in its bounds, and has only an affect when it is overloaded/saturated.
+This is independent from the question whether Camunda should ship with flow control enabled. The `no-limit` run shows what a default cluster does when it is overloaded: an unbounded backlog, a growing data availability delay and a full disk. Flow control needs expert knowledge to tune (at least right now), but a conservative default of the throttling (with an acceptable backlog) could keep data availability and disk usage under control. We have to follow up on this separately.
 
 ## Found Bugs
 <!-- Open issues for such -->
