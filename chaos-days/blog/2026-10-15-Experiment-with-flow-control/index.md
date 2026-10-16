@@ -25,8 +25,12 @@ Today we ran several load tests with different flow control settings to understa
 
 **TL;DR;**
 
-We learned that the acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
-
+- **The limit of the system is the exporter.** The maximum PIs/s is the exporter throughput divided by the exported records per PI. The stress process exports about 37 records per PI (33 of them written by the process itself), the exporter handled 7.0k to 7.9k records/s, so the limit is 190 to 215 PIs/s.
+- **Without flow control an overloaded cluster fills its backlog.** Under our stress load (300 PIs/s) the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) bounds that backlog and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
+- **Both knobs can hurt.** A backlog of 5k per partition cost about 13% throughput compared to 10k, and a write limit of 100 starved the partitions (only partition one made progress).
+- **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
+- Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
+- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
 
 ```mermaid
 flowchart LR
@@ -37,14 +41,7 @@ flowchart LR
     C -. "backlog / exporter rate = waiting time (data availability)" .-> E
 ```
 
-- The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
-- Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without flow control, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
-- When flow control is enabled the maximum PIs/s are bound by the exporter throughput divided by the records per PI (about 37 exported records per PI, 33 of them written by the process itself). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
-- A backlog limit of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to a 10k limit, because the exporter throughput dropped as well.
-- A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions most likely could not finish bootstrapping.
-- Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
-- Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
-- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
+The acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
 
 ## Chaos Experiment
 
