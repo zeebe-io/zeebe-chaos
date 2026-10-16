@@ -264,8 +264,7 @@ We plan to change our load test setup to cover the default (vanilla) configurati
 This is independent from the question whether Camunda should ship with flow control enabled. The `no-limit` run shows what a default cluster does when it is overloaded: an unbounded backlog, a growing data availability delay and a full disk. Flow control needs expert knowledge to tune (at least right now), but a conservative default of the throttling (with an acceptable backlog) could keep data availability and disk usage under control. We have to follow up on this separately.
 
 ## Found Bugs
-<!-- Open issues for such -->
 
-- Deployments are redistributed on every redeploy, even if the resources are identical.
-- Elasticsearch shards are unevenly used, see related [camunda/camunda#56522](https://github.com/camunda/camunda/pull/56522). 
-- Open question: why do we create indices that are never used?
+- Deployments are redistributed on every redeploy, even if the resources are identical, see [camunda/camunda#66171](https://github.com/camunda/camunda/issues/66171).
+- Elasticsearch shards are unevenly used for most partition counts and on stable versions, see [camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172) (related fix: [camunda/camunda#56522](https://github.com/camunda/camunda/pull/56522)).
+- Open question: why do we create indices that are never used, and what do they cost? See [camunda/camunda#66173](https://github.com/camunda/camunda/issues/66173).
