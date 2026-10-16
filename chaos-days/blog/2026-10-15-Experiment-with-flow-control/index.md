@@ -23,8 +23,8 @@ Today we ran several load tests with different flow control settings to understa
 
 **TL;DR;**
 
-- **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. The stress process exports about 37 records per PI (33 of them written by the process itself, the rest by the continuous deployments of our k6 script), the exporter handled 6.4k to 8.2k records/s for the base, 10k and 5k clusters (whole run means), which is 173 to 223 PIs/s.
-- **Without flow control an overloaded cluster fills its backlog.** Under our stress load (300 PIs/s) the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) steers that backlog towards a soft limit and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
+- **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. The stress workload exports about 37 records per PI (33 of them written by the process itself, the rest by the continuous deployments of our k6 script), the exporter handled 6.4k to 8.2k records/s for the base, 10k and 5k clusters (whole run means), which is 173 to 223 PIs/s.
+- **Without flow control an overloaded cluster fills its backlog.** Under the stress workload the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) steers that backlog towards a soft limit and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
 - **Both knobs can hurt.** A backlog of 5k per partition cost about 13% throughput compared to 10k, and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios. Ideally, the flow control configuration becomes the Camunda default at some point.
@@ -45,7 +45,7 @@ The acceptable backlog steers the size of the queue in the middle, and with it t
 
 As we wanted to understand how flow-control works and impacts the system we ran several load tests with different flow control settings.
 
-We used the max/stress scenario with 300 PIs/s and our [default load test setup](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L246-L252) as the base (using the REST API). Our default load test setup enables the following flow control configuration:
+We used the stress workload, 300 PIs/s with a process of one task (start event, service task, end event), and our [default load test setup](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L246-L252) as the base (using the REST API). Our default load test setup enables the following flow control configuration:
 
 ```yaml
 camunda.processing.flow-control.write.enabled: "true"
@@ -152,7 +152,7 @@ Changed here: the write limit of the processing is lowered to 100 records/s per 
 
 When setting the write limit to a lower value, we tried to estimate what this would mean to our throughput, as the effect of a record limit is not obvious from the user point of view.
 
-We tried to approximate how many records a single PI writes in our load test for our stress workload (one start event, a service task and an end event). Each process instance and flow node instance writes ~4 records, a job ~3 records, and we create 14 variables per process instance (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)). See [ZEP-004](https://github.com/zeebe-io/enhancements/blob/master/ZEP004-wf-stream-processing.md) for how the stream processing writes these records, and [camunda/camunda#61073](https://github.com/camunda/camunda/issues/61073) for related work on sizing by records per process model.
+We tried to approximate how many records a single PI writes in our load test for the stress workload. Each process instance and flow node instance writes ~4 records, a job ~3 records, and we create 14 variables per process instance (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)). See [ZEP-004](https://github.com/zeebe-io/enhancements/blob/master/ZEP004-wf-stream-processing.md) for how the stream processing writes these records, and [camunda/camunda#61073](https://github.com/camunda/camunda/issues/61073) for related work on sizing by records per process model.
 
 ![The process model of the stress workload: a start event, a service task and an end event](one_task.png)
 
