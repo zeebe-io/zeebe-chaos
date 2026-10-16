@@ -25,7 +25,7 @@ Today we ran several load tests with different flow control settings to understa
 
 ```mermaid
 flowchart LR
-    A["Incoming load<br/>(e.g. 300 PIs/s)"] --> B["Processing<br/>throttled when the backlog<br/>exceeds the acceptable backlog"]
+    A["Incoming load<br/>(e.g. 300 PIs/s)"] --> B["Processing<br/>throttled when the backlog<br/>approaches the acceptable backlog"]
     B --> C[("Exporter backlog<br/>records not yet exported")]
     C --> D["Exporter<br/>6.4 to 8.2k records/s"]
     D --> E["Elasticsearch<br/>data available"]
@@ -55,7 +55,7 @@ camunda.processing.flow-control.write.throttle.enabled: "true"
 
 See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default.
 
-Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling lowers this limit while the exporter backlog is larger than the acceptable backlog. Each variation below changes one of these knobs, highlighted in the diagram of its section (the base diagram highlights the knob of our default setup):
+Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling starts to lower this limit when the exporter backlog is larger than half of the acceptable backlog, and limits harder the larger the backlog gets. Each variation below changes one of these knobs, highlighted in the diagram of its section (the base diagram highlights the knob of our default setup):
 
 ```mermaid
 flowchart LR
@@ -292,7 +292,7 @@ We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog a
 
 ![Backlog comparison of the 5k and 10k clusters](lower-backlog-5k-comparison.png)
 
-We observed a lower throughput with the 5k backlog. The most likely reason is the lower limit itself. The throttling admits less the closer the backlog gets to the acceptable backlog, so a smaller buffer blocks more of the arriving load, even if the exporter serves at the same rate (in queueing theory a finite queue loses throughput as it shrinks).
+We observed a lower throughput with the 5k backlog. The most likely reason is the lower limit itself. The throttling admits less once the backlog is larger than half of the acceptable backlog (about 2.5k records per partition for 5k), so a smaller buffer blocks more of the arriving load, even if the exporter serves at the same rate (in queueing theory a finite queue loses throughput as it shrinks).
 
 ![Throughput comparison of the 5k and 10k clusters](lower-backlog-5k-comparison-throughput.png)
 
