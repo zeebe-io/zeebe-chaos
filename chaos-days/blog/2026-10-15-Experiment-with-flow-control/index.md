@@ -262,7 +262,7 @@ At around 13:40, about 2.5 hours after the start, the disks of the Camunda pods 
 
 ![Disk usage of the Camunda and Elasticsearch pods, the Camunda disks reach about 97%](no-limit-disk-limit.png)
 
-This is what queueing theory predicts. The records arrived faster (about 10.9k records/s) than the exporter served them (about 7k records/s), so the queue grew until a finite resource was exhausted, here the disk. Afterwards the system can only admit as much as it serves, about 190 PIs/s (`7000 / 37`).
+This is what queueing theory predicts. The records arrived faster (about 10.9k records/s) than the exporter served them (about 7k records/s), so the queue grew until a finite resource was exhausted, here the disk. Afterwards the system can only admit as much as it serves, about 190 PIs/s (`7000 / 37`, with 37 exported records per PI: the 33 written plus the continuous deployments, see Found Bugs).
 
 We measured about 150 to 200 PIs/s afterwards, with a much higher data availability delay. The most likely cause is the disk monitoring of the broker (we did not check the rejected commands): our load test setup rejects client commands and pauses processing when less than 3GB of disk space is free, and stops accepting replicated events below 2GB ([load test configuration](https://github.com/camunda/camunda/blob/880ec51f24c5dff162f70257d27059595bd4cd99/load-tests/setup/main/values/camunda-platform-values-defaults.yaml#L240-L241), the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L548-L559) are 2GB and 1GB). Processing presumably continues when snapshots and compaction free space again, which would explain why the disk usage stays at the watermark. So the free space watermark was most likely the effective limit for the backlog, not flow control.
 
@@ -285,8 +285,6 @@ flowchart LR
 The 5k cluster lowers the acceptable backlog even further, to 5k records per partition.
 
 In the investigation and discussion we realized that the throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
-
-This also lets us calculate the maximum PIs/s: exporter throughput divided by the exported records per process instance. Prometheus shows about 37 exported records per process instance, 4 more than the 33 written, because of the continuous deployments and their distribution (see Found Bugs).
 
 This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
