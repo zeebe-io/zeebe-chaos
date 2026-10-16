@@ -15,9 +15,7 @@ authors:
 
 # Chaos Day Summary
 
-During writing our [Sizing documentation for Camunda](https://docs.camunda.io/docs/next/components/best-practices/architecture/sizing-your-environment/), we noticed that our previous load tests did not account for the default flow control settings.
-
-Which for example impacted our experiments for [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). That means our results did not describe what we ship.
+While writing our [Sizing documentation for Camunda](https://docs.camunda.io/docs/next/components/best-practices/architecture/sizing-your-environment/), we noticed that our previous load tests did not account for the default flow control settings. This impacted for example our experiments for [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). That means our results did not describe what we ship.
 
 Today we ran several load tests with different flow control settings to understand how flow control affects throughput and data availability, and whether our earlier results need a correction.
 
@@ -57,7 +55,7 @@ camunda.processing.flow-control.write.throttle.enabled: "true"
 
 See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default.
 
-Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling lowers this limit while the exporter backlog is larger than the acceptable backlog. Each variation below turns one of these knobs, highlighted in the diagram of its section:
+Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling lowers this limit while the exporter backlog is larger than the acceptable backlog. Each variation below changes one of these knobs, highlighted in the diagram of its section (the base diagram highlights the knob of our default setup):
 
 ```mermaid
 flowchart LR
@@ -103,11 +101,11 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 
 
 - **Base:** 246 PIs/s at the start, on mean around 226 PIs/s. About +/-105k records not exported as backlog. Data availability: p50 40s, p99 59s.
-- **More PIs:** Shows quite similar picture to the base, with 239 to 225 PIs/s, with similar backlog and data availability (p50 41s, p99 60s).
+- **More PIs:** Showed a quite similar picture to the base, with 239 to 225 PIs/s, and a similar backlog and data availability (p50 41s, p99 60s).
 - **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high (p50 37s, p99 45s, see below).
 - **Lower backlog (10k):** 150 to 214 PIs/s, mean around 198. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
 - **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 150 to 200 PIs/s. The backlog grew to about 19 million records per partition. Data availability was no longer measurable, it was in the top bucket (90s) of the histogram.
-- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 28k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relate to restarts of the cluster.
+- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 28k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which presumably relates to restarts of the cluster.
 
 
 #### Base
@@ -150,7 +148,7 @@ flowchart LR
 
 Changed here: the write limit of the processing is lowered to 100 records/s per partition.
 
-When setting the write limit to a lower value, we tried to estimate what this would mean to our throughput. As this is not obvious from the user point of view (when setting record limit).
+When setting the write limit to a lower value, we tried to estimate what this would mean to our throughput, as the effect of a record limit is not obvious from the user point of view.
 
 We tried to approximate how many records a single PI writes in our load test for our stress workload (one start event, a service task and an end event). Each process instance and flow node instance writes ~4 records, a job ~3 records, and we create 14 variables per process instance (see [typical payload](https://github.com/camunda/camunda/blob/main/load-tests/load-tester/src/main/resources/bpmn/typical_payload.json)). See [ZEP-004](https://github.com/zeebe-io/enhancements/blob/master/ZEP004-wf-stream-processing.md) for how the stream processing writes these records, and [camunda/camunda#61073](https://github.com/camunda/camunda/issues/61073) for related work on sizing by records per process model.
 
@@ -174,7 +172,7 @@ print(total_records)  # 33
 
 This makes `33` records per process instance. As the limit is set to 100 per partition we can expect ~3 PIs/s per partition (`100 / 33`), which is about 9 PIs/s for our whole cluster.
 
-In Prometheus the exporters exported 37.0 records per completed process instance on the base, 10k and 5k clusters (whole run means of 36.4, 37.1 and 37.1), a bit more than these 33 records. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the bug below). For the exporter throughput below we use the 37 exported records per PI.
+In Prometheus the exporters exported 37.0 records per completed process instance on the base, 10k and 5k clusters (whole run means of 36.4, 37.1 and 37.1), a bit more than these 33 records. The difference comes from the deployments: our k6 script keeps deploying the same resources, and every deployment and its distribution to the other partitions adds records that do not belong to a process instance (see the Base section and Found Bugs). For the exporter throughput below we use the 37 exported records per PI.
 
 When we look at the metrics, we can see that the throughput aligns with our expectations for one partition only.
 
@@ -240,7 +238,7 @@ With an acceptable backlog of 10k we still reached a high throughput of about ~2
 
 The exporter backlog is about three times lower than in the base (about 35k vs 105k per partition). The measured backlog was therefore above the configured 10k.
 
-Important to note here is that a higher limit doesn't necessary help, as this only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit has a direct effect on the data availability latency. 
+Important to note here is that a higher acceptable backlog doesn't necessarily help, as this is only a short-term buffer and does not increase the exporter's processing capacity. The key factor is how fast the exporter can process the queued records. The queue limit has a direct effect on the data availability latency. 
 
 This is directly related to queuing theory (like Little's Law): the waiting time in a queue is its size divided by the rate at which it is served. For the backlog this estimates the export delay, which is only one part of the data availability measured through the REST API.
 
