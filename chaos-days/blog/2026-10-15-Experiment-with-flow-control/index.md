@@ -292,9 +292,7 @@ We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog a
 
 ![Backlog comparison of the 5k and 10k clusters](lower-backlog-5k-comparison.png)
 
-Divided by the 37 exported records per PI, the exported records per second of the table give 223, 198 and 173 PIs/s for the base, the 10k and the 5k cluster, within 2% of the measured PIs/s. This only confirms that everything the cluster processed was exported, it does not say why the rate dropped.
-
-The most likely reason is the lower limit itself. The throttling admits less the closer the backlog gets to the acceptable backlog, so a smaller buffer blocks more of the arriving load, even if the exporter serves at the same rate (in queueing theory a finite queue loses throughput as it shrinks). The exported records per second then drop because less is admitted. The acceptable backlog is configured per partition, so 5k is only about two to three seconds of exporting per partition (about 2.1k records/s each), but the measured backlog was still about 28k per partition. We did not verify this explanation. Another possibility is that a smaller queue means smaller export batches with a higher fixed cost per bulk request to Elasticsearch, which we did not measure either.
+We observed a lower throughput with the 5k backlog. The most likely reason is the lower limit itself. The throttling admits less the closer the backlog gets to the acceptable backlog, so a smaller buffer blocks more of the arriving load, even if the exporter serves at the same rate (in queueing theory a finite queue loses throughput as it shrinks).
 
 ![Throughput comparison of the 5k and 10k clusters](lower-backlog-5k-comparison-throughput.png)
 
