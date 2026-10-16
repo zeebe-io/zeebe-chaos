@@ -226,7 +226,7 @@ With a limit of 350 (and 33 records per process instance) we would expect ~10 PI
 flowchart LR
     A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
     B --> W{{"Write limit<br/>10000 records/s"}}
-    W --> Q[("Exporter backlog<br/>bounded to about 10k")]
+    W --> Q[("Exporter backlog<br/>steered towards 10k")]
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 10k" .-> W
@@ -235,7 +235,7 @@ flowchart LR
     class Q knob
 ```
 
-Changed here: the exporter queue is limited to 10k records by throttling the writes.
+Changed here: the acceptable backlog is lowered to 10k. It is a soft limit, the throttling steers the exporter backlog towards the value but does not enforce it.
 
 With an acceptable backlog of 10k we still reached a high throughput of about ~200 PIs/s.
 
@@ -281,7 +281,7 @@ This is what queueing theory predicts. The arrival rate (295 PIs/s, about 10.9k 
 flowchart LR
     A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
     B --> W{{"Write limit<br/>10000 records/s"}}
-    W --> Q[("Exporter backlog<br/>bounded to about 5k")]
+    W --> Q[("Exporter backlog<br/>steered towards 5k")]
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 5k" .-> W
@@ -290,7 +290,7 @@ flowchart LR
     class Q knob
 ```
 
-The 5k cluster limits the exporter queue even further, to 5k records per partition.
+The 5k cluster lowers the acceptable backlog even further, to 5k records per partition. This is a soft limit as well.
 
 In the investigation and discussion we realized that the acceptable backlog only tunes the data availability. A large backlog leads to a large export delay and a small backlog to a small one.
 
