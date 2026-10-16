@@ -115,6 +115,21 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 
 #### Base
 
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"Write limit<br/>10000 records/s"}}
+    W --> Q[("Exporter backlog<br/>records not yet exported")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    Q -. "Throttling: acceptable backlog 100k" .-> W
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class W knob
+```
+
+The base uses the write limit of 10000 and the throttling with the default acceptable backlog of 100k.
+
 The base behaved as in previous runs, with a backlog of about 105k records per partition per exporter.
 
 ![Backlog and exporting of the base cluster](lower-backlog-comparison-base.png)
@@ -124,6 +139,21 @@ While looking at the base we noticed that deployments are continuously distribut
 ![Command distribution of deployments on the base cluster](base-deployment-distribution.png)
 
 #### Lower write limit
+
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"Write limit<br/>100 records/s"}}
+    W --> Q[("Exporter backlog<br/>records not yet exported")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    Q -. "Throttling: acceptable backlog 100k" .-> W
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class W knob
+```
+
+Changed here: the write limit of the processing is lowered to 100 records/s per partition.
 
 When setting the write limit to a lower value, we tried to estimate what this would mean to our throughput. As this is not obvious from the user point of view (when setting record limit).
 
@@ -192,6 +222,21 @@ With a limit of 350 (and 33 records per process instance) we would expect ~10 PI
 
 #### Lower backlog
 
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"Write limit<br/>10000 records/s"}}
+    W --> Q[("Exporter backlog<br/>bounded to about 10k")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    Q -. "Throttling: acceptable backlog 10k" .-> W
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class Q knob
+```
+
+Changed here: the exporter queue is limited to 10k records by throttling the writes.
+
 With an acceptable backlog of 10k we still reached a high throughput of about ~200 PIs/s.
 
 ![General metrics of the 10k backlog cluster](lower-backlog-general.png)
@@ -207,6 +252,20 @@ This is directly related to queuing theory (like Little's Law): the waiting time
 
 #### No flow control
 
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"No write limit"}}
+    W --> Q[("Exporter backlog<br/>unbounded, until the disk is full")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class W off
+```
+
+Changed here: there is no limit on the write rate and no throttling, so there is no bound on the exporter queue.
+
 Without flow control (no exporter backlog limit) we reached about 295 PIs/s, but the exporter backlog kept growing until it reached about 19 million records per partition. The exporting throughput is lower than the processing throughput, so nothing slows the processing down.
 
 At around 13:40, about 2.5 hours after the start, the disks of the Camunda pods were almost full (about 97%). This lines up with the throughput drop.
@@ -217,6 +276,21 @@ This is what queueing theory predicts. The arrival rate (295 PIs/s, about 10.9k 
 
 
 #### Comparison and the 5k backlog
+
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"Write limit<br/>10000 records/s"}}
+    W --> Q[("Exporter backlog<br/>bounded to about 5k")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    Q -. "Throttling: acceptable backlog 5k" .-> W
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class Q knob
+```
+
+The 5k cluster limits the exporter queue even further, to 5k records per partition.
 
 In the investigation and discussion we realized that the acceptable backlog only tunes the data availability. A large backlog leads to a large export delay and a small backlog to a small one.
 
