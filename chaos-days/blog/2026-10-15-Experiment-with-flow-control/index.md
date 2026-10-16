@@ -179,9 +179,6 @@ When we look at the metrics, we can see that the throughput aligns with our expe
 ![General metrics of the lower limit cluster](lower-limit-general.png)
 
 Looking closer, partition one did much more than the other partitions.
-
-![Processing of partition one compared to the other partitions](lower-limit-different-processing.png)
-
 Only partition one created PIs, jobs and variables.
 
 ![Records written by partition one](lower-limit-p1-log.png)
