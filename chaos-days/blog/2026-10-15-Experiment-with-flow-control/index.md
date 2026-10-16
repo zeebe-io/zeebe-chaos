@@ -23,12 +23,25 @@ Today we ran several load tests with different flow control settings to understa
 
 <!--truncate-->
 
+```mermaid
+flowchart LR
+    A["Incoming load<br/>(e.g. 300 PIs/s)"] --> B["Processing<br/>throttled when the backlog<br/>exceeds the acceptable backlog"]
+    B --> C[("Exporter backlog<br/>records not yet exported")]
+    C --> D["Exporter<br/>about 7k records/s"]
+    D --> E["Elasticsearch<br/>data available"]
+    C -. "backlog / exporter rate = waiting time (data availability)" .-> E
+```
+
+The acceptable backlog only sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass, no matter how large or small the queue is.
+
 **TL;DR;**
 
-- The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one.
-- Without write flow control the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records. Afterwards the throughput dropped to about 190 PIs/s.
+- The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
+- Camunda ships with the write flow control disabled. Without it the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records, until the disks were almost full. Afterwards the throughput dropped to about 190 PIs/s.
+- The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). With 7k records/s this is about 190 PIs/s.
+- A backlog of 5k, below what the exporter handles per second, cost about 14% throughput compared to 10k, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
-- An acceptable backlog of 10k kept about 200 PIs/s with a lower backlog. A backlog of 5k, below what the exporter handles per second (about 7k records/s), cost about 14% throughput compared to 10k.
+- Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - Going forward, load tests run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
 - We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
 
