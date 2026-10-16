@@ -23,7 +23,7 @@ Today we ran several load tests with different flow control settings to understa
 
 **TL;DR;**
 
-- **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. On the base cluster the exporter handled about 8.2k records/s at about 37 exported records per PI, which is about 220 PIs/s and matches what we measured.
+- **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. On the base cluster the exporter handled about 8.2k records/s at about 37 exported records per PI, which gives about 220 PIs/s, close to the 226 PIs/s we measured.
 - **Without flow control an overloaded cluster fills its backlog.** Under the stress workload the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) steers that backlog towards a soft limit and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
 - **Both knobs can hurt.** A backlog of 5k per partition cost about 13% throughput compared to 10k, and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
