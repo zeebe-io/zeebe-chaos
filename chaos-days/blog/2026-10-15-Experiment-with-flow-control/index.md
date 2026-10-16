@@ -37,7 +37,7 @@ The acceptable backlog steers the size of the queue in the middle, and with it t
 - **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. On the base cluster the exporter handled about 8.2k records/s at about 37 exported records per PI, which gives about 220 PIs/s.
 - **Without flow control an overloaded cluster fills its backlog.** Under the stress workload the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full.
 - **The acceptable backlog steers the data availability.** Flow control steers the exporter backlog towards a soft limit, and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
-- **Both knobs can hurt.** A backlog lower than the serving rate costs throughput (5k per partition cost about 13% compared to 10k), and a write limit of 100 starved the partitions (only partition one made progress).
+- **Both knobs can hurt.** A too small backlog costs throughput (10k cost about 12% compared to the default 100k, 5k another 13% compared to 10k), and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration without our flow control settings ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - We found two bugs along the way: deployments are redistributed on every redeploy ([camunda/camunda#66171](https://github.com/camunda/camunda/issues/66171)), and Elasticsearch shards are unevenly used ([camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172)).
 
@@ -284,9 +284,9 @@ flowchart LR
 
 The 5k cluster lowers the acceptable backlog even further, to 5k records per partition.
 
-In the investigation and discussion we realized that the throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
+In the investigation and discussion we realized that the throughput is only moderately affected by the acceptable backlog (about 12% with 10k). What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the throttling enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
-This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
+This led to a thought: what if the acceptable backlog is only a few seconds of exporting? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
 We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog and better data availability at the same throughput, unless the limit is too low, in which case the throughput suffers.
 
