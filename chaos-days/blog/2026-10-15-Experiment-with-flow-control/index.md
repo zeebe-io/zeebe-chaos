@@ -15,13 +15,18 @@ authors:
 
 # Chaos Day Summary
 
-During writing our Sizing documentation for Camunda, we noticed that our previous load tests did not account for the default flow control settings.
+During writing our [Sizing documentation for Camunda](https://docs.camunda.io/docs/next/components/best-practices/architecture/sizing-your-environment/), we noticed that our previous load tests did not account for the default flow control settings.
 
 Which for example impacted our experiments for [Camunda 8.7 and beyond performance and reliability results](https://camunda.github.io/zeebe-chaos/2026/08/14/Camunda-8.7-and-beyond---performance-and-reliability). That means our results did not describe what we ship.
 
 Today we ran several load tests with different flow control settings to understand how flow control affects throughput and data availability, and whether our earlier results need a correction.
 
 <!--truncate-->
+
+**TL;DR;**
+
+We learned that the acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
+
 
 ```mermaid
 flowchart LR
@@ -32,14 +37,10 @@ flowchart LR
     C -. "backlog / exporter rate = waiting time (data availability)" .-> E
 ```
 
-The acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
-
-**TL;DR;**
-
 - The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
-- Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without it, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
-- The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
-- A backlog of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to 10k, because the exporter throughput dropped as well.
+- Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without flow control, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
+- When flow control is enabled the maximum PIs/s are bound by the exporter throughput divided by the records per PI (about 33 exported records per PI). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
+- A backlog limit of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to a 10k limit, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions most likely could not finish bootstrapping.
 - Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
@@ -57,7 +58,22 @@ camunda.processing.flow-control.write.limit: 10000
 camunda.processing.flow-control.write.throttle.enabled: "true"
 ```
 
-See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default, and it stays enabled in all our variations.
+See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default.
+
+Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling lowers this limit while the exporter backlog is larger than the acceptable backlog. Each variation below turns one of these knobs, highlighted in the diagram of its section:
+
+```mermaid
+flowchart LR
+    A["Incoming load<br/>300 PIs/s"] --> B["Processing"]
+    B --> W{{"Write limit<br/>caps records written per second"}}
+    W --> Q[("Exporter backlog<br/>records not yet exported")]
+    Q --> X["Exporter"]
+    X --> E["Elasticsearch"]
+    Q -. "Throttling: lowers the write limit<br/>when the backlog exceeds the acceptable backlog" .-> W
+    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
+    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    class W knob
+```
 
 We started one cluster per variation:
 
@@ -73,7 +89,7 @@ Later we added a sixth cluster after discussing the results:
 
 ### Expected
 
-Before we started with our tests we made some expectations based on our understanding of the flow control settings and the system behavior.
+Before we started with our tests we made some expectations based on our current understanding of the flow control settings and the system behavior.
 
 - **Base:** as usual about 220 PIs/s, a backlog of about 100k records per partition, and a data availability delay of 40 to 60 seconds.
 - **More PIs:** we already reach the limit with 300 PIs/s, so more load should not change the result. It might even be slightly worse because of overstress.
