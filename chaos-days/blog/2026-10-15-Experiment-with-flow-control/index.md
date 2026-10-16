@@ -315,13 +315,6 @@ We also noticed that many indices exist but hold no documents, and every shard h
 
 ## Conclusion
 
-- **Base:** as expected, about 220 PIs/s (246 at the start), about 105k records not exported per partition and a p99 data availability of about 59s.
-- **More PIs:** the same result as the base, so 300 PIs/s already stresses the cluster.
-- **Lower write limit:** a significant throughput drop, as expected: 3 PIs/s at the start and about 30 PIs/s after we raised the limit. In addition a limit of 100 most likely prevented partitions from bootstrapping, and the cluster recovered after we raised it. Data availability was high although there was no backlog (p50 37s). The test helped us to calculate the expected PIs/s for a given write limit (`limit / records per PI * partitions`).
-- **Lower backlog (10k):** a smaller throughput drop than expected (about 12%, 150 to 214 PIs/s), with a three times lower backlog and a p99 data availability of about 44s.
-- **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 13% compared to 10k, most likely because the smaller buffer admits less. It started with 220 PIs/s as well, then dropped. The p50 stayed the same as with 10k, only the tail improved. A single 15 minute window of the 10k and the 5k run reached the top bucket of 90s, which presumably relates to restarts of the cluster.
-- **No flow control:** under stress, more throughput than the others for a while (about 295 PIs/s for the first 2.5 hours), but a growing backlog until the disks were almost full, and a throughput drop afterwards (150 to 200 PIs/s). The data availability was no longer measurable.
-
 The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable. The maximum sustainable throughput is most likely bound by the exporter, so flow control can only trade data availability against throughput, it cannot add capacity.
 
 As we have no control of index and sharding placement in Elasticsearch, this can lead to uneven load distribution, causing noise in our tests.
