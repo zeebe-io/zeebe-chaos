@@ -27,19 +27,19 @@ Today we ran several load tests with different flow control settings to understa
 flowchart LR
     A["Incoming load<br/>(e.g. 300 PIs/s)"] --> B["Processing<br/>throttled when the backlog<br/>exceeds the acceptable backlog"]
     B --> C[("Exporter backlog<br/>records not yet exported")]
-    C --> D["Exporter<br/>about 7k records/s"]
+    C --> D["Exporter<br/>7 to 8k records/s"]
     D --> E["Elasticsearch<br/>data available"]
     C -. "backlog / exporter rate = waiting time (data availability)" .-> E
 ```
 
-The acceptable backlog only sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass, no matter how large or small the queue is.
+The acceptable backlog sizes the queue in the middle, and with it the waiting time. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
 
 **TL;DR;**
 
 - The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
 - Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without it, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Afterwards the throughput dropped to about 150 to 200 PIs/s.
-- The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). With 7k records/s this is about 190 PIs/s.
-- A backlog of 5k, below what the exporter handles per second, cost about 13% throughput compared to 10k, because the exporter throughput dropped as well.
+- The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). The exporter handled 7.0k to 7.9k records/s, which is 190 to 215 PIs/s.
+- A backlog of 5k per partition, about two seconds of exporting, cost about 13% throughput compared to 10k, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
 - Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - Going forward, load tests run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
@@ -206,9 +206,9 @@ In the investigation and discussion we realized that the acceptable backlog only
 
 The throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
-See the diagram at the top: the acceptable backlog only sizes the queue, the exporter rate sets the throughput.
+See the diagram at the top: the acceptable backlog sizes the queue, the exporter rate sets the throughput.
 
-This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster). This is a bit more than the 33 records we calculated for the write limit, as it also contains records that do not belong to a process instance, for example from the continuous deployments and their distribution. We did not break this down. With 37 records per PI and an exporter throughput of 7k records/s the maximum is `7000 / 37`, about 190 PIs/s.
+This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster). This is a bit more than the 33 records we calculated for the write limit, as it also contains records that do not belong to a process instance, for example from the continuous deployments and their distribution. We did not break this down. With 37 records per PI and the exporter throughput we measured (7.0k to 7.9k records/s) the maximum is `7000 / 37` to `7900 / 37`, about 190 to 215 PIs/s.
 
 This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
@@ -218,7 +218,7 @@ We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog a
 
 In the time window of the comparison above, the measured exporter throughput was about 7.9k records/s with the 10k backlog and 7.0k records/s with the 5k backlog. Divided by 37 records per PI this is about 213 and 188 PIs/s, which matches the PIs/s we measured in that window (218 and 188). Over the whole run the means were 198 and 173 PIs/s. So the 5k backlog did not slow down the processing directly, it lowered the exporter throughput, and the processing follows the exporter.
 
-A backlog of 5k is less than one second of exporting (about 30% below the 7k records/s). Queueing theory explains why this hurts. The exporter serves the queue in batches, and every batch has a fixed cost (the bulk request to Elasticsearch) on top of the cost per record. With a small queue the batches are small, the fixed cost is spread over fewer records, and the service rate drops, while a larger queue amortizes it. The PIs/s we measured follow this: about 225 (default 100k backlog), 198 (10k) and 173 (5k), so a larger buffer helps with diminishing returns, and a too small buffer starves the exporter. Compared to 10k, the throughput dropped by about 13% (173 vs 198 PIs/s over the whole run, 188 vs 218 in the comparison window). We did not measure the batch sizes, so the batching itself is an assumption.
+The acceptable backlog is configured per partition, while the exporter throughput of about 7k records/s is the sum over the three partitions, about 2.3k records/s per partition. A backlog of 5k is therefore about two seconds of exporting per partition. The measured backlog of the 5k cluster was larger than the setting (about 28k per partition on average), so the queue was not small, and the throttling does not hold the backlog at the configured value. Queueing theory offers one possible explanation for the lower exporter rate. The exporter serves the queue in batches, and every batch has a fixed cost (the bulk request to Elasticsearch) on top of the cost per record. With a small queue the batches are small, the fixed cost is spread over fewer records, and the service rate drops, while a larger queue amortizes it. The PIs/s we measured follow this: about 225 (default 100k backlog), 198 (10k) and 173 (5k), so a larger buffer helps with diminishing returns, and a too small buffer starves the exporter. Compared to 10k, the throughput dropped by about 13% (173 vs 198 PIs/s over the whole run, 188 vs 218 in the comparison window). We did not measure the batch sizes, so the batching itself is an assumption.
 
 ![Throughput comparison of the 5k and 10k clusters](lower-backlog-5k-comparison-throughput.png)
 
