@@ -29,8 +29,8 @@ Today we ran several load tests with different flow control settings to understa
 - **Without flow control an overloaded cluster fills its backlog.** Under our stress load (300 PIs/s) the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full. Flow control (the acceptable backlog) bounds that backlog and with it the data availability: p99 was about 59s with the default 100k, 44s with 10k and 30s with 5k.
 - **Both knobs can hurt.** A backlog of 5k per partition cost about 13% throughput compared to 10k, and a write limit of 100 starved the partitions (only partition one made progress).
 - **Under a realistic load (~51 PIs/s) no flow control was needed.** The default configuration ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
-- Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
-- We found two bugs along the way: deployments are redistributed on every redeploy, and Elasticsearch shards are unevenly used.
+- Going forward, load tests will run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios. Ideally, flow-control configuraiton become Camunda default at somepoint.
+- We found two bugs along the way: deployments are redistributed on every redeploy ([camunda/camunda#66171](https://github.com/camunda/camunda/issues/66171)), and Elasticsearch shards are unevenly used ([camunda/camunda#66172](https://github.com/camunda/camunda/issues/66172)).
 
 ```mermaid
 flowchart LR
