@@ -70,18 +70,18 @@ Before we started with our tests we made some expectations based on our understa
 
 ### Actual
 
-The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time it takes until the data is available via REST Query API.
+The numbers below come from Prometheus over the whole run (about 3 to 4 hours per cluster). The backlog is the number of records not yet exported, per partition (3 partitions) and the data availability the time from creating an instance until it is available via the REST API, as measured by the load tester (see [metrics documentation](https://github.com/camunda/camunda/blob/cccaef90819cd9456cfa4d3b2a3039a08ed8c84a/load-tests/docs/metrics.md#L215-L218)). Data availability is given as p50 and p99 over the whole run.
 
 ![Overview of the processing throughput and backlog for all clusters](actual-overview.png)
 ![Overview of the data availability and exporting for all clusters](actual-overview2.png)
 
 
-- **Base:** 246 PIs/s at the start, on mean around 220 PIs/s. About +/-105k records not exported as backlog, which creates a data availability of ~60 seconds per partition.
-- **More PIs:** Shows quite similar picture to the base, with 239 to 225 PIs/s, with similar backlog etc.
-- **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high.
-- **Lower backlog (10k):** 150 to 210 PIs/s, mean around 200. The backlog stayed on mean around 35k records per partition.
-- **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 190 PIs/s. The total backlog grew to about 46 million records. Data availability was no longer measurable.
-- **Backlog 5k:** Started with 220 as well, then dropped to 173 to 182 PIs/s. The backlog was on mean around 30k records per partition. Data availability was the best we measured among all configurations.
+- **Base:** 246 PIs/s at the start, on mean around 220 PIs/s. About +/-105k records not exported as backlog. Data availability: p50 40s, p99 59s.
+- **More PIs:** Shows quite similar picture to the base, with 239 to 225 PIs/s, with similar backlog and data availability (p50 41s, p99 60s).
+- **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high (p50 37s, p99 45s, see below).
+- **Lower backlog (10k):** 150 to 210 PIs/s, mean around 200. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
+- **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 190 PIs/s. The total backlog grew to about 46 million records. Data availability was no longer measurable, it was in the top bucket (90s) of the histogram.
+- **Backlog 5k:** Started with 220 as well, then dropped to 173 to 182 PIs/s. The backlog was on mean around 30k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which we relate to restarts of the cluster.
 
 
 #### Base
@@ -143,6 +143,7 @@ The deployment distribution was affected as well. It could not succeed while the
 
 ![Deployment redistribution with a limit of 100](lower-limit-deploy-redistribution.png)
 
+The data availability was high as well (p50 37s, p99 45s), although the exporting latency p99 was only about 0.09s and there was no backlog. This means the delay is not caused by the exporter. Our theory is that the write limit slows down the processing: commands like the PI creation are accepted, but their follow-up writes are rejected by the limit and retried by the engine until capacity is free again. The instance is then created and visible late. We did not verify this.
 
 ##### Raising the limit
 
