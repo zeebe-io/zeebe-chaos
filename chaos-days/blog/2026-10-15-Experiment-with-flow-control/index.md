@@ -317,7 +317,7 @@ We also noticed that many indices exist but hold no documents, and every shard h
 
 The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable. The maximum sustainable throughput is most likely bound by the exporter, so flow control can only trade data availability against throughput, it cannot add capacity.
 
-As we have no control of index and sharding placement in Elasticsearch, this can lead to uneven load distribution, causing noise in our tests.
+As we have no control of index and sharding placement in Elasticsearch, this can lead to uneven load distribution, causing noise in our tests and possibly a lower throughput (we did not measure this).
 
 Under realistic load, the default configuration without any flow control worked fine. After the experiments we started `c8-chaos-w42-no-limit-realistic`, a cluster with the default configuration (no write limit, no throttling) and a more realistic load. It has been running for about 22 hours and processed a stable ~51 PIs/s the whole time, with a data availability p50 of 1.6s and p99 of 3.9s, an exporting latency p99 of about 0.5s and almost no backlog. The exporter keeps up, so there is nothing for flow control to do. It only has an effect when the cluster is overloaded, like in the stress scenario.
 
