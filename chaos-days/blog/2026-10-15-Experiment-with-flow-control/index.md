@@ -39,7 +39,7 @@ The acceptable backlog only sizes the queue in the middle, and with it the waiti
 - The acceptable backlog is the knob for data availability: a large backlog means a large export delay, a small backlog a small one. The p99 data availability was about 59s with the default backlog (100k), 44s with 10k and 30s with 5k.
 - Camunda ships with the write flow control disabled. Under our stress load (300 PIs/s, more than the cluster can sustain) and without it, the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 46 million records, until the disks were almost full. Afterwards the throughput dropped to about 190 PIs/s.
 - The maximum PIs/s is bound by the exporter throughput divided by the records per PI (about 37 exported records per PI). With 7k records/s this is about 190 PIs/s.
-- A backlog of 5k, below what the exporter handles per second, cost about 14% throughput compared to 10k, because the exporter throughput dropped as well.
+- A backlog of 5k, below what the exporter handles per second, cost about 13% throughput compared to 10k, because the exporter throughput dropped as well.
 - A write limit that is too low starves partitions. With a limit of 100 only partition one made progress, and the other partitions could not finish bootstrapping.
 - Under a realistic load (~51 PIs/s) the default configuration without flow control ran stable for about 22 hours, with a p99 data availability of 3.9s and almost no backlog.
 - Going forward, load tests run with the default (vanilla) configuration. Tests with a specific flow control configuration are separate, explicit scenarios.
@@ -89,12 +89,12 @@ The numbers below come from Prometheus over the whole run (about 3 to 4 hours pe
 ![Overview of the data availability and exporting for all clusters](actual-overview2.png)
 
 
-- **Base:** 246 PIs/s at the start, on mean around 220 PIs/s. About +/-105k records not exported as backlog. Data availability: p50 40s, p99 59s.
+- **Base:** 246 PIs/s at the start, on mean around 225 PIs/s. About +/-105k records not exported as backlog. Data availability: p50 40s, p99 59s.
 - **More PIs:** Shows quite similar picture to the base, with 239 to 225 PIs/s, with similar backlog and data availability (p50 41s, p99 60s).
 - **Lower write limit:** at the start 3 PI/s, later about 30 PIs/s (after configuration change, see below). The backlog was close to zero, still the data availability was unexpectedly high (p50 37s, p99 45s, see below).
-- **Lower backlog (10k):** 150 to 210 PIs/s, mean around 200. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
+- **Lower backlog (10k):** 150 to 214 PIs/s, mean around 198. The backlog stayed on mean around 35k records per partition. Data availability: p50 23s, p99 44s.
 - **No flow control:** high processing throughput, about 295 PIs/s for the first 2.5 hours, then about 190 PIs/s. The total backlog grew to about 46 million records. Data availability was no longer measurable, it was in the top bucket (90s) of the histogram.
-- **Backlog 5k:** Started with 220 as well, then dropped to 173 to 182 PIs/s. The backlog was on mean around 30k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which we relate to restarts of the cluster.
+- **Backlog 5k:** Started with 220 as well, then dropped, mean around 173 PIs/s (max 222). The backlog was on mean around 30k records per partition. Data availability: p50 22s, p99 30s. The p50 is the same as with 10k, only the tail improved. A single 15 minute window of the run (for both 10k and 5k) reached the top bucket of 90s, which we relate to restarts of the cluster.
 
 
 #### Base
@@ -216,9 +216,9 @@ We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog a
 
 ![Backlog comparison of the 5k and 10k clusters](lower-backlog-5k-comparison.png)
 
-The measured exporter throughput was about 7.9k records/s with the 10k backlog and 7.0k records/s with the 5k backlog. Divided by 37 records per PI this is about 213 and 188 PIs/s, which matches the PIs/s we measured (218 and 188). So the 5k backlog did not slow down the processing directly, it lowered the exporter throughput, and the processing follows the exporter.
+In the time window of the comparison above, the measured exporter throughput was about 7.9k records/s with the 10k backlog and 7.0k records/s with the 5k backlog. Divided by 37 records per PI this is about 213 and 188 PIs/s, which matches the PIs/s we measured in that window (218 and 188). Over the whole run the means were 198 and 173 PIs/s. So the 5k backlog did not slow down the processing directly, it lowered the exporter throughput, and the processing follows the exporter.
 
-A backlog of 5k is less than one second of exporting (about 30% below the 7k records/s). Queueing theory explains why this hurts. The exporter serves the queue in batches, and every batch has a fixed cost (the bulk request to Elasticsearch) on top of the cost per record. With a small queue the batches are small, the fixed cost is spread over fewer records, and the service rate drops, while a larger queue amortizes it. The PIs/s we measured follow this: about 220 (default 100k backlog), 218 (10k) and 188 (5k), so a larger buffer helps with diminishing returns, and a too small buffer starves the exporter. Compared to 10k, the throughput dropped by about 14% (188 vs 218 PIs/s). We did not measure the batch sizes, so the batching itself is an assumption.
+A backlog of 5k is less than one second of exporting (about 30% below the 7k records/s). Queueing theory explains why this hurts. The exporter serves the queue in batches, and every batch has a fixed cost (the bulk request to Elasticsearch) on top of the cost per record. With a small queue the batches are small, the fixed cost is spread over fewer records, and the service rate drops, while a larger queue amortizes it. The PIs/s we measured follow this: about 225 (default 100k backlog), 198 (10k) and 173 (5k), so a larger buffer helps with diminishing returns, and a too small buffer starves the exporter. Compared to 10k, the throughput dropped by about 13% (173 vs 198 PIs/s over the whole run, 188 vs 218 in the comparison window). We did not measure the batch sizes, so the batching itself is an assumption.
 
 ![Throughput comparison of the 5k and 10k clusters](lower-backlog-5k-comparison-throughput.png)
 
@@ -258,8 +258,8 @@ We also noticed that many indices exist but hold no documents. Every shard has a
 - **Base:** as expected, about 220 PIs/s, about 105k records not exported per partition and a p99 data availability of about 59s.
 - **More PIs:** the same result as the base, so 300 PIs/s already stresses the cluster.
 - **Lower write limit:** a significant throughput drop, as expected. In addition a limit of 100 prevented partitions from bootstrapping, and the cluster recovered after we raised it. The test helped us to calculate the expected PIs/s for a given write limit (`limit / records per PI * partitions`).
-- **Lower backlog (10k):** a smaller throughput drop than expected (about 10%), with a three times lower backlog and a p99 data availability of about 44s.
-- **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 14% compared to 10k, because the exporter throughput dropped.
+- **Lower backlog (10k):** a smaller throughput drop than expected (about 12%), with a three times lower backlog and a p99 data availability of about 44s.
+- **Backlog below the exporter throughput (5k):** the p99 data availability improved to about 30s, but the throughput dropped by about 13% compared to 10k, because the exporter throughput dropped.
 - **No flow control:** under stress, more throughput than the others for a while, but a growing backlog until the disks were almost full, and a throughput drop afterwards.
 
 The acceptable backlog is the knob for data availability, and the write limit protects the partitions in a way that is hard to reason about. A low limit can make a cluster unusable. The maximum throughput is bound by the exporter, so flow control can only trade data availability against throughput, it cannot add capacity.
