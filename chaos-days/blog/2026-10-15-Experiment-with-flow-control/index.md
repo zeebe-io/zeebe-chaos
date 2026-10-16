@@ -127,7 +127,7 @@ flowchart LR
 
 The base behaved as in previous runs, with a backlog of about 105k records per partition per exporter.
 
-![Backlog and exporting of the base cluster](lower-backlog-comparison-base.png)
+![Backlog and exporting of the base cluster](base-backlog.png)
 
 While looking at the base we noticed that deployments are continuously distributed to the other partitions. Our k6 script deploys the same resources again and again. A redeploy of identical resources should be idempotent, but a command distribution is created every time. Something we need to follow up with.
 
