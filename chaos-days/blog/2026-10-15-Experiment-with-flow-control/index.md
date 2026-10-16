@@ -70,8 +70,8 @@ flowchart LR
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: lowers the write limit<br/>when the backlog exceeds the acceptable backlog" .-> W
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W knob
 ```
 
@@ -123,8 +123,8 @@ flowchart LR
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 100k" .-> W
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W knob
 ```
 
@@ -148,8 +148,8 @@ flowchart LR
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 100k" .-> W
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W knob
 ```
 
@@ -230,8 +230,8 @@ flowchart LR
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 10k" .-> W
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class Q knob
 ```
 
@@ -259,8 +259,8 @@ flowchart LR
     W --> Q[("Exporter backlog<br/>unbounded, until the disk is full")]
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class W off
 ```
 
@@ -285,8 +285,8 @@ flowchart LR
     Q --> X["Exporter"]
     X --> E["Elasticsearch"]
     Q -. "Throttling: acceptable backlog 5k" .-> W
-    classDef knob fill:#fde68a,stroke:#b45309,stroke-width:3px,color:#1f2937
-    classDef off fill:#f3f4f6,stroke:#9ca3af,stroke-dasharray:4 4,color:#6b7280
+    classDef knob fill:#f59e0b,fill-opacity:0.18,stroke:#f59e0b,stroke-width:3px
+    classDef off fill:none,stroke:#9ca3af,stroke-dasharray:4 4,color:#9ca3af
     class Q knob
 ```
 
