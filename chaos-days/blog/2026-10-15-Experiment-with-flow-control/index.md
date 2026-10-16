@@ -56,7 +56,7 @@ camunda.processing.flow-control.write.throttle.enabled: "true"
 
 See the [flow control documentation](https://docs.camunda.io/docs/next/self-managed/operational-guides/configure-flow-control/#enable-flow-control) for the meaning of these settings. The default of `acceptable-backlog` is 100000 (`camunda.processing.flow-control.write.throttle.acceptable-backlog`), which we haven't changed in our default setup. Note that Camunda itself ships with the write limit and the throttling disabled, see the [configuration defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1806-L1821). Only the request limit (backpressure, see the [defaults](https://github.com/camunda/camunda/blob/93eed7e8765965643acda91fc6e389d0328155b8/dist/src/main/config/defaults.yaml#L1761-L1762)) is enabled by default.
 
-Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling starts to lower this limit when the exporter backlog is larger than half of the acceptable backlog, and limits harder the larger the backlog gets. Each variation below changes one of these knobs, highlighted in the diagram of its section (the base diagram highlights the knob of our default setup):
+Flow control acts in two places on the write path of a partition. The write limit caps how many records per second the processing may write, and a rejected write is retried by the engine. The throttling starts to lower this limit when the exporter backlog is larger than half of the acceptable backlog, and limits harder the larger the backlog gets. Each variation below, except the one with more load, changes one of these knobs, highlighted in the diagram of its section (the base diagram highlights the knob of our default setup):
 
 ```mermaid
 flowchart LR
@@ -77,7 +77,7 @@ We started one cluster per variation:
 - **More PIs** (`c8-chaos-w42-pis-400`): `load-tester.starter.rate: 400`.
 - **Lower write limit** (`c8-chaos-w42-lower-limit`): `camunda.processing.flow-control.write.limit: 100`.
 - **Lower backlog** (`c8-chaos-w42-lower-limit-backlog`): `camunda.processing.flow-control.write.throttle.acceptable-backlog: 10000`.
-- **No flow control** (`c8-chaos-w42-no-limit`): the three lines above removed from the default load test setup (this uses the Camunda default flow control settings, the other settings of the load test setup, like the disk watermarks, stay).
+- **No flow control** (`c8-chaos-w42-no-limit`): the three flow control settings of the base removed from the default load test setup (this uses the Camunda default flow control settings, the other settings of the load test setup, like the disk watermarks, stay).
 
 Later we added a sixth cluster after discussing the results:
 
