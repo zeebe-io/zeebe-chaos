@@ -32,7 +32,7 @@ flowchart LR
     C -. "backlog / exporter rate = export delay, one part of the data availability" .-> E
 ```
 
-The acceptable backlog steers the size of the queue in the middle, and with it the export delay. This is one part of the data availability, which the load tester measures from creating an instance until it is available via the REST API. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed.
+The acceptable backlog steers the size of the queue in the middle, and with it the export delay. This is one part of the data availability, which the load tester measures from creating an instance until it is available via the REST API. The exporter rate on the right decides how many records per second can pass. A larger queue does not add capacity, and a too small queue can even lower it, as the 5k run showed. The exporter rate was not the same in every run (6.4k to 8.2k records/s). We expect that the uneven distribution of the load across the Elasticsearch shards is the reason (see below), we did not verify this.
 
 - **The limit of the system is most likely the exporter.** The maximum sustainable PIs/s is the exporter throughput divided by the exported records per PI. On the base cluster the exporter handled about 8.2k records/s at about 37 exported records per PI, which gives about 220 PIs/s.
 - **Without flow control an overloaded cluster fills its backlog.** Under the stress workload the cluster processed about 295 PIs/s for roughly 2.5 hours, while the exporter backlog grew to about 19 million records per partition, until the disks were almost full.
