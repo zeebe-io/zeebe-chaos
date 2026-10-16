@@ -191,17 +191,24 @@ In the investigation and discussion we realized that the acceptable backlog only
 
 The throughput is only slightly affected by the limit. What matters more is how fast the exporter cleans up and how fast new data can be accepted. Without flow control we reach 300 PIs/s because the exporter throughput is not respected (until we reach the disk limit). With the backlog enabled, processing waits for the exporter, so the exporter throughput sets the pace.
 
+See the diagram at the top: the acceptable backlog only sizes the queue, the exporter rate sets the throughput.
+
+This also lets us calculate the maximum PIs/s: exporter throughput divided by records per process instance. The exporters exported 37.0 records per completed process instance in Prometheus (base, 10k and 5k cluster). This is a bit more than the 33 records we calculated for the write limit, as it also contains records that do not belong to a process instance, for example from the continuous deployments and their distribution. We did not break this down. With 37 records per PI and an exporter throughput of 7k records/s the maximum is `7000 / 37`, about 190 PIs/s.
+
 This led to a thought: what if the backlog is lower than the throughput the exporter can sustain? How would the system behave? Would we still be able to achieve the same throughput with an even better data availability?
 
 We started `c8-chaos-w42-backlog-5k` to test this. We expected a lower backlog and better data availability at the same throughput, unless the limit is too low, in which case the throughput suffers.
 
 ![Backlog comparison of the 5k and 10k clusters](lower-backlog-5k-comparison.png)
 
-The exporter throughput was about 7k records/s. A backlog of 5k is about 30% below that, and processing throughput dropped by about 20% (188 PIs/s compared to 218 PIs/s with 10k). Thinking about this in more detail this makes also sense as we now limit our system by the queue size and no longer by our exporting rate (service rate).
+The measured exporter throughput was about 7.9k records/s with the 10k backlog and 7.0k records/s with the 5k backlog. Divided by 37 records per PI this is about 213 and 188 PIs/s, which matches the PIs/s we measured (218 and 188). So the 5k backlog did not slow down the processing directly, it lowered the exporter throughput, and the processing follows the exporter.
 
-![](lower-backlog-5k-comparison-throughput.png)
+A backlog of 5k is less than one second of exporting (about 30% below the 7k records/s). Queueing theory explains why this hurts. The exporter serves the queue in batches, and every batch has a fixed cost (the bulk request to Elasticsearch) on top of the cost per record. With a small queue the batches are small, the fixed cost is spread over fewer records, and the service rate drops, while a larger queue amortizes it. The PIs/s we measured follow this: about 220 (default 100k backlog), 218 (10k) and 188 (5k), so a larger buffer helps with diminishing returns, and a too small buffer starves the exporter. Compared to 10k, the throughput dropped by about 14% (188 vs 218 PIs/s). We did not measure the batch sizes, so the batching itself is an assumption.
+
+![Throughput comparison of the 5k and 10k clusters](lower-backlog-5k-comparison-throughput.png)
 
 We assume a backlog around 8k gives the best combination of throughput and data availability. We did not test that.
+
 The backlog also did not shrink as much as we expected. We did not find out why.
 
 #### Uneven load on Elasticsearch
