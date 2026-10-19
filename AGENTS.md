@@ -55,6 +55,22 @@ threshold, a durable behavioral note — also add it to
 which is the durable home for such facts, and link back to the chaos-day post as the source
 experiment.
 
+### Writing a chaos-day post
+
+Keep the chronological, past-tense narrative. Within it:
+
+- **Takeaway first.** The TL;DR holds the findings with at most a few rounded numbers. Put the exact
+  values per cluster into one small table in the `### Actual` section and name the source once.
+- **Say every fact once.** Define the workload, the statistics (for example whole run mean vs steady
+  state) and terms where they are first used, then refer back. Do not repeat the same explanation in
+  the TL;DR, the sections and the conclusion.
+- **Keep calculations short.** Show a calculation once, with one value and one rounding per metric,
+  and only when the reader needs it to follow the result. Prefer a diagram or a table over a block of
+  numbers, and keep paragraphs to a few sentences.
+- **Name the configuration of every cluster.** List where it deviates from the shipped Camunda
+  defaults and link the configuration at a commit. Our load test setup is not the product default,
+  and results measured with it can be skewed.
+
 ---
 
 ## Ownership
