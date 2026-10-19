@@ -67,9 +67,11 @@ Keep the chronological, past-tense narrative. Within it:
 - **Keep calculations short.** Show a calculation once, with one value and one rounding per metric,
   and only when the reader needs it to follow the result. Prefer a diagram or a table over a block of
   numbers, and keep paragraphs to a few sentences.
-- **Do not derive a cause from a restated measurement.** Exported records divided by records per
-  process instance reproduces the measured throughput by construction, so it does not explain it.
-  Put theories in their own sentence and mark them as not verified.
+- **Do not present a check that cannot fail as evidence.** If a number comes from the same
+  measurement, matching it proves nothing. Example: the exported records per process instance were
+  taken from the measured exports, so exported records per second divided by it always gives the
+  measured throughput back. Write a theory about a cause in its own sentence and mark it as not
+  verified.
 - **Name the configuration of every cluster.** List where it deviates from the shipped Camunda
   defaults and link the configuration at a commit. Our load test setup is not the product default,
   and results measured with it can be skewed.
