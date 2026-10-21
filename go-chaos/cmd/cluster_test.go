@@ -16,7 +16,9 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -216,4 +218,90 @@ func Test_JsonUnmarshalOfClusterTopology(t *testing.T) {
 	assert.Equal(t, 4, topology.Routing.RequestHandling.PartitionCount)
 	assert.Equal(t, "AllPartitions", topology.Routing.RequestHandling.Strategy)
 	assert.Equal(t, 4, topology.Routing.RequestHandling.PartitionCount)
+}
+
+func Test_NextFailoverStep(t *testing.T) {
+	// 4 brokers over 2 regions: even ids are in region 0, odd ids in region 1
+	flags := &Flags{regions: 2, regionId: 0, brokers: 4}
+	allBrokers := []BrokerState{{Id: 0}, {Id: 1}, {Id: 2}, {Id: 3}}
+	survivors := []BrokerState{{Id: 0}, {Id: 2}}
+
+	tests := map[string]struct {
+		topology *CurrentTopology
+		expected failoverStep
+	}{
+		"fresh start removes the other region": {
+			topology: &CurrentTopology{Brokers: allBrokers},
+			expected: failoverStepForceRemove,
+		},
+		"retry after a completed failover is done": {
+			topology: &CurrentTopology{Brokers: survivors, LastChange: &LastChange{Id: 2, Status: "COMPLETED"}},
+			expected: failoverStepDone,
+		},
+		"retry while the failover is still running waits for it": {
+			topology: &CurrentTopology{Brokers: allBrokers, PendingChange: &TopologyChange{Id: 3}},
+			expected: failoverStepWaitForPendingChange,
+		},
+		"missing brokers are waited for": {
+			topology: &CurrentTopology{Brokers: allBrokers[:3]},
+			expected: failoverStepWaitForBrokers,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, nextFailoverStep(tc.topology, flags))
+		})
+	}
+}
+
+func Test_WaitForChangeSurvivesQueryErrors(t *testing.T) {
+	// given a gateway that fails a few times before reporting the change as completed
+	calls := 0
+	query := func() (*CurrentTopology, error) {
+		calls++
+		if calls <= 3 {
+			return nil, errors.New("expected status code 200 but got 502")
+		}
+		return &CurrentTopology{LastChange: &LastChange{Id: 7, Status: "COMPLETED"}}, nil
+	}
+
+	// when
+	err := waitForChangeWith(query, 7, time.Second, time.Millisecond)
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, 4, calls)
+}
+
+func Test_WaitForChangeTreatsOutdatedChangeAsCompleted(t *testing.T) {
+	query := func() (*CurrentTopology, error) {
+		return &CurrentTopology{LastChange: &LastChange{Id: 8, Status: "COMPLETED"}}, nil
+	}
+
+	assert.NoError(t, waitForChangeWith(query, 7, time.Second, time.Millisecond))
+}
+
+func Test_WaitForChangeReportsQueryErrorOnTimeout(t *testing.T) {
+	query := func() (*CurrentTopology, error) {
+		return nil, errors.New("expected status code 200 but got 502")
+	}
+
+	err := waitForChangeWith(query, 7, 20*time.Millisecond, 5*time.Millisecond)
+
+	assert.ErrorContains(t, err, "did not complete")
+	assert.ErrorContains(t, err, "502")
+}
+
+func Test_WaitForChangeDoesNotBurnTheTimeoutOnQueryErrors(t *testing.T) {
+	// the timeout must be spent waiting, not on spinning through failed queries
+	calls := 0
+	query := func() (*CurrentTopology, error) {
+		calls++
+		return nil, errors.New("connection refused")
+	}
+
+	_ = waitForChangeWith(query, 7, 100*time.Millisecond, 20*time.Millisecond)
+
+	assert.LessOrEqual(t, calls, 6)
 }
