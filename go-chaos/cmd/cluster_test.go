@@ -242,6 +242,10 @@ func Test_NextFailoverStep(t *testing.T) {
 			topology: &CurrentTopology{Brokers: allBrokers, PendingChange: &TopologyChange{Id: 3}},
 			expected: failoverStepWaitForPendingChange,
 		},
+		"empty topology is not mistaken for a finished failover": {
+			topology: &CurrentTopology{},
+			expected: failoverStepWaitForBrokers,
+		},
 		"missing brokers are waited for": {
 			topology: &CurrentTopology{Brokers: allBrokers[:3]},
 			expected: failoverStepWaitForBrokers,
@@ -301,7 +305,11 @@ func Test_WaitForChangeDoesNotBurnTheTimeoutOnQueryErrors(t *testing.T) {
 		return nil, errors.New("connection refused")
 	}
 
+	start := time.Now()
 	_ = waitForChangeWith(query, 7, 100*time.Millisecond, 20*time.Millisecond)
+	elapsed := time.Since(start)
 
+	// the loop gives up once another interval would pass the deadline, hence one interval of slack
+	assert.GreaterOrEqual(t, elapsed, 80*time.Millisecond)
 	assert.LessOrEqual(t, calls, 6)
 }

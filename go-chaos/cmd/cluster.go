@@ -384,7 +384,8 @@ func nextFailoverStep(topology *CurrentTopology, flags *Flags) failoverStep {
 	if topology.PendingChange != nil {
 		return failoverStepWaitForPendingChange
 	}
-	if len(getBrokersInOtherRegions(topology, flags.regions, flags.regionId)) == 0 {
+	// An empty topology is a gateway that has not seen its cluster yet, not a finished failover.
+	if len(topology.Brokers) > 0 && len(getBrokersInOtherRegions(topology, flags.regions, flags.regionId)) == 0 {
 		return failoverStepDone
 	}
 	if len(topology.Brokers) == flags.brokers {
@@ -405,7 +406,7 @@ func forceFailover(flags *Flags) error {
 	deadline := time.Now().Add(timeout)
 	var lastQueryErr error
 
-	for {
+	for time.Now().Before(deadline) {
 		topology, err := QueryTopology(port)
 		if err != nil {
 			lastQueryErr = err
@@ -418,7 +419,8 @@ func forceFailover(flags *Flags) error {
 				return nil
 			case failoverStepWaitForPendingChange:
 				internal.LogInfo("Cluster is already changing, waiting for change %d to complete", topology.PendingChange.Id)
-				err = waitForChange(port, topology.PendingChange.Id, timeout)
+				// The pending change shares the overall budget instead of getting a fresh timeout.
+				err = waitForChange(port, topology.PendingChange.Id, time.Until(deadline))
 				ensureNoError(err)
 				continue
 			case failoverStepForceRemove:
