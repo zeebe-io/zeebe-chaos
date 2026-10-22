@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/camunda/zeebe-chaos/go-chaos/internal"
+	"github.com/camunda/zeebe-chaos/go-chaos/internal/utils/deadline"
 	"github.com/spf13/cobra"
 )
 
@@ -219,7 +220,10 @@ func waitForBackup(flags *Flags) error {
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
-	for {
+	timeout := 6 * time.Hour
+	d := deadline.NewDeadliner(timeout, 5*time.Second)
+
+	for range d.IterateWithSleep() {
 		backup, err := getBackupStatus(port, flags.backupId)
 		if err != nil {
 			return err
@@ -233,9 +237,8 @@ func waitForBackup(flags *Flags) error {
 		case "DOES_NOT_EXIST":
 			return errors.New("backup does not exist")
 		}
-		time.Sleep(5 * time.Second)
 	}
-
+	return fmt.Errorf("backup %s did not complete within %s", flags.backupId, timeout)
 }
 
 func restoreFromBackup(flags *Flags) error {
