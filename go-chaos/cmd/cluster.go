@@ -188,6 +188,9 @@ func sendPatchCluster(port int, force bool, clusterRequest ClusterPatchRequest) 
 	}
 	internal.LogInfo("Requesting scaling %s with input %s \n", url, string(requestBody))
 	resp, err := sendHTTPJsonRequest(url, "PATCH", requestBody)
+	if err != nil {
+		return nil, err
+	}
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
@@ -302,48 +305,93 @@ func portForwardAndWaitForChange(flags *Flags) error {
 }
 
 func waitForChange(port int, changeId int64, timeout time.Duration) error {
-	interval := time.Second * 5
-	iterations := int(timeout / interval)
-	for i := 0; i < int(iterations); i++ {
-		topology, err := QueryTopology(port)
+	return waitForChangeWith(func() (*CurrentTopology, error) { return QueryTopology(port) }, changeId, timeout, time.Second*5)
+}
+
+// waitForChangeWith polls the topology until the change reaches a final state or the timeout elapses.
+// A failing query (e.g. the gateway pod we are port-forwarded to is briefly unavailable) is retried
+// after the same interval as a successful one and does not shorten the time budget.
+func waitForChangeWith(queryTopology func() (*CurrentTopology, error), changeId int64, timeout time.Duration, interval time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	var lastQueryErr error
+	for i := 1; ; i++ {
+		topology, err := queryTopology()
 		if err != nil {
+			lastQueryErr = err
 			internal.LogInfo("Failed to query topology: %s", err)
-			continue
-		}
-		if changeId <= 0 {
-			if topology.PendingChange != nil {
-				changeId = topology.PendingChange.Id
-			} else if topology.LastChange != nil {
-				changeId = topology.LastChange.Id
-			} else {
-				internal.LogInfo("No change exists")
+		} else {
+			lastQueryErr = nil
+			if changeId <= 0 {
+				if topology.PendingChange != nil {
+					changeId = topology.PendingChange.Id
+				} else if topology.LastChange != nil {
+					changeId = topology.LastChange.Id
+				} else {
+					internal.LogInfo("No change exists")
+					return nil
+				}
+			}
+			changeStatus := describeChangeStatus(topology, int64(changeId))
+			switch changeStatus {
+			case ChangeStatusCompleted:
+				internal.LogInfo("Change %d completed successfully", changeId)
 				return nil
+			case ChangeStatusFailed:
+				internal.LogInfo("Change %d failed with status %s", changeId, topology.LastChange.Status)
+				return fmt.Errorf("change %d failed with status %s", changeId, topology.LastChange.Status)
+			case ChangeStatusOutdated:
+				internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", changeId, topology.LastChange.Id)
+				return nil
+			case ChangeStatusPending:
+				competed := len(topology.PendingChange.Completed)
+				pending := len(topology.PendingChange.Pending)
+				total := competed + pending
+				internal.LogInfo("Change %d is %s with %d/%d operations complete", changeId, topology.PendingChange.Status, competed, total)
+			case ChangeStatusUnknown:
+				internal.LogInfo("Change %d not yet started", changeId)
 			}
 		}
-		changeStatus := describeChangeStatus(topology, int64(changeId))
-		switch changeStatus {
-		case ChangeStatusCompleted:
-			internal.LogInfo("Change %d completed successfully", changeId)
-			return nil
-		case ChangeStatusFailed:
-			internal.LogInfo("Change %d failed with status %s", changeId, topology.LastChange.Status)
-			return fmt.Errorf("change %d failed with status %s", changeId, topology.LastChange.Status)
-		case ChangeStatusOutdated:
-			internal.LogInfo("Change %d is outdated but was most likely completed successfully, latest change is %d", changeId, topology.LastChange.Id)
-			return nil
-		case ChangeStatusPending:
-			competed := len(topology.PendingChange.Completed)
-			pending := len(topology.PendingChange.Pending)
-			total := competed + pending
-			internal.LogInfo("Change %d is %s with %d/%d operations complete", changeId, topology.PendingChange.Status, competed, total)
-		case ChangeStatusUnknown:
-			internal.LogInfo("Change %d not yet started", changeId)
+
+		if !time.Now().Add(interval).Before(deadline) {
+			break
 		}
-		internal.LogVerbose("Waiting %s before checking again. Iteration %d out of %d", interval, i, iterations)
+		internal.LogVerbose("Waiting %s before checking again. Iteration %d", interval, i)
 		time.Sleep(interval)
 	}
 
+	if lastQueryErr != nil {
+		return fmt.Errorf("change %d did not complete within %s, the last topology query failed: %w", changeId, timeout, lastQueryErr)
+	}
 	return fmt.Errorf("change %d did not complete within %s", changeId, timeout)
+}
+
+type failoverStep string
+
+const (
+	// failoverStepDone means there are no brokers left in other regions and nothing is changing. This is
+	// the state a previous (possibly unconfirmed) attempt leaves behind, so retrying must succeed.
+	failoverStepDone failoverStep = "DONE"
+	// failoverStepWaitForPendingChange means a configuration change is in flight, e.g. the failover of a
+	// previous attempt. We wait for it and decide again.
+	failoverStepWaitForPendingChange failoverStep = "WAIT_FOR_PENDING_CHANGE"
+	// failoverStepForceRemove means the cluster is in the expected pre-failover state.
+	failoverStepForceRemove failoverStep = "FORCE_REMOVE"
+	// failoverStepWaitForBrokers means the cluster is neither failed over nor complete yet.
+	failoverStepWaitForBrokers failoverStep = "WAIT_FOR_BROKERS"
+)
+
+func nextFailoverStep(topology *CurrentTopology, flags *Flags) failoverStep {
+	if topology.PendingChange != nil {
+		return failoverStepWaitForPendingChange
+	}
+	// An empty topology is a gateway that has not seen its cluster yet, not a finished failover.
+	if len(topology.Brokers) > 0 && len(getBrokersInOtherRegions(topology, flags.regions, flags.regionId)) == 0 {
+		return failoverStepDone
+	}
+	if len(topology.Brokers) == flags.brokers {
+		return failoverStepForceRemove
+	}
+	return failoverStepWaitForBrokers
 }
 
 func forceFailover(flags *Flags) error {
@@ -353,47 +401,51 @@ func forceFailover(flags *Flags) error {
 	port, closePortForward := k8Client.MustGatewayPortForward(0, 9600)
 	defer closePortForward()
 
-	// Wait until we see 4 brokers in the topology
 	timeout := time.Minute * 5
 	interval := time.Second * 5
-	iterations := int(timeout / interval)
-	var currentTopology *CurrentTopology
+	deadline := time.Now().Add(timeout)
+	var lastQueryErr error
 
-	for i := 0; i < iterations; i++ {
+	for time.Now().Before(deadline) {
 		topology, err := QueryTopology(port)
 		if err != nil {
-			if i == iterations-1 {
-				panic(err)
+			lastQueryErr = err
+			internal.LogInfo("Failed to query topology: %s", err)
+		} else {
+			lastQueryErr = nil
+			switch nextFailoverStep(topology, flags) {
+			case failoverStepDone:
+				internal.LogInfo("No brokers outside region %d left in the cluster, failover is already done", flags.regionId)
+				return nil
+			case failoverStepWaitForPendingChange:
+				internal.LogInfo("Cluster is already changing, waiting for change %d to complete", topology.PendingChange.Id)
+				// The pending change shares the overall budget instead of getting a fresh timeout.
+				err = waitForChange(port, topology.PendingChange.Id, time.Until(deadline))
+				ensureNoError(err)
+				continue
+			case failoverStepForceRemove:
+				brokersToRemove := getBrokersInOtherRegions(topology, flags.regions, flags.regionId)
+				changeResponse, err := sendScaleRequest(port, brokersToRemove, 0, true, -1)
+				ensureNoError(err)
+
+				err = waitForChange(port, changeResponse.ChangeId, timeout)
+				ensureNoError(err)
+				return nil
+			case failoverStepWaitForBrokers:
+				internal.LogInfo("Waiting for %d brokers in topology, found %d", flags.brokers, len(topology.Brokers))
 			}
-			time.Sleep(interval)
-			continue
 		}
 
-		if len(topology.Brokers) == flags.brokers {
-			currentTopology = topology
+		if !time.Now().Add(interval).Before(deadline) {
 			break
 		}
-
 		time.Sleep(interval)
 	}
 
-	if currentTopology == nil {
-		return fmt.Errorf("timeout waiting for %d brokers in topology", flags.brokers)
+	if lastQueryErr != nil {
+		return fmt.Errorf("timeout waiting for %d brokers in topology, the last topology query failed: %w", flags.brokers, lastQueryErr)
 	}
-
-	if currentTopology.PendingChange != nil {
-		return fmt.Errorf("cluster is already scaling")
-	}
-
-	brokersToRemove := getBrokersInOtherRegions(currentTopology, flags.regions, flags.regionId)
-
-	changeResponse, err := sendScaleRequest(port, brokersToRemove, 0, true, -1)
-	ensureNoError(err)
-
-	err = waitForChange(port, changeResponse.ChangeId, timeout)
-	ensureNoError(err)
-
-	return nil
+	return fmt.Errorf("timeout waiting for %d brokers in topology", flags.brokers)
 }
 
 func getBrokersInOtherRegions(topology *CurrentTopology, regions int32, regionId int32) []int32 {
@@ -439,12 +491,12 @@ func QueryTopology(port int) (*CurrentTopology, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("expected status code 200 but got %d", resp.StatusCode)
-	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("expected status code 200 but got %d", resp.StatusCode)
+	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
